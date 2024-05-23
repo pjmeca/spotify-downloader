@@ -5,30 +5,17 @@ RUN apk add --no-cache curl tar && \
     tar -xzf /tmp/hcron.tar.gz -C /usr/local/bin && \
     rm /tmp/hcron.tar.gz
 
-
-
 FROM python:3.12-slim
-
 RUN pip install psutil pyyaml spotdl && \
-    spotdl --download-ffmpeg
+spotdl --download-ffmpeg
 RUN apt-get update && \
-    apt-get install -y cron
+apt-get install -y cron
 WORKDIR /app
-
-ENV CRON_SCHEDULE="0 0 */1 * *"
 COPY --from=download-hcron /usr/local/bin/hcron .
-
-ADD automated_run.py .
-ADD tracking.yaml .
-
-COPY main.sh start.sh ./
+COPY automated_run.py main.sh start.sh tracking.yaml ./
 RUN chmod +x main.sh start.sh
-
 WORKDIR /music
-
+ENV CRON_SCHEDULE="0 0 * * *"
 ENV FORMAT=opus
 ENV OPTIONS=
-
 ENTRYPOINT ["/app/start.sh"]
-
-#ENTRYPOINT [ "python", "/app/automated_run.py", "/app/tracking.yaml" ]
