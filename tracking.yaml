@@ -8,3 +8,6 @@ artists:
     url: https://open.spotify.com/intl-es/artist/74KM79TiuVKeVCqs8QtB0B?si=0QpxUG2CTs6SSLWVikmVFQ
   - name: ROSALÍA
     url: https://open.spotify.com/intl-es/artist/7ltDVBr6mKbRvohxheJ9h1?si=An8v7yyeT0-H3bOHcyTv3g
+playlists:
+  - name: Los 90 España
+    url: https://open.spotify.com/playlist/37i9dQZF1DWXm9R2iowygp?si=7a8a840ee1b14436
