@@ -21,26 +21,35 @@ def load_yaml(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return yaml.safe_load(file)
 
-def extract_artists(yaml_content):
+def download_yaml(yaml_content, type):
+    print(f"Processing {type}...", flush=True)
+    entries = extract_info_yaml(yaml_content, type)
+    for entry in entries:
+        download_music(entry)
+    print(f"{type} processed", flush=True)
+
+def extract_info_yaml(yaml_content, type):
     """
-    Extract artists information from YAML content.
+    Extract information from YAML content.
 
     :param yaml_content: Content of the YAML file as a dictionary.
-    :return: List of dictionaries with information about the artists.
+    :return: List of dictionaries with information about the yaml entries.
     """
-    artists = yaml_content.get('artists', [])
-    return artists
+    entries = yaml_content.get(type, [])
+    return entries
 
-def download_artist_music(artist):
+def download_music(entry):
     """
-    Run the spotdl command to download music from an artist.
+    Run the spotdl command to download music and embed Spotify metadata.
 
-    :param artist: Artist from Spotify to download.
+    :param entry: Entry from Spotify to download.
     """
-    name = artist['name']
-    url = artist['url']
+    name = entry['name']
+    url = entry['url']
 
-    print(f"Downloading artist: {name}")
+    print(f"Downloading: {name}")
+
+    os.chdir(f'/music')
 
     print(f"Creating directory: {name}...", flush=True)
     if not os.path.exists(name):
@@ -49,7 +58,7 @@ def download_artist_music(artist):
     else:
         print("Directory already exists", flush=True)
 
-    os.chdir(f'/app/{name}')
+    os.chdir(f'/music/{name}')
 
     command = ['/usr/local/bin/spotdl', 'download', url, '--format', FORMAT, '--threads', str(NUM_THREADS)]
     for arg in OPTIONS.split():
@@ -64,16 +73,21 @@ def download_artist_music(artist):
         else:
             print(f"spotdl exited with errors for query: {url}", flush=True)
 
+    os.chdir(f'/music')
+
 def main(file_path):
     """
     :param file_path: YAML file path.
     """
     print(f"I will download music as {FORMAT} files with {NUM_THREADS} threads", flush=True)
     
+    print("Loading tracking info...", flush=True)
     yaml_content = load_yaml(file_path)
-    artists = extract_artists(yaml_content)
-    for artist in artists:
-        download_artist_music(artist)
+    print("Tracking info loaded", flush=True)
+
+    download_yaml(yaml_content, 'artists')
+
+    download_yaml(yaml_content,'playlists')
 
 if __name__ == "__main__":
 
