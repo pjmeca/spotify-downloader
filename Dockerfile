@@ -6,10 +6,10 @@ RUN apk add --no-cache curl tar && \
     rm /tmp/hcron.tar.gz
 
 FROM python:3.12-slim
-RUN pip install psutil pyyaml spotdl && \
-spotdl --download-ffmpeg
-RUN apt-get update && \
-apt-get install -y cron
+RUN apt-get update && apt-get install -y --no-install-recommends cron && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir psutil pyyaml spotdl && \
+    spotdl --download-ffmpeg
 WORKDIR /app
 COPY --from=download-hcron /usr/local/bin/hcron .
 COPY automated_run.py main.sh start.sh tracking.yaml ./
