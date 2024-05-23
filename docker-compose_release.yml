@@ -2,12 +2,8 @@ name: spotify-downloader
 
 services:
   spotify-downloader:
-    image: pjmeca/spotify-downloader:beta
+    image: pjmeca/spotify-downloader:latest
     container_name: spotify-downloader
-    build:
-      context: .
-      platforms:
-        - linux/amd64
     volumes:
       - /your/main/music/path:/music # Change this
       - /path/to/tracking.yaml:/app/tracking.yaml:ro # Change this
