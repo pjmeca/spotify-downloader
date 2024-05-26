@@ -2,7 +2,7 @@ name: spotify-downloader
 
 services:
   spotify-downloader:
-    image: pjmeca/spotify-downloader:beta
+    image: pjmeca/spotify-downloader:latest
     container_name: spotify-downloader
     build:
       context: .
