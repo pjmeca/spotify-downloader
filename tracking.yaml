@@ -2,10 +2,14 @@
 artists:
   - name: Dua Lipa
     url: https://open.spotify.com/intl-es/artist/6M2wZ9GZgrQXHCFfjv46we?si=p0oIec8oSkWbb0FSJ1CHVw
+  - name: The Beatles
+    url: https://open.spotify.com/intl-es/artist/3WrFJ7ztbogyGnTHbHJFl2?si=s1ZRiu9rT6WbL5WPtW3rDA
+    refresh: false
   - name: Olivia Rodrigo
     url: https://open.spotify.com/intl-es/artist/1McMsnEElThX1knmY4oliG?si=1AJfFUAgTdquWXOI7643xw
   - name: Sabrina Carpenter
     url: https://open.spotify.com/intl-es/artist/74KM79TiuVKeVCqs8QtB0B?si=0QpxUG2CTs6SSLWVikmVFQ
+    refresh: true
   - name: ROSALÍA
     url: https://open.spotify.com/intl-es/artist/7ltDVBr6mKbRvohxheJ9h1?si=An8v7yyeT0-H3bOHcyTv3g
 playlists:

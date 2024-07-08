@@ -48,12 +48,18 @@ Each time the script inside the container runs, it reads the `tracking.yaml` fil
 
 Below is an example of `tracking.yaml`. The `name` field is used as a folder name, which will be created if it does not exist. If you want to download multiple URLs to the same folder, create multiple entries with the same name.
 
+Optionally, you can specify if you wish to `refresh` each entry (defaults to `True`) in case it already contains files. It is advised to set this field for artists who do not publish new tracks frequently, as it will drastically decrease Spotify's API calls, thus reducing the risk of receiving too many 429 HTTP codes.
+
 ```yaml
 artists:
   - name: Dua Lipa
     url: https://open.spotify.com/intl-es/artist/6M2wZ9GZgrQXHCFfjv46we?si=p0oIec8oSkWbb0FSJ1CHVw
+  - name: The Beatles
+    url: https://open.spotify.com/intl-es/artist/3WrFJ7ztbogyGnTHbHJFl2?si=s1ZRiu9rT6WbL5WPtW3rDA
+    refresh: false
   - name: Olivia Rodrigo
     url: https://open.spotify.com/intl-es/artist/1McMsnEElThX1knmY4oliG?si=1AJfFUAgTdquWXOI7643xw
+    refresh: true
 
 playlists:
   - name: Los 90 España
@@ -67,17 +73,19 @@ user@host:/music$ tree -d
 .
 ├── Dua Lipa
 ├── Los 90 España
-└── Olivia Rodrigo
+├── Olivia Rodrigo
+└── The Beatles
 ```
 
 
 ## Changelog
 
-- 0.0.1: Initial release
-- 0.0.2: Fixed download directories
-- 0.0.3: Displayed program start & end time
-- 0.0.4: Fixed download directories (again)
+- 1.1.0: Added `refresh` field to `tracking.yaml`
 - 1.0.0: Added playlists; first stable release
+- 0.0.4: Fixed download directories (again)
+- 0.0.3: Displayed program start & end time
+- 0.0.2: Fixed download directories
+- 0.0.1: Initial release
 
 ## Special Thanks To
 
