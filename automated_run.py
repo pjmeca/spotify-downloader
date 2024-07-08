@@ -46,6 +46,7 @@ def download_music(entry):
     """
     name = entry['name']
     url = entry['url']
+    refresh = entry.get('refresh', True)
 
     print(f"Downloading: {name}")
 
@@ -57,6 +58,9 @@ def download_music(entry):
         print("Directory created", flush=True)
     else:
         print("Directory already exists", flush=True)
+        if not refresh and os.listdir(name) != []:
+            print("Directory contains files and property 'refresh' is set to False -> Skipping...", flush=True)
+            return
 
     os.chdir(f'/music/{name}')
 
