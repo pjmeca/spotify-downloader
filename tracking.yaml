@@ -1,17 +1,17 @@
 ---
 artists:
   - name: Dua Lipa
-    url: https://open.spotify.com/intl-es/artist/6M2wZ9GZgrQXHCFfjv46we?si=p0oIec8oSkWbb0FSJ1CHVw
+    url: https://open.spotify.com/intl-es/artist/6M2wZ9GZgrQXHCFfjv46we
   - name: The Beatles
-    url: https://open.spotify.com/intl-es/artist/3WrFJ7ztbogyGnTHbHJFl2?si=s1ZRiu9rT6WbL5WPtW3rDA
+    url: https://open.spotify.com/intl-es/artist/3WrFJ7ztbogyGnTHbHJFl2
     refresh: false
   - name: Olivia Rodrigo
-    url: https://open.spotify.com/intl-es/artist/1McMsnEElThX1knmY4oliG?si=1AJfFUAgTdquWXOI7643xw
+    url: https://open.spotify.com/intl-es/artist/1McMsnEElThX1knmY4oliG
   - name: Sabrina Carpenter
-    url: https://open.spotify.com/intl-es/artist/74KM79TiuVKeVCqs8QtB0B?si=0QpxUG2CTs6SSLWVikmVFQ
+    url: https://open.spotify.com/intl-es/artist/74KM79TiuVKeVCqs8QtB0B
     refresh: true
   - name: ROSALÍA
-    url: https://open.spotify.com/intl-es/artist/7ltDVBr6mKbRvohxheJ9h1?si=An8v7yyeT0-H3bOHcyTv3g
+    url: https://open.spotify.com/intl-es/artist/7ltDVBr6mKbRvohxheJ9h1
 playlists:
   - name: Los 90 España
-    url: https://open.spotify.com/playlist/37i9dQZF1DWXm9R2iowygp?si=7a8a840ee1b14436
+    url: https://open.spotify.com/playlist/37i9dQZF1DWXm9R2iowygp

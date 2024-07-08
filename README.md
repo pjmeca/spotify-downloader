@@ -56,17 +56,17 @@ Optionally, you can specify if you wish to `refresh` each entry (defaults to `Tr
 ```yaml
 artists:
   - name: Dua Lipa
-    url: https://open.spotify.com/intl-es/artist/6M2wZ9GZgrQXHCFfjv46we?si=p0oIec8oSkWbb0FSJ1CHVw
+    url: https://open.spotify.com/intl-es/artist/6M2wZ9GZgrQXHCFfjv46we
   - name: The Beatles
-    url: https://open.spotify.com/intl-es/artist/3WrFJ7ztbogyGnTHbHJFl2?si=s1ZRiu9rT6WbL5WPtW3rDA
+    url: https://open.spotify.com/intl-es/artist/3WrFJ7ztbogyGnTHbHJFl2
     refresh: false
   - name: Olivia Rodrigo
-    url: https://open.spotify.com/intl-es/artist/1McMsnEElThX1knmY4oliG?si=1AJfFUAgTdquWXOI7643xw
+    url: https://open.spotify.com/intl-es/artist/1McMsnEElThX1knmY4oliG
     refresh: true
 
 playlists:
   - name: Los 90 España
-    url: https://open.spotify.com/playlist/37i9dQZF1DWXm9R2iowygp?si=7a8a840ee1b14436
+    url: https://open.spotify.com/playlist/37i9dQZF1DWXm9R2iowygp
 ```
 
 ### Result
