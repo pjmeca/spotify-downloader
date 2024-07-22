@@ -83,6 +83,7 @@ user@host:/music$ tree -d
 
 ## Changelog
 
+- 1.1.1: Fix: A debug directory was mistakenly introduced in the build of the release image
 - 1.1.0: Added `refresh` field to `tracking.yaml`
 - 1.0.0: Added playlists; first stable release
 - 0.0.4: Fixed download directories (again)
