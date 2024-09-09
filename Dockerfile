@@ -16,7 +16,7 @@ LABEL org.label-schema.name="pjmeca/spotify-downloader" \
     maintainer="pjmeca"
 RUN apt-get update && apt-get install -y --no-install-recommends cron && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir psutil pyyaml spotdl && \
+RUN pip install --no-cache-dir psutil pyyaml spotdl==4.2.8 && \
     spotdl --download-ffmpeg
 WORKDIR /app
 COPY --from=download-hcron /usr/local/bin/hcron .
