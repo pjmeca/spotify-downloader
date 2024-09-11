@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./Music:/music
+      - ./logs:/app/logs # Optional
       - ./tracking.yaml:/app/tracking.yaml:ro
       - /etc/localtime:/etc/localtime:ro
     environment:

@@ -18,6 +18,8 @@
 	<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
 	<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
 	<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+	<PackageReference Include="SpotifyAPI.Web" Version="7.1.1" />
+	<PackageReference Include="YamlDotNet" Version="16.1.0" />
   </ItemGroup>
 
 </Project>
