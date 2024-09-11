@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# S6678: Use PascalCase for named placeholders
+dotnet_diagnostic.S6678.severity = none

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SpotifyDownloader": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

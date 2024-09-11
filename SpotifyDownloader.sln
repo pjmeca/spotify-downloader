@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyDownloader", "SpotifyDownloader\SpotifyDownloader.csproj", "{D931BDE9-F095-4551-8A18-3FBBB2966F14}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{C110A888-0BF3-447F-BB6F-645B763B1F1F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D931BDE9-F095-4551-8A18-3FBBB2966F14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D931BDE9-F095-4551-8A18-3FBBB2966F14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D931BDE9-F095-4551-8A18-3FBBB2966F14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D931BDE9-F095-4551-8A18-3FBBB2966F14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C110A888-0BF3-447F-BB6F-645B763B1F1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C110A888-0BF3-447F-BB6F-645B763B1F1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C110A888-0BF3-447F-BB6F-645B763B1F1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C110A888-0BF3-447F-BB6F-645B763B1F1F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {214C0CF9-B41F-47BA-ADD7-58CB36606C59}
+	EndGlobalSection
+EndGlobal
