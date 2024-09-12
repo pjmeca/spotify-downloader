@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -186,7 +186,10 @@ public class DownloadingService(ILogger<DownloadingService> logger, IConfigurati
         if (process != null)
         {
             string output = await process.StandardOutput.ReadToEndAsync();
-            logger.LogDebug("spotdl output:\n{output}", output);
+            foreach (var x in output.Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)))
+            {
+                logger.LogInformation("{output}", x);
+            }
 
             await process.WaitForExitAsync();
         }
