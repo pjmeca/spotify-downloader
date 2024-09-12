@@ -35,7 +35,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, IConfigurati
             try
             {
                 logger.LogInformation("Processing {name}", artist.Name);
-                result.AlbumsDownloaded = await ProcessArtist(artist);
+                result.AlbumsDownloaded += await ProcessArtist(artist);
             }
             catch (Exception ex)
             {
