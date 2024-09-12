@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -69,6 +69,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, IConfigurati
         
         var remoteAlbums = await GetRemoteArtistInfo(artist.Url);
         var albumsToDownload = remoteAlbums
+            .Where(x => x.AlbumType != "compilation") // AlbumType allowed values: "album", "single", "compilation"
             .Where(x => !localAlbums.Contains(x.Name))
             .ToList();
 
