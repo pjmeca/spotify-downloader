@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg python3-
     apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN python3 -m venv env && \
     /env/bin/pip install spotdl==4.2.8
-USER app
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
