@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using SpotifyAPI.Web;
 using SpotifyDownloader.Services;
 
 var Configuration = new ConfigurationBuilder()
@@ -19,8 +20,11 @@ logger.LogInformation("Initializing...");
 try
 {
     var trackingService = app.Services.GetRequiredService<ITrackingService>();
+    var downloadingService = app.Services.GetRequiredService<IDownloadingService>();
 
     var trackingInformation = trackingService.ReadTrackingInformation();
+    var result = await downloadingService.Download(trackingInformation);
+    logger.LogInformation("Downloaded {albums} new albums and {playlists} new playlists.", result.AlbumsDownloaded, result.PlaylistsDownloaded);
 
     logger.LogInformation("Ready!");
 }
@@ -52,6 +56,14 @@ static IHost Build(string[] args, IConfigurationRoot Configuration)
         });
 
         x.AddSingleton<ITrackingService, TrackingService>();
+        x.AddSingleton<IDownloadingService, DownloadingService>();
+
+        var config = SpotifyClientConfig
+            .CreateDefault()
+            .WithAuthenticator(new ClientCredentialsAuthenticator(
+                Configuration.GetSection("CLIENT").GetValue<string>("ID")!,
+                Configuration.GetSection("CLIENT").GetValue<string>("SECRET")!));
+        x.AddSingleton(new SpotifyClient(config));
     });
 
     var app = builder.Build();

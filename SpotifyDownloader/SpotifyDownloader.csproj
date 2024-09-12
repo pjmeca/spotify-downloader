@@ -8,7 +8,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	<NoWarn>$(NoWarn);1591;S3237</NoWarn>
+	<NoWarn>$(NoWarn);1591;S3237;S3626</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +19,7 @@
 	<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
 	<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
 	<PackageReference Include="SpotifyAPI.Web" Version="7.1.1" />
+	<PackageReference Include="TagLibSharp" Version="2.3.0" />
 	<PackageReference Include="YamlDotNet" Version="16.1.0" />
   </ItemGroup>
 

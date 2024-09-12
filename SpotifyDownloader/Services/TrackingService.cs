@@ -12,11 +12,11 @@ interface ITrackingService
 
 public class TrackingService(ILogger<TrackingService> logger) : ITrackingService
 {
-    public const string TrackingFile = "/app/tracking.yaml";
+    public const string DEFAULT_TRACKING_FILE = "/app/tracking.yaml";
 
     public TrackingInformation ReadTrackingInformation(string? trackingFile = null)
     {
-        trackingFile ??= TrackingFile;
+        trackingFile ??= DEFAULT_TRACKING_FILE;
 
         logger.LogInformation("Reading tracking information...");
 
