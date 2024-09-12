@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -111,9 +111,15 @@ public class DownloadingService(ILogger<DownloadingService> logger, IConfigurati
 
         async Task<SimpleAlbum[]> GetRemoteArtistInfo(string url)
         {
-            var artistIdRegex = new Regex(@".*\.spotify.com\/.*artist\/(.+)\?.*?", RegexOptions.Compiled);
+            var artistIdRegex = new Regex(@"/.*\.spotify.com\/.*artist\/([^\?]+)(\?.+)?", RegexOptions.Compiled);
             var artistId = artistIdRegex.Match(url).Groups[1].Value;
-            
+
+            if (artistId == null)
+            {
+                logger.LogError("Artist not found in URL: {url}", url);
+                return [];
+            }
+
             var albums = await spotifyClient.Artists.GetAlbums(artistId);
             return albums.Items?.ToArray() ?? [];
         }
