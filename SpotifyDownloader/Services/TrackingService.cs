@@ -5,7 +5,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace SpotifyDownloader.Services;
 
-interface ITrackingService
+public interface ITrackingService
 {
     TrackingInformation ReadTrackingInformation(string? trackingFile = null);
 }

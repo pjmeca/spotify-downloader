@@ -1,3 +1,4 @@
+using EasyCronJob.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,21 +13,22 @@ var Configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-var app = Build(args, Configuration);
+string CRON_SCHEDULE = Configuration.GetValue<string>("CRON_SCHEDULE")!;
+string SPOTIFY_CLIENT_ID = Configuration.GetSection("CLIENT").GetValue<string>("ID")!;
+string SPOTIFY_CLIENT_SECRET = Configuration.GetSection("CLIENT").GetValue<string>("SECRET")!;
+
+var app = Build();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Initializing...");
 
 try
 {
-    var trackingService = app.Services.GetRequiredService<ITrackingService>();
-    var downloadingService = app.Services.GetRequiredService<IDownloadingService>();
-
-    var trackingInformation = trackingService.ReadTrackingInformation();
-    var result = await downloadingService.Download(trackingInformation);
-    logger.LogInformation("Downloaded {albums} new albums and {playlists} new playlists.", result.AlbumsDownloaded, result.PlaylistsDownloaded);
-
+    logger.LogInformation("Cron job configured with: \"{cron}\"", CRON_SCHEDULE);
+    
     logger.LogInformation("Ready!");
+
+    // The cron job will take it from here
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -34,10 +36,10 @@ catch (Exception ex)
     Environment.FailFast("Stopped program because of exception", ex);
 }
 
-static IHost Build(string[] args, IConfigurationRoot Configuration)
+IHost Build()
 {
     var builder = Host.CreateDefaultBuilder(args);
-
+    
     builder.ConfigureServices(x =>
     {
         x.AddSerilog(config =>
@@ -61,9 +63,16 @@ static IHost Build(string[] args, IConfigurationRoot Configuration)
         var config = SpotifyClientConfig
             .CreateDefault()
             .WithAuthenticator(new ClientCredentialsAuthenticator(
-                Configuration.GetSection("CLIENT").GetValue<string>("ID")!,
-                Configuration.GetSection("CLIENT").GetValue<string>("SECRET")!));
+                SPOTIFY_CLIENT_ID,
+                SPOTIFY_CLIENT_SECRET));
         x.AddSingleton(new SpotifyClient(config));
+
+        x.ApplyResulation<CronJob>(options =>
+        {
+            options.CronExpression = CRON_SCHEDULE;
+            options.TimeZoneInfo = TimeZoneInfo.Local;
+            options.CronFormat = Cronos.CronFormat.Standard;
+        });
     });
 
     var app = builder.Build();
