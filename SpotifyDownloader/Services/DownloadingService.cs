@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -120,8 +120,9 @@ public class DownloadingService(ILogger<DownloadingService> logger, IConfigurati
                 return [];
             }
 
-            var albums = await spotifyClient.Artists.GetAlbums(artistId);
-            return albums.Items?.ToArray() ?? [];
+            var firstAlbum = await spotifyClient.Artists.GetAlbums(artistId);
+            var albums = await spotifyClient.PaginateAll(firstAlbum);
+            return [.. albums];
         }
     }
 
