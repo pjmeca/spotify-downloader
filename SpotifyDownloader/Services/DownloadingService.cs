@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using SpotifyDownloader.Models;
+using static SpotifyAPI.Web.ArtistsAlbumsRequest;
 
 namespace SpotifyDownloader.Services;
 
@@ -74,12 +75,27 @@ public class DownloadingService(ILogger<DownloadingService> logger, IConfigurati
             .ToList();
 
         logger.LogInformation("{num} albums will be downloaded.", albumsToDownload.Count);
-
         int albumsDownloaded = albumsToDownload.Count;
+
+        // Process "appears_on" independently
+        var albumsAppearsOnToDownload = albumsToDownload
+            .Where(x => x.AlbumGroup == "appears_on")
+            .ToList();
+        albumsToDownload.RemoveAll(x => albumsAppearsOnToDownload.Contains(x));
 
         foreach(var album in albumsToDownload)
         {
             var result = await DownloadAlbum(itemDirectory, album);
+            if (!result)
+            {
+                albumsDownloaded--;
+            }
+        }
+
+        foreach (var album in albumsAppearsOnToDownload)
+        {
+            var result = await DownloadTracksFromAlbum(itemDirectory, album,
+                x => x.Artists.Select(x => x.Name).Any(x => x.Contains(artist.Name)));
             if (!result)
             {
                 albumsDownloaded--;
@@ -121,7 +137,10 @@ public class DownloadingService(ILogger<DownloadingService> logger, IConfigurati
                 return [];
             }
 
-            var firstAlbum = await spotifyClient.Artists.GetAlbums(artistId);
+            var firstAlbum = await spotifyClient.Artists.GetAlbums(artistId, new ArtistsAlbumsRequest()
+            {
+                IncludeGroupsParam = IncludeGroups.Album | IncludeGroups.Single | IncludeGroups.AppearsOn
+            });
             var albums = await spotifyClient.PaginateAll(firstAlbum);
             return [.. albums];
         }
@@ -144,6 +163,39 @@ public class DownloadingService(ILogger<DownloadingService> logger, IConfigurati
         catch (Exception ex)
         {
             logger.LogError(ex, "An exception occurred while downloading the album \"{album}\".", album.Name);
+
+            // Remove all downloaded songs from this album so it will be downloaded next time
+            Directory.GetFiles(path)
+                .Where(x => TagLib.File.Create(x).Tag.Album == album.Name)
+                .ToList()
+                .ForEach(File.Delete);
+
+            return false;
+        }
+    }
+
+    private async Task<bool> DownloadTracksFromAlbum(string path, SimpleAlbum album, Func<SimpleTrack, bool>? filter = null)
+    {
+        if (filter is null)
+        {
+            return await DownloadAlbum(path, album);
+        }
+
+        try
+        {
+            var firstTrack = await spotifyClient.Albums.GetTracks(album.Id);
+            var albumTracks = await spotifyClient.PaginateAll(firstTrack);
+
+            foreach (var track in albumTracks.Where(x => filter(x)))
+            {
+                await Download(path, "track", track.Name, track.ExternalUrls["spotify"]);
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An exception occurred while downloading tracks from the album \"{album}\".", album.Name);
 
             // Remove all downloaded songs from this album so it will be downloaded next time
             Directory.GetFiles(path)
