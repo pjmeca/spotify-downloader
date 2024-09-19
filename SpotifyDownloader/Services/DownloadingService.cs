@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
+using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Models;
 using static SpotifyAPI.Web.ArtistsAlbumsRequest;
 

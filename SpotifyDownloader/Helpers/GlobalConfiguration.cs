@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using SpotifyDownloader.Utils;
 
-namespace SpotifyDownloader.Services;
+namespace SpotifyDownloader.Helpers;
 
 /// <summary>
 /// Provides an easy way to access environment variables and appsettings.

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using SpotifyAPI.Web;
+using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Services;
 
 var Configuration = new ConfigurationBuilder()
