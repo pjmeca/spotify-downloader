@@ -26,4 +26,10 @@
     <PackageReference Include="YamlDotNet" Version="16.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="banner">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
