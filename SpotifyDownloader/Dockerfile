@@ -4,9 +4,8 @@ LABEL org.label-schema.name="pjmeca/spotify-downloader" \
     org.label-schema.description="This Docker image periodically tracks and downloads new music for your library using spotDL." \
     org.label-schema.url="https://hub.docker.com/r/pjmeca/spotify-downloader" \
     org.label-schema.vcs-url="https://github.com/pjmeca/spotify-downloader" \
-    org.label-schema.version="1.1.2" \
+    org.label-schema.version="2.0.0" \
     org.label-schema.schema-version="1.0.0-rc.1" \
-    org.label-schema.docker.cmd="docker run --name spotify-downloader -v /your/main/music/path:/music -v /path/to/tracking.yaml:/app/tracking.yaml:ro -v /etc/localtime:/etc/localtime:ro -e CRON_SCHEDULE=\"0 0 * * *\" --restart unless-stopped pjmeca/spotify-downloader:latest" \
     maintainer="pjmeca"
 WORKDIR /
 USER root
