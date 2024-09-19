@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using SpotifyDownloader.Models;
@@ -13,11 +12,11 @@ public interface IDownloadingService
     Task<DownloadResult> Download(TrackingInformation trackingInformation);
 }
 
-public class DownloadingService(ILogger<DownloadingService> logger, IConfiguration configuration, SpotifyClient spotifyClient) : IDownloadingService
+public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration, SpotifyClient spotifyClient) : IDownloadingService
 {
     public const string MUSIC_DIRECTORY = "/music";
-    private readonly string ClientId = configuration.GetSection("CLIENT").GetValue<string>("ID")!;
-    private readonly string ClientSecret = configuration.GetSection("CLIENT").GetValue<string>("SECRET")!;
+    private readonly string ClientId = configuration.SPOTIFY_CLIENT_ID;
+    private readonly string ClientSecret = configuration.SPOTIFY_CLIENT_SECRET;
 
     public async Task<DownloadResult> Download(TrackingInformation trackingInformation)
     {

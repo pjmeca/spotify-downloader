@@ -13,9 +13,10 @@ var Configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-string CRON_SCHEDULE = Configuration.GetValue<string>("CRON_SCHEDULE")!;
-string SPOTIFY_CLIENT_ID = Configuration.GetSection("CLIENT").GetValue<string>("ID")!;
-string SPOTIFY_CLIENT_SECRET = Configuration.GetSection("CLIENT").GetValue<string>("SECRET")!;
+var GlobalConfiguration = new GlobalConfiguration(Configuration);
+string CRON_SCHEDULE = GlobalConfiguration.CRON_SCHEDULE;
+string SPOTIFY_CLIENT_ID = GlobalConfiguration.SPOTIFY_CLIENT_ID;
+string SPOTIFY_CLIENT_SECRET = GlobalConfiguration.SPOTIFY_CLIENT_SECRET;
 
 var app = Build();
 
@@ -39,7 +40,15 @@ catch (Exception ex)
 IHost Build()
 {
     var builder = Host.CreateDefaultBuilder(args);
-    
+
+    builder.ConfigureAppConfiguration((context, config) =>
+    {
+        var env = context.HostingEnvironment;
+        config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+              .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+              .AddEnvironmentVariables();
+    });
+
     builder.ConfigureServices(x =>
     {
         x.AddSerilog(config =>
@@ -56,6 +65,8 @@ IHost Build()
                 .WriteTo.File("/app/logs/info-.log", restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information, rollingInterval: RollingInterval.Day, fileSizeLimitBytes: null, retainedFileCountLimit: 31)
                 .WriteTo.File("/app/logs/error-.log", restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error, rollingInterval: RollingInterval.Day, fileSizeLimitBytes: null, retainedFileCountLimit: 31);
         });
+
+        x.AddSingleton<GlobalConfiguration>();
 
         x.AddSingleton<ITrackingService, TrackingService>();
         x.AddSingleton<IDownloadingService, DownloadingService>();
