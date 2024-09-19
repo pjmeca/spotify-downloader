@@ -8,6 +8,9 @@ using SpotifyAPI.Web;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Services;
 
+var banner = await File.ReadAllTextAsync("./banner");
+Console.Write(banner);
+
 var Configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true, reloadOnChange: true)
