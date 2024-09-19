@@ -15,6 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg python3-
 RUN python3 -m venv env && \
     /env/bin/pip install spotdl==4.2.8
 WORKDIR /app
+ENV CRON_SCHEDULE=
+ENV CLIENT__ID=
+ENV CLIENT__SECRET=
+ENV FORMAT="opus"
+ENV OPTIONS=
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release

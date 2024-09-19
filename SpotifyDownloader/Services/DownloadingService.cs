@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
@@ -15,8 +16,6 @@ public interface IDownloadingService
 public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration, SpotifyClient spotifyClient) : IDownloadingService
 {
     public const string MUSIC_DIRECTORY = "/music";
-    private readonly string ClientId = configuration.SPOTIFY_CLIENT_ID;
-    private readonly string ClientSecret = configuration.SPOTIFY_CLIENT_SECRET;
 
     public async Task<DownloadResult> Download(TrackingInformation trackingInformation)
     {
@@ -226,11 +225,21 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
 
         Directory.CreateDirectory(path);
 
+        var arguments = new StringBuilder()
+            .Append($"download {url}")
+            .Append($" --format {configuration.FORMAT}")
+            .Append($" --threads {Process.GetCurrentProcess().Threads.Count}")
+            .Append($" --client-id {configuration.SPOTIFY_CLIENT_ID} --client-secret {configuration.SPOTIFY_CLIENT_SECRET}");
+        if (configuration.OPTIONS is not null)
+        {
+            arguments.Append($" {configuration.OPTIONS}");
+        }
+
         ProcessStartInfo startInfo = new()
         {
             WorkingDirectory = path,
             FileName = @"/env/bin/spotdl",
-            Arguments = $"download {url} --format opus --threads {Process.GetCurrentProcess().Threads.Count} --client-id {ClientId} --client-secret {ClientSecret}",
+            Arguments = arguments.ToString(),
             UseShellExecute = false,
             RedirectStandardOutput = true
         };

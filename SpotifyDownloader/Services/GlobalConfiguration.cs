@@ -11,11 +11,15 @@ public class GlobalConfiguration
     public string CRON_SCHEDULE { get; }
     public string SPOTIFY_CLIENT_ID { get; }
     public string SPOTIFY_CLIENT_SECRET { get; }
+    public string FORMAT { get; }
+    public string? OPTIONS { get; }
 
     public GlobalConfiguration(IConfiguration configuration)
     {
-        CRON_SCHEDULE = configuration.GetValue<string>("CRON_SCHEDULE").ThrowExceptionIfNullOrWhiteSpace(nameof(CRON_SCHEDULE));
-        SPOTIFY_CLIENT_ID = configuration.GetSection("CLIENT").GetValue<string>("ID").ThrowExceptionIfNullOrWhiteSpace(nameof(SPOTIFY_CLIENT_ID));
-        SPOTIFY_CLIENT_SECRET = configuration.GetSection("CLIENT").GetValue<string>("SECRET").ThrowExceptionIfNullOrWhiteSpace(nameof(SPOTIFY_CLIENT_SECRET));
+        CRON_SCHEDULE = configuration.GetValue<string>("CRON_SCHEDULE").ThrowExceptionIfNullOrWhiteSpace("CRON_SCHEDULE");
+        SPOTIFY_CLIENT_ID = configuration.GetSection("CLIENT").GetValue<string>("ID").ThrowExceptionIfNullOrWhiteSpace("CLIENT__ID");
+        SPOTIFY_CLIENT_SECRET = configuration.GetSection("CLIENT").GetValue<string>("SECRET").ThrowExceptionIfNullOrWhiteSpace("CLIENT__SECRET");
+        FORMAT = configuration.GetValue<string>("FORMAT").ThrowExceptionIfNullOrWhiteSpace("FORMAT");
+        OPTIONS = configuration.GetValue<string?>("OPTIONS").ValueOrNull()?.Trim();
     }
 }
