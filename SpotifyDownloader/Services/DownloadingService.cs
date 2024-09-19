@@ -70,6 +70,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         var albumsToDownload = remoteAlbums
             .Where(x => x.AlbumType != "compilation") // AlbumType allowed values: "album", "single", "compilation"
             .Where(x => !localAlbums.Contains(x.Name))
+            .OrderBy(x => x.ReleaseDate)
             .ToList();
 
         logger.LogInformation("{num} albums will be downloaded.", albumsToDownload.Count);
