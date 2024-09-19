@@ -3,6 +3,9 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/pjmeca/spotify-downloader?style=flat&logo=github&label=Star%20this%20repo!)](https://github.com/pjmeca/spotify-downloader)
 [![Docker Image Version (tag)](https://img.shields.io/docker/v/pjmeca/spotify-downloader/latest?logo=docker)](https://hub.docker.com/r/pjmeca/spotify-downloader)
 
+> [!WARNING]
+> This branch contains a version of `spotify-downloader` written in **Python**, which is now deprecated in favor of a much more powerful version written in **.Net 8**. The code will no longer be maintained as there is no reason to do so.
+
 This Docker image periodically tracks and downloads new music for your library using [spotDL](https://github.com/spotDL/spotify-downloader). New tracks are downloaded from YouTube and Spotify's metadata is embedded. You can chose from various formats (the default is "opus") and add custom options to the spotDL execution command. For more information, [read the docs](https://spotdl.readthedocs.io).
 
 I created this image to keep my music library updated automatically as new tracks are released. spotDL is a fantastic tool; all credit go to its team. I just repackaged it with cron and a script that reads a YAML file.
