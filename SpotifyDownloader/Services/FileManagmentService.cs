@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Models;
 using SpotifyDownloader.Utils;
@@ -74,6 +74,16 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
         {
             ArrangeArtist(artist);
         }
+
+        // In case something went wrong, delete empty directories
+        foreach (var directory in
+            Directory.GetDirectories(GlobalConfiguration.ARTISTS_DIRECTORY, "*",SearchOption.AllDirectories)
+                .Where(x => Directory.GetFiles(x).Length == 0))
+        {
+            Directory.Delete(directory);
+        }
+
+        return;
 
         void ArrangeArtist(string artistName)
         {
