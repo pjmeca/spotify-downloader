@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Models;
+using SpotifyDownloader.Utils;
 using static SpotifyAPI.Web.ArtistsAlbumsRequest;
 
 namespace SpotifyDownloader.Services;
@@ -16,14 +17,12 @@ public interface IDownloadingService
 
 public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration, SpotifyClient spotifyClient) : IDownloadingService
 {
-    public const string MUSIC_DIRECTORY = "/music";
-
     public async Task<DownloadResult> Download(TrackingInformation trackingInformation)
     {
         DownloadResult result = new();
 
         // Let's see what's currently in the music directory
-        IEnumerable<string> folders = Directory.GetDirectories(MUSIC_DIRECTORY);
+        IEnumerable<string> folders = Directory.GetDirectories(GlobalConfiguration.MUSIC_DIRECTORY);
         folders = folders.Select(x => x.Split("/")[^1]);
 
         // Remove those items that already exist and have refresh set to false
@@ -34,7 +33,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         {
             try
             {
-                logger.LogInformation("Processing {name}", artist.Name);
+                logger.LogInformation("Processing the artist \"{name}\"", artist.Name);
                 result.AlbumsDownloaded += await ProcessArtist(artist);
             }
             catch (Exception ex)
@@ -47,7 +46,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         {
             try
             {
-                logger.LogInformation("Processing {name}", playlist.Name);
+                logger.LogInformation("Processing the playlist \"{name}\"", playlist.Name);
                 await ProcessPlaylist(playlist);
                 result.PlaylistsDownloaded++;
             }
@@ -62,7 +61,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
     
     private async Task<int> ProcessArtist(TrackingInformation.Item artist)
     {
-        string itemDirectory = $"{MUSIC_DIRECTORY}/{artist.Name}";
+        string itemDirectory = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artist.Name}";
 
         (var localTracks, var localAlbums) = GetLocalArtistInfo(itemDirectory);
         logger.LogInformation("Currently there are {numAlbums} albums with a total number of {numTracks} tracks.", localAlbums.Length, localTracks.Length);
@@ -112,7 +111,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             // Get all the tracks in the directory
             if (Directory.Exists(itemDirectory))
             {
-                localTracks = Directory.GetFiles(itemDirectory);
+                localTracks = Directory.GetFiles(itemDirectory, "*", SearchOption.AllDirectories);
                 localAlbums = localTracks
                     .Select(x =>
                     {
@@ -149,16 +148,19 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
 
     private async Task ProcessPlaylist(TrackingInformation.Item playlist)
     {
-        string itemDirectory = $"{MUSIC_DIRECTORY}/{playlist.Name}";
+        string itemDirectory = $"{GlobalConfiguration.PLAYLISTS_DIRECTORY}/{playlist.Name}";
 
         _ = await DownloadPlaylist(itemDirectory, playlist.Name, playlist.Url);
     }
 
     private async Task<bool> DownloadAlbum(string path, SimpleAlbum album)
     {
+        string downloadPath = album.TotalTracks > 1 ?
+            $"{path}/{album.Name.ToValidPathString()}"
+            : path;
         try
         {
-            await Download(path, "album", album.Name, album.ExternalUrls["spotify"]);
+            await Download(downloadPath, "album", album.Name, album.ExternalUrls["spotify"]);
             return true;
         }
         catch (Exception ex)
@@ -166,7 +168,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             logger.LogError(ex, "An exception occurred while downloading the album \"{album}\".", album.Name);
 
             // Remove all downloaded songs from this album so it will be downloaded next time
-            Directory.GetFiles(path)
+            Directory.GetFiles(downloadPath)
                 .Where(x => TagLib.File.Create(x).Tag.Album == album.Name)
                 .ToList()
                 .ForEach(File.Delete);
@@ -182,14 +184,21 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             return await DownloadAlbum(path, album);
         }
 
+        string? downloadPath = null;
+
         try
         {
             var firstTrack = await spotifyClient.Albums.GetTracks(album.Id);
             var albumTracks = await spotifyClient.PaginateAll(firstTrack);
 
-            foreach (var track in albumTracks.Where(x => filter(x)))
+            var tracksToDownload = albumTracks.Where(x => filter(x)).ToList();
+            downloadPath = tracksToDownload.Count > 1 ?
+                $"{path}/{album.Name.ToValidPathString()}"
+                : path;
+
+            foreach (var track in tracksToDownload)
             {
-                await Download(path, "track", track.Name, track.ExternalUrls["spotify"]);
+                await Download(downloadPath, "track", track.Name, track.ExternalUrls["spotify"]);
             }
 
             return true;
@@ -199,10 +208,13 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             logger.LogError(ex, "An exception occurred while downloading tracks from the album \"{album}\".", album.Name);
 
             // Remove all downloaded songs from this album so it will be downloaded next time
-            Directory.GetFiles(path)
-                .Where(x => TagLib.File.Create(x).Tag.Album == album.Name)
-                .ToList()
-                .ForEach(File.Delete);
+            if (downloadPath != null)
+            {
+                Directory.GetFiles(downloadPath)
+                    .Where(x => TagLib.File.Create(x).Tag.Album == album.Name)
+                    .ToList()
+                    .ForEach(File.Delete);
+            }
 
             return false;
         }
@@ -212,7 +224,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
     {
         try
         {
-            await Download(path, "playlist", name, url);
+            await Download($"{path}/{name.ToValidPathString()}", "playlist", name, url);
             return true;
         }
         catch (Exception ex)

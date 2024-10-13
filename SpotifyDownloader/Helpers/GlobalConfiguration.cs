@@ -14,6 +14,10 @@ public class GlobalConfiguration
     public string FORMAT { get; }
     public string? OPTIONS { get; }
 
+    public const string MUSIC_DIRECTORY = "/music";
+    public const string ARTISTS_DIRECTORY = $"{MUSIC_DIRECTORY}/Artists";
+    public const string PLAYLISTS_DIRECTORY = $"{MUSIC_DIRECTORY}/Playlists";
+
     public GlobalConfiguration(IConfiguration configuration)
     {
         CRON_SCHEDULE = configuration.GetValue<string>("CRON_SCHEDULE").ThrowExceptionIfNullOrWhiteSpace("CRON_SCHEDULE");

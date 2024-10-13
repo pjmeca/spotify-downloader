@@ -17,12 +17,12 @@ var Configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
-var GlobalConfiguration = Fluents.Fluent.Try(() => new GlobalConfiguration(Configuration))
+var configuration = Fluents.Fluent.Try(() => new GlobalConfiguration(Configuration))
     .Catch(x => Environment.FailFast($"[ERROR] Missing required configuration: {x.Message}"))
     .Execute<GlobalConfiguration>();
-string CRON_SCHEDULE = GlobalConfiguration.CRON_SCHEDULE;
-string SPOTIFY_CLIENT_ID = GlobalConfiguration.SPOTIFY_CLIENT_ID;
-string SPOTIFY_CLIENT_SECRET = GlobalConfiguration.SPOTIFY_CLIENT_SECRET;
+string CRON_SCHEDULE = configuration.CRON_SCHEDULE;
+string SPOTIFY_CLIENT_ID = configuration.SPOTIFY_CLIENT_ID;
+string SPOTIFY_CLIENT_SECRET = configuration.SPOTIFY_CLIENT_SECRET;
 
 var app = Build();
 
@@ -74,6 +74,7 @@ IHost Build()
 
         x.AddSingleton<GlobalConfiguration>();
 
+        x.AddSingleton<IFileManagmentService, FileManagmentService>();
         x.AddSingleton<ITrackingService, TrackingService>();
         x.AddSingleton<IDownloadingService, DownloadingService>();
 

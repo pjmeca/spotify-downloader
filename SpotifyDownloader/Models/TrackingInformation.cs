@@ -1,4 +1,6 @@
-﻿namespace SpotifyDownloader.Models;
+﻿using SpotifyDownloader.Utils;
+
+namespace SpotifyDownloader.Models;
 
 public class TrackingInformation
 {
@@ -7,7 +9,15 @@ public class TrackingInformation
 
     public class Item
     {
-        public required string Name { get; set; }
+        private string _name = null!;
+        public required string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value.ToValidPathString();
+            }
+        }
         public required string Url { get; set; }
         public bool Refresh { get; set; } = true;
     }
