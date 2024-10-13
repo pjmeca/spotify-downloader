@@ -11,4 +11,15 @@ public static class StringUtils
 
         return value;
     }
+
+    public static string ToValidPathString(this string? value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        foreach (var c in Path.GetInvalidPathChars())
+        {
+            value = value.Replace(char.ToString(c), "");
+        }
+        return value;
+    }
 }
