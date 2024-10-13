@@ -44,8 +44,14 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
                 return;
             }
 
-            logger.LogInformation("Moving {num} items to \"{dir}\"...", items.Count(), destinationDirectory);
-            foreach (var item in items.Select(x => x.Name))
+            var itemsToMove = items.Where(x => musicSubDirectories.Exists(y => y.Name == x.Name));
+            if (!itemsToMove.Any())
+            {
+                return;
+            }
+
+            logger.LogInformation("Moving {num} items to \"{dir}\"...", itemsToMove.Count(), destinationDirectory);
+            foreach (var item in itemsToMove.Select(x => x.Name))
             {
                 try
                 {
@@ -53,7 +59,7 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
                     if (origin != default)
                     {
                         string destination = $"{destinationDirectory}/{origin.Name}";
-                        logger.LogInformation("Moving {origin} to {dest}...", origin.FullPath, destination);
+                        logger.LogInformation("Moving \"{origin}\" to \"{dest}\"...", origin.FullPath, destination);
                         DirectoryUtils.MoveAndMerge(origin.FullPath, destination);
                     }
                 }
@@ -74,7 +80,7 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
 
         void ArrangeArtist(string artistName)
         {
-            logger.LogInformation("Arranging artist {name}...", artistName);
+            logger.LogInformation("Arranging artist \"{name}\"...", artistName);
 
             string artistPath = $"{ArtistsDirectory}/{artistName}";
             var albumsToArrange = Directory.GetFiles(artistPath, "*", SearchOption.TopDirectoryOnly)
@@ -83,6 +89,12 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
                 .Where(x => x.Count() > 1) // Avoid singles
                 .ToDictionary(x => x.Key, x => x.Select(x => Path.GetFileName(x.Name)).ToList());
             
+            if (albumsToArrange.Count == 0)
+            {
+                logger.LogInformation("Artist \"{name}\" is already arranged.", artistName);
+                return;
+            }
+
             logger.LogInformation("{num} albums will be arranged.", albumsToArrange.Count);
             foreach (var album in albumsToArrange)
             {
@@ -101,7 +113,7 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
                 }
             }
 
-            logger.LogInformation("Arranged artist {name}.", artistName);
+            logger.LogInformation("Arranged artist \"{name}\".", artistName);
         }
     }
 }
