@@ -74,6 +74,7 @@ IHost Build()
 
         x.AddSingleton<GlobalConfiguration>();
 
+        x.AddSingleton<IFileManagmentService, FileManagmentService>();
         x.AddSingleton<ITrackingService, TrackingService>();
         x.AddSingleton<IDownloadingService, DownloadingService>();
 
