@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Models;
 using SpotifyDownloader.Utils;
@@ -19,21 +19,18 @@ public interface IFileManagmentService
 
 public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileManagmentService
 {
-    public const string ArtistsDirectory = $"{GlobalConfiguration.MUSIC_DIRECTORY}/Artists";
-    public const string PlaylistsDirectory = $"{GlobalConfiguration.MUSIC_DIRECTORY}/Playlists";
-
     public void MigrateFromOlderVersion(TrackingInformation trackingInformation)
     {
-        Directory.CreateDirectory(ArtistsDirectory);
-        Directory.CreateDirectory(PlaylistsDirectory);
+        Directory.CreateDirectory(GlobalConfiguration.ARTISTS_DIRECTORY);
+        Directory.CreateDirectory(GlobalConfiguration.PLAYLISTS_DIRECTORY);
 
         var musicSubDirectories = Directory.GetDirectories(GlobalConfiguration.MUSIC_DIRECTORY, "*", SearchOption.TopDirectoryOnly)
             .Select(x => (FullPath: x, Name: Path.GetFileName(x)))
-            .Where(x => x.FullPath != ArtistsDirectory && x.FullPath != PlaylistsDirectory)
+            .Where(x => x.FullPath != GlobalConfiguration.ARTISTS_DIRECTORY && x.FullPath != GlobalConfiguration.PLAYLISTS_DIRECTORY)
             .ToList();
 
-        Move(trackingInformation.Artists, ArtistsDirectory);
-        Move(trackingInformation.Playlists, PlaylistsDirectory);
+        Move(trackingInformation.Artists, GlobalConfiguration.ARTISTS_DIRECTORY);
+        Move(trackingInformation.Playlists, GlobalConfiguration.PLAYLISTS_DIRECTORY);
 
         ArrangeArtists(trackingInformation.Artists.Select(x => x.Name));
 
