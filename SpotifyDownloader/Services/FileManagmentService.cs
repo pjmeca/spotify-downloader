@@ -12,9 +12,9 @@ public interface IFileManagmentService
     /// </summary>
     void MigrateFromOlderVersion(TrackingInformation trackingInformation);
     /// <summary>
-    /// Groups tracks by albums in the file system. If an album only has one track, it won't be arranged.
+    /// Groups tracks by albums in the file system. If an album only has one track, it won't be moved.
     /// </summary>
-    void ArrangeArtists(IEnumerable<string> artistsNames);
+    void OrganizeArtists(IEnumerable<string> artistsNames);
 }
 
 public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileManagmentService
@@ -34,7 +34,7 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
             () => Move(trackingInformation.Playlists, GlobalConfiguration.PLAYLISTS_DIRECTORY)
         );
 
-        ArrangeArtists(trackingInformation.Artists.Select(x => x.Name));
+        OrganizeArtists(trackingInformation.Artists.Select(x => x.Name));
 
         void Move(IEnumerable<TrackingInformation.Item> items, string destinationDirectory)
         {
@@ -77,12 +77,12 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
         }
     }
 
-    public void ArrangeArtists(IEnumerable<string> artistsNames)
+    public void OrganizeArtists(IEnumerable<string> artistsNames)
     {
         var actions = new List<Action>();
         foreach (var artist in artistsNames)
         {
-            actions.Add(() => ArrangeArtist(artist));
+            actions.Add(() => OrganizeArtist(artist));
         }
         Parallel.Invoke([.. actions]);
 
@@ -96,9 +96,9 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
 
         return;
 
-        void ArrangeArtist(string artistName)
+        void OrganizeArtist(string artistName)
         {
-            logger.LogInformation("Arranging artist \"{name}\"...", artistName);
+            logger.LogInformation("Organizing artist \"{name}\"...", artistName);
 
             string artistPath = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artistName}";
             if (!Directory.Exists(artistPath))
@@ -106,20 +106,20 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
                 logger.LogInformation("Directory for artist \"{name}\" does not exist yet. Skipping.", artistName);
                 return;
             }
-            var albumsToArrange = Directory.GetFiles(artistPath, "*", SearchOption.TopDirectoryOnly)
+            var albumsToOrganize = Directory.GetFiles(artistPath, "*", SearchOption.TopDirectoryOnly)
                 .Select(x => TagLib.File.Create(x))
                 .GroupBy(x => x.Tag.Album)
                 .Where(x => x.Count() > 1) // Avoid singles
                 .ToDictionary(x => x.Key, x => x.Select(x => Path.GetFileName(x.Name)).ToList());
             
-            if (albumsToArrange.Count == 0)
+            if (albumsToOrganize.Count == 0)
             {
-                logger.LogInformation("Artist \"{name}\" is already arranged.", artistName);
+                logger.LogInformation("Artist \"{name}\" is already organized.", artistName);
                 return;
             }
 
-            logger.LogInformation("{num} albums will be arranged.", albumsToArrange.Count);
-            foreach (var album in albumsToArrange)
+            logger.LogInformation("{num} albums will be organized.", albumsToOrganize.Count);
+            foreach (var album in albumsToOrganize)
             {
                 try
                 {
@@ -132,11 +132,11 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "An error occurred while arranging the album {album}.", album);
+                    logger.LogError(ex, "An error occurred while organizing the album {album}.", album);
                 }
             }
 
-            logger.LogInformation("Arranged artist \"{name}\".", artistName);
+            logger.LogInformation("Organized artist \"{name}\".", artistName);
         }
     }
 }
