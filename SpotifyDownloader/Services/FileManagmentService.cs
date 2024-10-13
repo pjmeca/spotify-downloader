@@ -79,7 +79,12 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
         {
             logger.LogInformation("Arranging artist \"{name}\"...", artistName);
 
-            string artistPath = $"{ArtistsDirectory}/{artistName}";
+            string artistPath = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artistName}";
+            if (!Directory.Exists(artistPath))
+            {
+                logger.LogInformation("Directory for artist \"{name}\" does not exist yet. Skipping.", artistName);
+                return;
+            }
             var albumsToArrange = Directory.GetFiles(artistPath, "*", SearchOption.TopDirectoryOnly)
                 .Select(x => TagLib.File.Create(x))
                 .GroupBy(x => x.Tag.Album)
