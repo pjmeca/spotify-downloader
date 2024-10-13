@@ -13,6 +13,7 @@ public class GlobalConfiguration
     public string SPOTIFY_CLIENT_SECRET { get; }
     public string FORMAT { get; }
     public string? OPTIONS { get; }
+    public const string MUSIC_DIRECTORY = "/music";
 
     public GlobalConfiguration(IConfiguration configuration)
     {

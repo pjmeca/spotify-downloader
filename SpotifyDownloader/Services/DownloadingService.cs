@@ -16,14 +16,12 @@ public interface IDownloadingService
 
 public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration, SpotifyClient spotifyClient) : IDownloadingService
 {
-    public const string MUSIC_DIRECTORY = "/music";
-
     public async Task<DownloadResult> Download(TrackingInformation trackingInformation)
     {
         DownloadResult result = new();
 
         // Let's see what's currently in the music directory
-        IEnumerable<string> folders = Directory.GetDirectories(MUSIC_DIRECTORY);
+        IEnumerable<string> folders = Directory.GetDirectories(GlobalConfiguration.MUSIC_DIRECTORY);
         folders = folders.Select(x => x.Split("/")[^1]);
 
         // Remove those items that already exist and have refresh set to false
@@ -62,7 +60,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
     
     private async Task<int> ProcessArtist(TrackingInformation.Item artist)
     {
-        string itemDirectory = $"{MUSIC_DIRECTORY}/{artist.Name}";
+        string itemDirectory = $"{GlobalConfiguration.MUSIC_DIRECTORY}/{artist.Name}";
 
         (var localTracks, var localAlbums) = GetLocalArtistInfo(itemDirectory);
         logger.LogInformation("Currently there are {numAlbums} albums with a total number of {numTracks} tracks.", localAlbums.Length, localTracks.Length);
@@ -149,7 +147,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
 
     private async Task ProcessPlaylist(TrackingInformation.Item playlist)
     {
-        string itemDirectory = $"{MUSIC_DIRECTORY}/{playlist.Name}";
+        string itemDirectory = $"{GlobalConfiguration.MUSIC_DIRECTORY}/{playlist.Name}";
 
         _ = await DownloadPlaylist(itemDirectory, playlist.Name, playlist.Url);
     }
