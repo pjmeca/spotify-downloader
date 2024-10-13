@@ -29,8 +29,10 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
             .Where(x => x.FullPath != GlobalConfiguration.ARTISTS_DIRECTORY && x.FullPath != GlobalConfiguration.PLAYLISTS_DIRECTORY)
             .ToList();
 
-        Move(trackingInformation.Artists, GlobalConfiguration.ARTISTS_DIRECTORY);
-        Move(trackingInformation.Playlists, GlobalConfiguration.PLAYLISTS_DIRECTORY);
+        Parallel.Invoke(
+            () => Move(trackingInformation.Artists, GlobalConfiguration.ARTISTS_DIRECTORY),
+            () => Move(trackingInformation.Playlists, GlobalConfiguration.PLAYLISTS_DIRECTORY)
+        );
 
         ArrangeArtists(trackingInformation.Artists.Select(x => x.Name));
 
@@ -48,7 +50,14 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
             }
 
             logger.LogInformation("Moving {num} items to \"{dir}\"...", itemsToMove.Count(), destinationDirectory);
+            var actions = new List<Action>();
             foreach (var item in itemsToMove.Select(x => x.Name))
+            {
+                actions.Add(() => MoveItem(destinationDirectory, item));
+            }
+            Parallel.Invoke([.. actions]);
+
+            void MoveItem(string destinationDirectory, string item)
             {
                 try
                 {
@@ -70,10 +79,12 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
 
     public void ArrangeArtists(IEnumerable<string> artistsNames)
     {
+        var actions = new List<Action>();
         foreach (var artist in artistsNames)
         {
-            ArrangeArtist(artist);
+            actions.Add(() => ArrangeArtist(artist));
         }
+        Parallel.Invoke([.. actions]);
 
         // In case something went wrong, delete empty directories
         foreach (var directory in
