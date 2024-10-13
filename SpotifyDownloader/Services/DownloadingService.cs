@@ -139,7 +139,8 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
 
             var firstAlbum = await spotifyClient.Artists.GetAlbums(artistId, new ArtistsAlbumsRequest()
             {
-                IncludeGroupsParam = IncludeGroups.Album | IncludeGroups.Single | IncludeGroups.AppearsOn
+                IncludeGroupsParam = IncludeGroups.Album | IncludeGroups.Single | IncludeGroups.AppearsOn,
+                Limit = 50
             });
             var albums = await spotifyClient.PaginateAll(firstAlbum);
             return [.. albums];
