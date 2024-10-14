@@ -1,21 +1,24 @@
 ﻿using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
+using SpotifyDownloader.Helpers;
 using static SpotifyAPI.Web.ArtistsAlbumsRequest;
 
 namespace SpotifyDownloader.Services;
 
 public interface IArtistsService
 {
-    (string[] localTracks, string[] localAlbums) GetLocalArtistInfo(string itemDirectory);
+    (string[] localTracks, string[] localAlbums) GetLocalArtistInfo(string artistName);
 
     Task<SimpleAlbum[]> GetRemoteArtistInfo(string url);
 }
 
 public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotifyClient) : IArtistsService
 {
-    public (string[] localTracks, string[] localAlbums) GetLocalArtistInfo(string itemDirectory)
+    public (string[] localTracks, string[] localAlbums) GetLocalArtistInfo(string artistName)
     {
+        var itemDirectory = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artistName}";
+
         string[] localTracks = [];
         string[] localAlbums = [];
 

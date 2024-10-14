@@ -87,9 +87,10 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
         Parallel.Invoke([.. actions]);
 
         // In case something went wrong, delete empty directories
-        foreach (var directory in
-            Directory.GetDirectories(GlobalConfiguration.ARTISTS_DIRECTORY, "*",SearchOption.AllDirectories)
-                .Where(x => Directory.GetFiles(x).Length == 0))
+        var emptyDirectories = Directory.GetDirectories(GlobalConfiguration.ARTISTS_DIRECTORY, "*", SearchOption.AllDirectories)
+            .Where(x => Directory.GetFileSystemEntries(x).Length == 0)
+            .ToList();
+        foreach (var directory in emptyDirectories)
         {
             Directory.Delete(directory);
         }
