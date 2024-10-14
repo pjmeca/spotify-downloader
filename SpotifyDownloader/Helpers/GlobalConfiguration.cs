@@ -18,12 +18,14 @@ public class GlobalConfiguration
     public const string ARTISTS_DIRECTORY = $"{MUSIC_DIRECTORY}/Artists";
     public const string PLAYLISTS_DIRECTORY = $"{MUSIC_DIRECTORY}/Playlists";
 
+    public const string DB_PATH = "/app/cache/application.db";
+
     public GlobalConfiguration(IConfiguration configuration)
     {
-        CRON_SCHEDULE = configuration.GetValue<string>("CRON_SCHEDULE").ThrowExceptionIfNullOrWhiteSpace("CRON_SCHEDULE");
-        SPOTIFY_CLIENT_ID = configuration.GetSection("CLIENT").GetValue<string>("ID").ThrowExceptionIfNullOrWhiteSpace("CLIENT__ID");
-        SPOTIFY_CLIENT_SECRET = configuration.GetSection("CLIENT").GetValue<string>("SECRET").ThrowExceptionIfNullOrWhiteSpace("CLIENT__SECRET");
-        FORMAT = configuration.GetValue<string>("FORMAT").ThrowExceptionIfNullOrWhiteSpace("FORMAT");
+        CRON_SCHEDULE = configuration.GetValue<string>("CRON_SCHEDULE").ThrowExceptionIfNullOrWhiteSpace("CRON_SCHEDULE", false);
+        SPOTIFY_CLIENT_ID = configuration.GetSection("CLIENT").GetValue<string>("ID").ThrowExceptionIfNullOrWhiteSpace("CLIENT__ID", false);
+        SPOTIFY_CLIENT_SECRET = configuration.GetSection("CLIENT").GetValue<string>("SECRET").ThrowExceptionIfNullOrWhiteSpace("CLIENT__SECRET", false);
+        FORMAT = configuration.GetValue<string>("FORMAT").ThrowExceptionIfNullOrWhiteSpace("FORMAT", false);
         OPTIONS = configuration.GetValue<string?>("OPTIONS").ValueOrNull()?.Trim();
     }
 }

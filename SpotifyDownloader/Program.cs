@@ -1,10 +1,12 @@
 using EasyCronJob.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using SpotifyAPI.Web;
+using SpotifyDownloader.Data;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Services;
 
@@ -30,6 +32,17 @@ var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 try
 {
+    Directory.CreateDirectory(Directory.GetParent(GlobalConfiguration.DB_PATH)!.FullName);
+    using var scope = app.Services.CreateScope();
+    using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+    if (pendingMigrations.Any())
+    {
+        logger.LogInformation("Applying {num} pending migrations...", pendingMigrations.Count());
+        pendingMigrations.ToList().ForEach(x => logger.LogDebug("Applying migration \"{name}\".", x));
+        await dbContext.Database.MigrateAsync();
+    }
+
     logger.LogInformation("Cron job configured with: \"{cron}\"", CRON_SCHEDULE);
     
     logger.LogInformation("Ready!");
@@ -74,9 +87,12 @@ IHost Build()
 
         x.AddSingleton<GlobalConfiguration>();
 
+        x.AddDbContext<ApplicationDbContext>();
+
         x.AddSingleton<IFileManagmentService, FileManagmentService>();
         x.AddSingleton<ITrackingService, TrackingService>();
         x.AddSingleton<IDownloadingService, DownloadingService>();
+        x.AddScoped<IArtistsService, ArtistsService>();
 
         var config = SpotifyClientConfig
             .CreateDefault()
