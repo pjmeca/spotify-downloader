@@ -2,8 +2,13 @@
 
 public static class ExceptionUtils
 {
-    public static string ThrowExceptionIfNullOrWhiteSpace(this string? value, string? propertyName = null)
+    public static string ThrowExceptionIfNullOrWhiteSpace(this string? value, string? propertyName = null, bool throwInDevelopment = true)
     {
+        if (!throwInDevelopment && Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+        {
+            return value!;
+        }
+
         if (string.IsNullOrWhiteSpace(value))
         {
             if (propertyName is not null)
