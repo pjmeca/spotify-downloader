@@ -92,6 +92,7 @@ IHost Build()
         x.AddSingleton<IFileManagmentService, FileManagmentService>();
         x.AddSingleton<ITrackingService, TrackingService>();
         x.AddSingleton<IDownloadingService, DownloadingService>();
+        x.AddScoped<IArtistsService, ArtistsService>();
 
         var config = SpotifyClientConfig
             .CreateDefault()

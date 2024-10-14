@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Models;
 using SpotifyDownloader.Utils;
-using static SpotifyAPI.Web.ArtistsAlbumsRequest;
 
 namespace SpotifyDownloader.Services;
 
@@ -15,7 +13,8 @@ public interface IDownloadingService
     Task<DownloadResult> Download(TrackingInformation trackingInformation);
 }
 
-public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration, SpotifyClient spotifyClient) : IDownloadingService
+public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration,
+    SpotifyClient spotifyClient, IArtistsService _artistsService) : IDownloadingService
 {
     public async Task<DownloadResult> Download(TrackingInformation trackingInformation)
     {
@@ -63,10 +62,10 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
     {
         string itemDirectory = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artist.Name}";
 
-        (var localTracks, var localAlbums) = GetLocalArtistInfo(itemDirectory);
+        (var localTracks, var localAlbums) = _artistsService.GetLocalArtistInfo(itemDirectory);
         logger.LogInformation("Currently there are {numAlbums} albums with a total number of {numTracks} tracks.", localAlbums.Length, localTracks.Length);
         
-        var remoteAlbums = await GetRemoteArtistInfo(artist.Url);
+        var remoteAlbums = await _artistsService.GetRemoteArtistInfo(artist.Url);
         var albumsToDownload = remoteAlbums
             .Where(x => x.AlbumType != "compilation") // AlbumType allowed values: "album", "single", "compilation"
             .Where(x => !localAlbums.Contains(x.Name))
@@ -102,48 +101,6 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         }
 
         return albumsDownloaded;
-
-        (string[] localTracks, string[] localAlbums) GetLocalArtistInfo(string itemDirectory)
-        {
-            string[] localTracks = [];
-            string[] localAlbums = [];
-
-            // Get all the tracks in the directory
-            if (Directory.Exists(itemDirectory))
-            {
-                localTracks = Directory.GetFiles(itemDirectory, "*", SearchOption.AllDirectories);
-                localAlbums = localTracks
-                    .Select(x =>
-                    {
-                        var file = TagLib.File.Create(x);
-                        return file.Tag.Album;
-                    })
-                    .Distinct()
-                    .ToArray();
-            }
-
-            return (localTracks, localAlbums);
-        }
-
-        async Task<SimpleAlbum[]> GetRemoteArtistInfo(string url)
-        {
-            var artistIdRegex = new Regex(@"/.*\.spotify.com\/.*artist\/([^\?]+)(\?.+)?", RegexOptions.Compiled);
-            var artistId = artistIdRegex.Match(url).Groups[1].Value;
-
-            if (artistId == null)
-            {
-                logger.LogError("Artist not found in URL: {url}", url);
-                return [];
-            }
-
-            var firstAlbum = await spotifyClient.Artists.GetAlbums(artistId, new ArtistsAlbumsRequest()
-            {
-                IncludeGroupsParam = IncludeGroups.Album | IncludeGroups.Single | IncludeGroups.AppearsOn,
-                Limit = 50
-            });
-            var albums = await spotifyClient.PaginateAll(firstAlbum);
-            return [.. albums];
-        }
     }
 
     private async Task ProcessPlaylist(TrackingInformation.Item playlist)

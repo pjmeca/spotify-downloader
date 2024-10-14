@@ -277,3 +277,4 @@ __pycache__/
 docker-storage/
 .vscode/launch.json
 Music/
+cache/
