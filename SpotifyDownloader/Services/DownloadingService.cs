@@ -60,7 +60,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
     
     private async Task<int> ProcessArtist(TrackingInformation.Item artist)
     {
-        string itemDirectory = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artist.Name}";
+        string itemDirectory = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artist.Name.ToValidPathString()}";
 
         (var localTracks, var localAlbums) = _artistsService.GetLocalArtistInfo(artist.Name);
         logger.LogInformation("Currently there are {numAlbums} albums with a total number of {numTracks} tracks.", localAlbums.Length, localTracks.Length);
