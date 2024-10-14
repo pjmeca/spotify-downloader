@@ -72,6 +72,8 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             .OrderBy(x => x.ReleaseDate)
             .ToList();
 
+        albumsToDownload = ClearRepeatedSingles(albumsToDownload, localTracks);
+
         logger.LogInformation("{num} albums will be downloaded.", albumsToDownload.Count);
         int albumsDownloaded = albumsToDownload.Count;
 
@@ -101,6 +103,18 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         }
 
         return albumsDownloaded;
+
+        static List<SimpleAlbum> ClearRepeatedSingles(List<SimpleAlbum> albums, string[] localTracks)
+        {
+            // When a single is released in multiple albums, the track gets stuck 
+            // because, even though the album is different, the track name is the same,
+            // so spotdl skips it and never downloads it. As a result, the album is retrieved
+            // for download again in subsequent executions.
+            // This method tries to prevent this cases as much as possible without calling the Spotify API.
+            return albums
+                .Where(album => album.TotalTracks > 1 || !Array.Exists(localTracks, localTrack => localTrack.Contains(album.Name)))
+                .ToList();
+        }
     }
 
     private async Task ProcessPlaylist(TrackingInformation.Item playlist)
