@@ -11,7 +11,7 @@ namespace SpotifyDownloader.Services;
 
 public interface IArtistsService
 {
-    (string[] localTracks, string[] localAlbums) GetLocalArtistInfo(string artistName);
+    Task<(string[] localTracks, string[] localAlbums)> GetLocalArtistInfo(string artistName);
 
     Task<SimpleAlbum[]> GetRemoteArtistInfo(string url);
 
@@ -20,7 +20,7 @@ public interface IArtistsService
 
 public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotifyClient, ApplicationDbContext _applicationDbContext) : IArtistsService
 {
-    public (string[] localTracks, string[] localAlbums) GetLocalArtistInfo(string artistName)
+    public async Task<(string[] localTracks, string[] localAlbums)> GetLocalArtistInfo(string artistName)
     {
         var itemDirectory = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artistName.ToValidPathString()}";
 
@@ -39,6 +39,11 @@ public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotif
                 })
                 .Distinct()
                 .ToArray();
+            var dbAlbums = await _applicationDbContext.Albums
+                .Where(x => x.Artist.Name == artistName.ToValidPathString())
+                .Select(x => x.Name)
+                .ToListAsync();
+            localAlbums = [..localAlbums, ..dbAlbums];
         }
 
         return (localTracks, localAlbums);
