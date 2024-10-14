@@ -68,7 +68,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         var remoteAlbums = await _artistsService.GetRemoteArtistInfo(artist.Url);
         var albumsToDownload = remoteAlbums
             .Where(x => x.AlbumType != "compilation") // AlbumType allowed values: "album", "single", "compilation"
-            .Where(x => !localAlbums.Contains(x.Name))
+            .Where(x => !Array.Exists(localAlbums, y => y.Equals(x.Name.ToValidPathString(), StringComparison.InvariantCultureIgnoreCase)))
             .OrderBy(x => x.ReleaseDate)
             .ToList();
 

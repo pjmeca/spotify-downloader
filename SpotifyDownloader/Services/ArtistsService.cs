@@ -32,18 +32,15 @@ public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotif
         {
             localTracks = Directory.GetFiles(itemDirectory, "*", SearchOption.AllDirectories);
             localAlbums = localTracks
-                .Select(x =>
-                {
-                    var file = TagLib.File.Create(x);
-                    return file.Tag.Album;
-                })
+                .Select(x => TagLib.File.Create(x).Tag.Album)
                 .Distinct()
                 .ToArray();
             var dbAlbums = await _applicationDbContext.Albums
                 .Where(x => x.Artist.Name == artistName.ToValidPathString())
                 .Select(x => x.Name)
                 .ToListAsync();
-            localAlbums = [..localAlbums, ..dbAlbums];
+
+            localAlbums = localAlbums.Concat(dbAlbums).Distinct().ToArray();
         }
 
         return (localTracks, localAlbums);
@@ -71,7 +68,9 @@ public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotif
 
     public async Task UpdateLocalArtistsInfo()
     {
-        var localArtists = Directory.GetDirectories(GlobalConfiguration.ARTISTS_DIRECTORY, "*", SearchOption.TopDirectoryOnly);
+        var localArtists = Directory.GetDirectories(GlobalConfiguration.ARTISTS_DIRECTORY, "*", SearchOption.TopDirectoryOnly)
+            .Select(x => Path.GetFileName(x))
+            .ToList();
         var dbArtists = await _applicationDbContext.Artists.ToListAsync();
 
         // 1. Create new artists
@@ -80,7 +79,8 @@ public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotif
             .Select(x => new Artist()
             {
                 Name = x
-            }).ToList();
+            })
+            .ToList();
         await _applicationDbContext.Artists.AddRangeAsync(artistsToCreate);
 
         // 2. Delete artists
@@ -89,19 +89,22 @@ public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotif
 
         // 3. Update DB
         await _applicationDbContext.SaveChangesAsync();
-        dbArtists = await _applicationDbContext.Artists.ToListAsync();
+        dbArtists = await _applicationDbContext.Artists
+            .Include(x => x.Albums)
+            .ToListAsync();
 
         // 4. Create new albums
-        var dbAlbums = await _applicationDbContext.Albums.Select(x => x.Name).ToListAsync();
+        var dbAlbums = dbArtists.SelectMany(x => x.Albums.Select(x => x.Name)).ToList();
         foreach (var artist in dbArtists)
         {
-            if (!Directory.Exists(artist.Name.ToValidPathString()))
+            var artistPath = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artist.Name.ToValidPathString()}";
+            if (!Directory.Exists(artistPath))
             {
                 continue;
             }
 
             var localAlbums = Directory
-                .GetFiles($"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artist.Name.ToValidPathString()}", "*", SearchOption.AllDirectories)
+                .GetFiles(artistPath, "*", SearchOption.AllDirectories)
                 .Select(x => TagLib.File.Create(x).Tag.Album)
                 .Distinct();
             var albumsToCreate = localAlbums
