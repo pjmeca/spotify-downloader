@@ -9,8 +9,9 @@ using SpotifyAPI.Web;
 using SpotifyDownloader.Data;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Services;
+using SpotifyDownloader.Utils;
 
-var banner = await File.ReadAllTextAsync("./banner");
+var banner = await BannerRetriever.GetBanner();
 Console.Write(banner);
 
 var Configuration = new ConfigurationBuilder()
