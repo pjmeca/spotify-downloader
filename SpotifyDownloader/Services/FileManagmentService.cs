@@ -108,8 +108,9 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
                 return;
             }
             var albumsToOrganize = Directory.GetFiles(artistPath, "*", SearchOption.TopDirectoryOnly)
-                .Select(x => TagLib.File.Create(x))
-                .GroupBy(x => x.Tag.Album)
+                .Select(x => Fluents.Fluent.Try(() => TagLib.File.Create(x)).Ignore().Execute<TagLib.File?>())
+                .Where(x => x is not null)
+                .GroupBy(x => x!.Tag.Album)
                 .Where(x => x.Count() > 1) // Avoid singles
                 .ToDictionary(x => x.Key, x => x.Select(x => Path.GetFileName(x.Name)).ToList());
             
