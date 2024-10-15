@@ -108,8 +108,13 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
                 return;
             }
             var albumsToOrganize = Directory.GetFiles(artistPath, "*", SearchOption.TopDirectoryOnly)
-                .Select(x => TagLib.File.Create(x))
-                .GroupBy(x => x.Tag.Album)
+                .Select(file => Fluents.Fluent
+                    .Try(() => TagLib.File.Create(file))
+                    .Catch(e => logger.LogError(e, "An error occurred while creating the TagLib file for \"{file}\"." +
+                        " This file will be ignored in the process of organizing the artist \"{artistName}\".", file, artistName))
+                    .Execute<TagLib.File?>())
+                .Where(x => x is not null)
+                .GroupBy(x => x!.Tag.Album)
                 .Where(x => x.Count() > 1) // Avoid singles
                 .ToDictionary(x => x.Key, x => x.Select(x => Path.GetFileName(x.Name)).ToList());
             
