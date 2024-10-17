@@ -76,6 +76,7 @@ user@host:/music$ tree -d
 
 ## Changelog
 
+- 2.1.0: Smart Deletion & Organize files into subfolders
 - 2.0.0: .Net Release
 - 1.1.2: Upgrade `spotdl` to `v4.2.8`
 - 1.1.1: Fix: A debug directory was mistakenly introduced in the build of the release image

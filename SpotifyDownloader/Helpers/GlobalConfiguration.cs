@@ -8,7 +8,7 @@ namespace SpotifyDownloader.Helpers;
 /// </summary>
 public class GlobalConfiguration
 {
-    public const string VERSION = "v2.0.0";
+    public const string VERSION = "v2.1.0";
 
     public string CRON_SCHEDULE { get; }
     public string SPOTIFY_CLIENT_ID { get; }
