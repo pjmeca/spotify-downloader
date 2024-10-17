@@ -16,7 +16,7 @@ public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<Cron
         var trackingInformation = trackingService.ReadTrackingInformation();
         fileManagmentService.MigrateFromOlderVersion(trackingInformation);
         var result = await downloadingService.Download(trackingInformation);
-        logger.LogInformation("Downloaded {albums} new albums and {playlists} new playlists.", result.AlbumsDownloaded, result.PlaylistsDownloaded);
+        logger.LogInformation("Downloaded {albums} new albums and {playlists} playlists.", result.AlbumsDownloaded, result.PlaylistsDownloaded);
 
         logger.LogInformation("Updating the cache...");
         await artistsService.UpdateLocalArtistsInfo();
