@@ -11,16 +11,23 @@ public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<Cron
 {
     public override async Task DoWork(CancellationToken cancellationToken)
     {
-        logger.LogInformation("Job started");
+        try
+        {
+            logger.LogInformation("Job started");
 
-        var trackingInformation = trackingService.ReadTrackingInformation();
-        fileManagmentService.MigrateFromOlderVersion(trackingInformation);
-        var result = await downloadingService.Download(trackingInformation);
-        logger.LogInformation("Downloaded {albums} new albums and {playlists} playlists.", result.AlbumsDownloaded, result.PlaylistsDownloaded);
+            var trackingInformation = trackingService.ReadTrackingInformation();
+            fileManagmentService.MigrateFromOlderVersion(trackingInformation);
+            var result = await downloadingService.Download(trackingInformation);
+            logger.LogInformation("Downloaded {albums} new albums and {playlists} playlists.", result.AlbumsDownloaded, result.PlaylistsDownloaded);
 
-        logger.LogInformation("Updating the cache...");
-        await artistsService.UpdateLocalArtistsInfo();
+            logger.LogInformation("Updating the cache...");
+            await artistsService.UpdateLocalArtistsInfo();
 
-        logger.LogInformation("Job finished");
+            logger.LogInformation("Job finished");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unhandled exception occurred during the cron job.");
+        }
     }
 }
