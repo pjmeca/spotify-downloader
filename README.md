@@ -76,6 +76,7 @@ user@host:/music$ tree -d
 
 ## Changelog
 
+- 2.1.1: Prevent OOM issues & Avoid `null` albums to be a key of the dictionary
 - 2.1.0: Smart Deletion & Organize files into subfolders
 - 2.0.0: .Net Release
 - 1.1.2: Upgrade `spotdl` to `v4.2.8`

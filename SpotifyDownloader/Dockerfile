@@ -4,7 +4,7 @@ LABEL org.label-schema.name="pjmeca/spotify-downloader" \
     org.label-schema.description="This Docker image periodically tracks and downloads new music for your library using spotDL." \
     org.label-schema.url="https://hub.docker.com/r/pjmeca/spotify-downloader" \
     org.label-schema.vcs-url="https://github.com/pjmeca/spotify-downloader" \
-    org.label-schema.version="2.1.0" \
+    org.label-schema.version="2.1.1" \
     org.label-schema.schema-version="1.0.0-rc.1" \
     maintainer="pjmeca"
 WORKDIR /
