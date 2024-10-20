@@ -5,7 +5,7 @@ using SpotifyDownloader.Utils;
 
 namespace SpotifyDownloader.Services;
 
-public interface IFileManagmentService
+public interface IFileManagementService
 {
     /// <summary>
     /// If we have just upgraded from v2.0.0 or lower, move each artist and playlist to their corresponding subfolder.
@@ -17,7 +17,7 @@ public interface IFileManagmentService
     void OrganizeArtists(IEnumerable<string> artistsNames);
 }
 
-public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileManagmentService
+public class FileManagementService(ILogger<FileManagementService> logger) : IFileManagementService
 {
     public void MigrateFromOlderVersion(TrackingInformation trackingInformation)
     {

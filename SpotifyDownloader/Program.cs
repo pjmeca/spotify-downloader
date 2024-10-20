@@ -90,7 +90,7 @@ IHost Build()
 
         x.AddDbContext<ApplicationDbContext>();
 
-        x.AddSingleton<IFileManagmentService, FileManagmentService>();
+        x.AddSingleton<IFileManagementService, FileManagementService>();
         x.AddSingleton<ITrackingService, TrackingService>();
         x.AddSingleton<IDownloadingService, DownloadingService>();
         x.AddScoped<IArtistsService, ArtistsService>();

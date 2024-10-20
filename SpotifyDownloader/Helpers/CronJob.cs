@@ -5,7 +5,7 @@ using SpotifyDownloader.Services;
 namespace SpotifyDownloader.Helpers;
 
 public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<CronJob> logger,
-    IFileManagmentService fileManagmentService, ITrackingService trackingService, IDownloadingService downloadingService,
+    IFileManagementService fileManagmentService, ITrackingService trackingService, IDownloadingService downloadingService,
     IArtistsService artistsService)
     : CronJobService(cronConfiguration.CronExpression, cronConfiguration.TimeZoneInfo, cronConfiguration.CronFormat)
 {
