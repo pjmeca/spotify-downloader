@@ -115,6 +115,7 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
                     .Execute<TagLib.File?>())
                 .Where(x => x is not null)
                 .GroupBy(x => x!.Tag.Album)
+                .Where(x => x.Key is not null)
                 .Where(x => x.Count() > 1) // Avoid singles
                 .ToDictionary(x => x.Key, x => x.Select(x => Path.GetFileName(x.Name)).ToList());
             
