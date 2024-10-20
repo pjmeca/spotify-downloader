@@ -5,7 +5,7 @@ using SpotifyDownloader.Utils;
 
 namespace SpotifyDownloader.Services;
 
-public interface IFileManagmentService
+public interface IFileManagementService
 {
     /// <summary>
     /// If we have just upgraded from v2.0.0 or lower, move each artist and playlist to their corresponding subfolder.
@@ -17,7 +17,7 @@ public interface IFileManagmentService
     void OrganizeArtists(IEnumerable<string> artistsNames);
 }
 
-public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileManagmentService
+public class FileManagementService(ILogger<FileManagementService> logger) : IFileManagementService
 {
     public void MigrateFromOlderVersion(TrackingInformation trackingInformation)
     {
@@ -29,10 +29,8 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
             .Where(x => x.FullPath != GlobalConfiguration.ARTISTS_DIRECTORY && x.FullPath != GlobalConfiguration.PLAYLISTS_DIRECTORY)
             .ToList();
 
-        Parallel.Invoke(
-            () => Move(trackingInformation.Artists, GlobalConfiguration.ARTISTS_DIRECTORY),
-            () => Move(trackingInformation.Playlists, GlobalConfiguration.PLAYLISTS_DIRECTORY)
-        );
+        Move(trackingInformation.Artists, GlobalConfiguration.ARTISTS_DIRECTORY);
+        Move(trackingInformation.Playlists, GlobalConfiguration.PLAYLISTS_DIRECTORY);
 
         OrganizeArtists(trackingInformation.Artists.Select(x => x.Name));
 
@@ -50,12 +48,10 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
             }
 
             logger.LogInformation("Moving {num} items to \"{dir}\"...", itemsToMove.Count(), destinationDirectory);
-            var actions = new List<Action>();
             foreach (var item in itemsToMove.Select(x => x.Name))
             {
-                actions.Add(() => MoveItem(destinationDirectory, item));
+                MoveItem(destinationDirectory, item);
             }
-            Parallel.Invoke([.. actions]);
 
             void MoveItem(string destinationDirectory, string item)
             {
@@ -79,12 +75,10 @@ public class FileManagmentService(ILogger<FileManagmentService> logger) : IFileM
 
     public void OrganizeArtists(IEnumerable<string> artistsNames)
     {
-        var actions = new List<Action>();
         foreach (var artist in artistsNames)
         {
-            actions.Add(() => OrganizeArtist(artist));
+            OrganizeArtist(artist);
         }
-        Parallel.Invoke([.. actions]);
 
         // In case something went wrong, delete empty directories
         var emptyDirectories = Directory.GetDirectories(GlobalConfiguration.ARTISTS_DIRECTORY, "*", SearchOption.AllDirectories)
