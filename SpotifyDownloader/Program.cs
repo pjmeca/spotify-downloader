@@ -90,11 +90,6 @@ IHost Build()
 
         x.AddDbContext<ApplicationDbContext>();
 
-        x.AddSingleton<IFileManagementService, FileManagementService>();
-        x.AddSingleton<ITrackingService, TrackingService>();
-        x.AddSingleton<IDownloadingService, DownloadingService>();
-        x.AddScoped<IArtistsService, ArtistsService>();
-
         var config = SpotifyClientConfig
             .CreateDefault()
             .WithAuthenticator(new ClientCredentialsAuthenticator(
@@ -102,6 +97,11 @@ IHost Build()
                 SPOTIFY_CLIENT_SECRET));
         x.AddSingleton(new SpotifyClient(config));
         x.AddScoped<ISpotifyClientWrapper, SpotifyClientWrapper>();
+
+        x.AddSingleton<IFileManagementService, FileManagementService>();
+        x.AddSingleton<ITrackingService, TrackingService>();
+        x.AddSingleton<IDownloadingService, DownloadingService>();
+        x.AddScoped<IArtistsService, ArtistsService>();
 
         x.ApplyResulation<CronJob>(options =>
         {
