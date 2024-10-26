@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
@@ -216,6 +216,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             .Append($" --format {configuration.FORMAT}")
             .Append($" --threads {Process.GetCurrentProcess().Threads.Count}")
             .Append($" --client-id {configuration.SPOTIFY_CLIENT_ID} --client-secret {configuration.SPOTIFY_CLIENT_SECRET}");
+
         if (configuration.OPTIONS is not null)
         {
             arguments.Append($" {configuration.OPTIONS}");
@@ -234,13 +235,46 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         using Process? process = Process.Start(startInfo);
         if (process != null)
         {
-            string output = await process.StandardOutput.ReadToEndAsync();
-            foreach (var x in output.Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)))
-            {
-                logger.LogInformation("{output}", x);
-            }
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+            var exitTask = process.WaitForExitAsync(cts.Token);
 
-            await process.WaitForExitAsync();
+            var outputReadingTask = Task.Run(async () =>
+            {
+                while (!process.StandardOutput.EndOfStream)
+                {
+                    var line = await process.StandardOutput.ReadLineAsync();
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        logger.LogInformation("{output}", line);
+                    }
+                }
+            });
+
+            var errorReadingTask = Task.Run(async () =>
+            {
+                while (!process.StandardError.EndOfStream)
+                {
+                    var line = await process.StandardError.ReadLineAsync();
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        logger.LogError("{error}", line);
+                    }
+                }
+            });
+
+            // Wait for the process to finish or for the timeout to expire
+            if (await Task.WhenAny(exitTask, Task.Delay(-1, cts.Token)) == exitTask)
+            {
+                // The process finished
+                await exitTask;
+                await Task.WhenAll(outputReadingTask, errorReadingTask); // Ensure output was logged
+            }
+            else
+            {
+                // Timeout
+                process.Kill();
+                throw new TimeoutException("Process timeout: spotdl took too long and was terminated.");
+            }
         }
 
         logger.LogInformation("Downloaded \"{name}\".", name);
