@@ -101,6 +101,7 @@ IHost Build()
                 SPOTIFY_CLIENT_ID,
                 SPOTIFY_CLIENT_SECRET));
         x.AddSingleton(new SpotifyClient(config));
+        x.AddScoped<ISpotifyClientWrapper, SpotifyClientWrapper>();
 
         x.ApplyResulation<CronJob>(options =>
         {
