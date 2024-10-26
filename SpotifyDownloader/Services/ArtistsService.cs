@@ -33,6 +33,7 @@ public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotif
             localTracks = Directory.GetFiles(itemDirectory, "*", SearchOption.AllDirectories);
             localAlbums = localTracks
                 .Select(x => TagLib.File.Create(x).Tag.Album)
+                .Where(x => x != null)
                 .Distinct()
                 .ToArray();
             var dbAlbums = await _applicationDbContext.Albums
