@@ -18,13 +18,13 @@ public interface ISpotifyClientWrapper
 
 public class SpotifyClientWrapper(ILogger<SpotifyClientWrapper> _logger, SpotifyClient _spotifyClient) : ISpotifyClientWrapper
 {
-    private T TooManyRequestsWrapper<T>(Func<T> func)
+    private async Task<T> TooManyRequestsWrapper<T>(Func<Task<T>> func)
     {
         while (true)
         {
             try
             {
-                return func();
+                return await func();
             }
             catch (APITooManyRequestsException ex)
             {
