@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
@@ -227,7 +227,8 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             FileName = @"/env/bin/spotdl",
             Arguments = arguments.ToString(),
             UseShellExecute = false,
-            RedirectStandardOutput = true
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
         };
 
         using Process? process = Process.Start(startInfo);
