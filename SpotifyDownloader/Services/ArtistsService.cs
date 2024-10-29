@@ -5,6 +5,7 @@ using SpotifyAPI.Web;
 using SpotifyDownloader.Data;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Utils;
+using static Fluents.Fluent;
 
 namespace SpotifyDownloader.Services;
 
@@ -31,8 +32,8 @@ public class ArtistsService(ILogger<ArtistsService> logger, ISpotifyClientWrappe
         {
             localTracks = Directory.GetFiles(itemDirectory, "*", SearchOption.AllDirectories);
             localAlbums = localTracks
-                .Select(x => TagLib.File.Create(x).Tag.Album)
-                .Where(x => x != null)
+                .Select(x => Try(() => TagLib.File.Create(x).Tag.Album).Ignore().Execute<string>())
+                .Where(x => x is not null)
                 .Distinct()
                 .ToArray();
             var dbAlbums = await _applicationDbContext.Albums
@@ -100,7 +101,8 @@ public class ArtistsService(ILogger<ArtistsService> logger, ISpotifyClientWrappe
 
             var localAlbums = Directory
                 .GetFiles(artistPath, "*", SearchOption.AllDirectories)
-                .Select(x => TagLib.File.Create(x).Tag.Album)
+                .Select(x => Try(() => TagLib.File.Create(x).Tag.Album).Ignore().Execute<string>())
+                .Where(x => x is not null)
                 .Distinct();
             var albumsToCreate = localAlbums
                 .Where(x => !dbAlbums.Contains(x))

@@ -5,6 +5,7 @@ using SpotifyAPI.Web;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Models;
 using SpotifyDownloader.Utils;
+using static Fluents.Fluent;
 
 namespace SpotifyDownloader.Services;
 
@@ -140,7 +141,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
 
             // Remove all downloaded songs from this album so it will be downloaded next time
             Directory.GetFiles(downloadPath)
-                .Where(x => TagLib.File.Create(x).Tag.Album == album.Name)
+                .Where(x => Try(() => TagLib.File.Create(x).Tag.Album).Ignore().Execute<string>() == album.Name)
                 .ToList()
                 .ForEach(File.Delete);
 
@@ -181,7 +182,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             if (downloadPath != null)
             {
                 Directory.GetFiles(downloadPath)
-                    .Where(x => TagLib.File.Create(x).Tag.Album == album.Name)
+                    .Where(x => Try(() => TagLib.File.Create(x).Tag.Album).Ignore().Execute<string>() == album.Name)
                     .ToList()
                     .ForEach(File.Delete);
             }
