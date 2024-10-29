@@ -81,4 +81,3 @@ The reason why this change was made in .NET instead of sticking with Python is j
 ## Special Thanks To
 
 - The [spotDL project](https://github.com/spotDL/spotify-downloader) for providing the core functionality of this image.
-- The [cron project](https://github.com/lnquy/cron) for offering an easy way to display cron expressions in a human-friendly way.
