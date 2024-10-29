@@ -22,7 +22,8 @@ services:
     volumes:
       - /your/main/music/path:/music # (Required) Change this
       - /path/to/tracking.yaml:/app/tracking.yaml:ro # (Required) Change this
-      - /logs:/app/logs # (Optional)
+      - /path/to/cache:/app/cache # (Recommended) Store the SQLite cache somewhere
+      - /path/to/logs:/app/logs # (Optional)
     environment:
       CRON_SCHEDULE: "0 0 * * *" # (Required) Customize your cron if needed
       CLIENT__ID: "y0ur5p071fycl13n71d" # (Required) Change this
