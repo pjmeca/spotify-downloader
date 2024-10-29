@@ -14,7 +14,7 @@ public interface IDownloadingService
 }
 
 public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration,
-    SpotifyClient spotifyClient, IArtistsService _artistsService) : IDownloadingService
+    ISpotifyClientWrapper spotifyClient, IArtistsService _artistsService) : IDownloadingService
 {
     public async Task<DownloadResult> Download(TrackingInformation trackingInformation)
     {
@@ -159,8 +159,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
 
         try
         {
-            var firstTrack = await spotifyClient.Albums.GetTracks(album.Id);
-            var albumTracks = await spotifyClient.PaginateAll(firstTrack);
+            var albumTracks = await spotifyClient.GetAllTracks(album.Id);
 
             var tracksToDownload = albumTracks.Where(x => filter(x)).ToList();
             downloadPath = tracksToDownload.Count > 1 ?
