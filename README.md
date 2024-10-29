@@ -80,4 +80,8 @@ The reason why this change was made in .NET instead of sticking with Python is j
 
 ## Special Thanks To
 
-- The [spotDL project](https://github.com/spotDL/spotify-downloader) for providing the core functionality of this image.
+- The [spotDL project](https://github.com/spotDL/spotify-downloader), which powers the core music downloading functionality for seamless integration.
+- The [SpotifyAPI-NET project](https://github.com/JohnnyCrazy/SpotifyAPI-NET) for providing an intuitive interface to communicate with the Spotify API.
+- [TagLib#](https://github.com/mono/taglib-sharp) for providing an easy way to read the metadata from the tracks stored in the file system.
+- [YamlDotNet](https://github.com/aaubry/YamlDotNet) for providing a fast and easy way to read Yaml files within .Net.
+- The [EasyCronJob project](https://github.com/furkandeveloper/EasyCronJob) for providing an easy way to implement a cron job in .Net.
