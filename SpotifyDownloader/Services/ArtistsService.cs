@@ -5,7 +5,6 @@ using SpotifyAPI.Web;
 using SpotifyDownloader.Data;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Utils;
-using static SpotifyAPI.Web.ArtistsAlbumsRequest;
 
 namespace SpotifyDownloader.Services;
 
@@ -18,7 +17,7 @@ public interface IArtistsService
     Task UpdateLocalArtistsInfo();
 }
 
-public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotifyClient, ApplicationDbContext _applicationDbContext) : IArtistsService
+public class ArtistsService(ILogger<ArtistsService> logger, ISpotifyClientWrapper spotifyClient, ApplicationDbContext _applicationDbContext) : IArtistsService
 {
     public async Task<(string[] localTracks, string[] localAlbums)> GetLocalArtistInfo(string artistName)
     {
@@ -58,12 +57,7 @@ public class ArtistsService(ILogger<ArtistsService> logger, SpotifyClient spotif
             return [];
         }
 
-        var firstAlbum = await spotifyClient.Artists.GetAlbums(artistId, new ArtistsAlbumsRequest()
-        {
-            IncludeGroupsParam = IncludeGroups.Album | IncludeGroups.Single | IncludeGroups.AppearsOn,
-            Limit = 50
-        });
-        var albums = await spotifyClient.PaginateAll(firstAlbum);
+        var albums = await spotifyClient.GetAllAlbums(artistId);
         return [.. albums];
     }
 
