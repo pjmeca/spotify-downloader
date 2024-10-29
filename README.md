@@ -73,26 +73,10 @@ user@host:/music$ tree -d
 └── The Beatles
 ```
 
+## About the .Net release
+In September 2024, version `2.0.0` of `spotify-downloader` was released. This major version included a rewrite of the original code in Python. The reason behind this decision was to address a continuous series of `429` errors from the Spotify API unhandled by `spotDL`. I followed all the recomendations suggested in their [issue](https://github.com/spotDL/spotify-downloader/issues/2142), but it still didn't work. So, I decided to take a different approach, giving myself more flexibility to achieve what I really need.
 
-## Changelog
-
-- 2.1.1: Prevent OOM issues & Avoid `null` albums to be a key of the dictionary
-- 2.1.0: Smart Deletion & Organize files into subfolders
-- 2.0.0: .Net Release
-- 1.1.2: Upgrade `spotdl` to `v4.2.8`
-- 1.1.1: Fix: A debug directory was mistakenly introduced in the build of the release image
-- 1.1.0: Added `refresh` field to `tracking.yaml`
-- 1.0.0: Added playlists; first stable release
-- 0.0.4: Fixed download directories (again)
-- 0.0.3: Displayed program start & end time
-- 0.0.2: Fixed download directories
-- 0.0.1: Initial release
-
-> [!NOTE]
-> ### About the .Net release
-> In September 2024, version `2.0.0` of `spotify-downloader` was released. This major version included a rewrite of the original code in Python. The reason behind this decision was to address a continuous series of `429` errors from the Spotify API unhandled by `spotDL`. I followed all the recomendations suggested in their [issue](https://github.com/spotDL/spotify-downloader/issues/2142), but it still didn't work. So, I decided to take a different approach, giving myself more flexibility to achieve what I really need.
-> 
-> The reason why this change was made in .NET instead of sticking with Python is just that I am much more fluent in the former.
+The reason why this change was made in .NET instead of sticking with Python is just that I am much more fluent in the former.
 
 ## Special Thanks To
 
