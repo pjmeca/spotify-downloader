@@ -32,8 +32,8 @@ public class ArtistsService(ILogger<ArtistsService> logger, ISpotifyClientWrappe
         {
             localTracks = Directory.GetFiles(itemDirectory, "*", SearchOption.AllDirectories);
             localAlbums = localTracks
-                .Select(x => TagLib.File.Create(x).Tag.Album)
-                .Where(x => x != null)
+                .Select(x => Try(() => TagLib.File.Create(x).Tag.Album).Ignore().Execute<string>())
+                .Where(x => x is not null)
                 .Distinct()
                 .ToArray();
             var dbAlbums = await _applicationDbContext.Albums
