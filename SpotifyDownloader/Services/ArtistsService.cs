@@ -90,9 +90,12 @@ public class ArtistsService(ILogger<ArtistsService> logger, ISpotifyClientWrappe
             .ToListAsync();
 
         // 4. Create new albums
-        var dbAlbums = dbArtists.SelectMany(x => x.Albums.Select(x => x.Name)).ToList();
         foreach (var artist in dbArtists)
         {
+            var dbAlbums = dbArtists
+                .Where(x => x.Id == artist.Id)
+                .SelectMany(x => x.Albums.Select(x => x.Name)).ToList();
+
             var artistPath = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artist.Name.ToValidPathString()}";
             if (!Directory.Exists(artistPath))
             {
