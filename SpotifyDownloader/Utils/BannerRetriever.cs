@@ -7,7 +7,7 @@ public static class BannerRetriever
     public static async Task<string> GetBanner()
     {
         const string projectName = "spotify-downloader";
-        var version = GlobalConfiguration.VERSION;
+        var version = GlobalConfiguration.CurrentVersion;
 
         var client = new HttpClient();
         var request = new HttpRequestMessage(HttpMethod.Get,
