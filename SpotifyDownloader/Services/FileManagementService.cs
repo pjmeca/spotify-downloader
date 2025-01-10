@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using SpotifyDownloader.Data;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Models;
 using SpotifyDownloader.Utils;
@@ -10,7 +11,7 @@ public interface IFileManagementService
     /// <summary>
     /// If we have just upgraded from v2.0.0 or lower, move each artist and playlist to their corresponding subfolder.
     /// </summary>
-    void MigrateFromOlderVersion(TrackingInformation trackingInformation);
+    void MigrateFromOlderVersion(TrackingInformation trackingInformation, AppVersion upgradeFrom);
     /// <summary>
     /// Groups tracks by albums in the file system. If an album only has one track, it won't be moved.
     /// </summary>
@@ -19,55 +20,63 @@ public interface IFileManagementService
 
 public class FileManagementService(ILogger<FileManagementService> logger) : IFileManagementService
 {
-    public void MigrateFromOlderVersion(TrackingInformation trackingInformation)
+    public void MigrateFromOlderVersion(TrackingInformation trackingInformation, AppVersion upgradeFrom)
     {
-        Directory.CreateDirectory(GlobalConfiguration.ARTISTS_DIRECTORY);
-        Directory.CreateDirectory(GlobalConfiguration.PLAYLISTS_DIRECTORY);
-
-        var musicSubDirectories = Directory.GetDirectories(GlobalConfiguration.MUSIC_DIRECTORY, "*", SearchOption.TopDirectoryOnly)
-            .Select(x => (FullPath: x, Name: Path.GetFileName(x)))
-            .Where(x => x.FullPath != GlobalConfiguration.ARTISTS_DIRECTORY && x.FullPath != GlobalConfiguration.PLAYLISTS_DIRECTORY)
-            .ToList();
-
-        Move(trackingInformation.Artists, GlobalConfiguration.ARTISTS_DIRECTORY);
-        Move(trackingInformation.Playlists, GlobalConfiguration.PLAYLISTS_DIRECTORY);
-
-        OrganizeArtists(trackingInformation.Artists.Select(x => x.Name));
-
-        void Move(IEnumerable<TrackingInformation.Item> items, string destinationDirectory)
+        if (upgradeFrom < new AppVersion(2, 1, 2))
         {
-            if (!items.Any())
-            {
-                return;
-            }
+            Migration_2_1_2();
+        }
 
-            var itemsToMove = items.Where(x => musicSubDirectories.Exists(y => y.Name == x.Name));
-            if (!itemsToMove.Any())
-            {
-                return;
-            }
+        void Migration_2_1_2()
+        {
+            Directory.CreateDirectory(GlobalConfiguration.ARTISTS_DIRECTORY);
+            Directory.CreateDirectory(GlobalConfiguration.PLAYLISTS_DIRECTORY);
 
-            logger.LogInformation("Moving {num} items to \"{dir}\"...", itemsToMove.Count(), destinationDirectory);
-            foreach (var item in itemsToMove.Select(x => x.Name))
-            {
-                MoveItem(destinationDirectory, item);
-            }
+            var musicSubDirectories = Directory.GetDirectories(GlobalConfiguration.MUSIC_DIRECTORY, "*", SearchOption.TopDirectoryOnly)
+                .Select(x => (FullPath: x, Name: Path.GetFileName(x)))
+                .Where(x => x.FullPath != GlobalConfiguration.ARTISTS_DIRECTORY && x.FullPath != GlobalConfiguration.PLAYLISTS_DIRECTORY)
+                .ToList();
 
-            void MoveItem(string destinationDirectory, string item)
+            Move(trackingInformation.Artists, GlobalConfiguration.ARTISTS_DIRECTORY);
+            Move(trackingInformation.Playlists, GlobalConfiguration.PLAYLISTS_DIRECTORY);
+
+            OrganizeArtists(trackingInformation.Artists.Select(x => x.Name));
+
+            void Move(IEnumerable<TrackingInformation.Item> items, string destinationDirectory)
             {
-                try
+                if (!items.Any())
                 {
-                    var origin = musicSubDirectories.Find(x => x.Name == item);
-                    if (origin != default)
-                    {
-                        string destination = $"{destinationDirectory}/{origin.Name}";
-                        logger.LogInformation("Moving \"{origin}\" to \"{dest}\"...", origin.FullPath, destination);
-                        DirectoryUtils.MoveAndMerge(origin.FullPath, destination);
-                    }
+                    return;
                 }
-                catch (Exception ex)
+
+                var itemsToMove = items.Where(x => musicSubDirectories.Exists(y => y.Name == x.Name));
+                if (!itemsToMove.Any())
                 {
-                    logger.LogError(ex, "An error occurred while moving {name}.", item);
+                    return;
+                }
+
+                logger.LogInformation("Moving {num} items to \"{dir}\"...", itemsToMove.Count(), destinationDirectory);
+                foreach (var item in itemsToMove.Select(x => x.Name))
+                {
+                    MoveItem(destinationDirectory, item);
+                }
+
+                void MoveItem(string destinationDirectory, string item)
+                {
+                    try
+                    {
+                        var origin = musicSubDirectories.Find(x => x.Name == item);
+                        if (origin != default)
+                        {
+                            string destination = $"{destinationDirectory}/{origin.Name}";
+                            logger.LogInformation("Moving \"{origin}\" to \"{dest}\"...", origin.FullPath, destination);
+                            DirectoryUtils.MoveAndMerge(origin.FullPath, destination);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "An error occurred while moving {name}.", item);
+                    }
                 }
             }
         }

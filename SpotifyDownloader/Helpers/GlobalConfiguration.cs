@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using SpotifyDownloader.Data;
 using SpotifyDownloader.Utils;
 
 namespace SpotifyDownloader.Helpers;
@@ -8,7 +9,10 @@ namespace SpotifyDownloader.Helpers;
 /// </summary>
 public class GlobalConfiguration
 {
-    public const string VERSION = "v2.1.2";
+    private const int MAJOR = 2;
+    private const int MINOR = 1;
+    private const int BUGFIX = 2;
+    public static readonly AppVersion CurrentVersion = new(MAJOR, MINOR, BUGFIX);
 
     public string CRON_SCHEDULE { get; }
     public string SPOTIFY_CLIENT_ID { get; }
