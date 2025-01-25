@@ -12,7 +12,7 @@ USER root
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg python3-pip python3-venv && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN python3 -m venv env && \
-    /env/bin/pip install spotdl==4.2.8
+    /env/bin/pip install spotdl==4.2.11
 WORKDIR /app
 ENV CRON_SCHEDULE=
 ENV CLIENT__ID=
