@@ -10,8 +10,8 @@ namespace SpotifyDownloader.Helpers;
 public class GlobalConfiguration
 {
     private const int MAJOR = 2;
-    private const int MINOR = 1;
-    private const int BUGFIX = 2;
+    private const int MINOR = 2;
+    private const int BUGFIX = 0;
     public static readonly AppVersion CurrentVersion = new(MAJOR, MINOR, BUGFIX);
 
     public string CRON_SCHEDULE { get; }
