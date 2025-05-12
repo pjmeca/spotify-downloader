@@ -51,12 +51,12 @@ Optionally, you can specify if you wish to `refresh` each entry (defaults to `Tr
 artists:
   - name: Dua Lipa
     url: https://open.spotify.com/intl-es/artist/6M2wZ9GZgrQXHCFfjv46we
-  - name: The Beatles
-    url: https://open.spotify.com/intl-es/artist/3WrFJ7ztbogyGnTHbHJFl2
-    refresh: false
   - name: Olivia Rodrigo
     url: https://open.spotify.com/intl-es/artist/1McMsnEElThX1knmY4oliG
     refresh: true
+  - name: The Beatles
+    url: https://open.spotify.com/intl-es/artist/3WrFJ7ztbogyGnTHbHJFl2
+    refresh: false
 
 playlists:
   - name: Los 90 España
@@ -66,12 +66,15 @@ playlists:
 ### Result
 
 ```bash
-user@host:/music$ tree -d
+user@host:/music$ tree -d -L 2
 .
-├── Dua Lipa
-├── Los 90 España
-├── Olivia Rodrigo
-└── The Beatles
+├── Artists
+│   ├── Dua Lipa
+│   ├── Olivia Rodrigo
+│   └── The Beatles
+├── cache
+└── Playlists
+    └── Los 90 España
 ```
 
 ## About the .Net release
