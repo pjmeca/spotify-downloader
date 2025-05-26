@@ -217,6 +217,11 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             .Append($" --threads {Process.GetCurrentProcess().Threads.Count}")
             .Append($" --client-id {configuration.SPOTIFY_CLIENT_ID} --client-secret {configuration.SPOTIFY_CLIENT_SECRET}");
 
+        if (configuration.OPTIONS is null || !configuration.OPTIONS.Contains("--bitrate"))
+        {
+            arguments.Append(" --bitrate disable"); // Fixes https://github.com/pjmeca/spotify-downloader/issues/32
+        }
+        
         if (configuration.OPTIONS is not null)
         {
             arguments.Append($" {configuration.OPTIONS}");
