@@ -4,10 +4,10 @@ namespace SpotifyDownloader.Models;
 
 public class TrackingInformation
 {
-    public List<Item> Artists { get; set; } = [];
-    public List<Item> Playlists { get; set; } = [];
+    public List<ArtistItem> Artists { get; set; } = [];
+    public List<PlaylistItem> Playlists { get; set; } = [];
 
-    public class Item
+    public abstract class BaseItem
     {
         private string _name = null!;
         public required string Name
@@ -20,6 +20,12 @@ public class TrackingInformation
         }
         public required string Url { get; set; }
         public bool Refresh { get; set; } = true;
+    }
+
+    public class ArtistItem : BaseItem;
+    public class PlaylistItem : BaseItem
+    {
+        public PlaylistDownloadMode Mode { get; set; }
     }
 }
 

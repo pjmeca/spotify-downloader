@@ -15,3 +15,4 @@ artists:
 playlists:
   - name: Los 90 España
     url: https://open.spotify.com/playlist/37i9dQZF1DWXm9R2iowygp
+    mode: "full"

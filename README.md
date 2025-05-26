@@ -45,7 +45,11 @@ Each time the script inside the container runs, it reads the `tracking.yaml` fil
 
 Below is an example of `tracking.yaml`. The `name` field is used as a folder name, which will be created if it does not exist. If you want to download multiple URLs to the same folder, create multiple entries with the same name.
 
-Optionally, you can specify if you wish to `refresh` each entry (defaults to `True`) in case it already contains files. It is advised to set this field for artists who do not publish new tracks frequently, as it will drastically decrease Spotify's API calls, thus reducing the risk of receiving too many 429 HTTP codes.
+Optionally, you can specify if you wish to `refresh` each entry (defaults to `true`) in case it already contains files. It is advised to set this field for artists who do not publish new tracks frequently, as it will drastically decrease Spotify's API calls, thus reducing the risk of receiving too many 429 HTTP codes.
+
+Playlists support an optional `mode` field. It accepts two values:
+- `add` (default): new tracks found in the remote playlist are added to the local folder, but no files are removed.
+- `full`: the local folder is synchronized with the remote playlist. Any local tracks no longer present in the remote playlist will be removed.
 
 ```yaml
 artists:
@@ -53,7 +57,7 @@ artists:
     url: https://open.spotify.com/intl-es/artist/6M2wZ9GZgrQXHCFfjv46we
   - name: Olivia Rodrigo
     url: https://open.spotify.com/intl-es/artist/1McMsnEElThX1knmY4oliG
-    refresh: true
+    refresh: true # optional, default is 'true'
   - name: The Beatles
     url: https://open.spotify.com/intl-es/artist/3WrFJ7ztbogyGnTHbHJFl2
     refresh: false
@@ -61,6 +65,7 @@ artists:
 playlists:
   - name: Los 90 España
     url: https://open.spotify.com/playlist/37i9dQZF1DWXm9R2iowygp
+    mode: full # optional, default is 'add'
 ```
 
 ### Result

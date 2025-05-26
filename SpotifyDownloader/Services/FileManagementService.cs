@@ -42,7 +42,7 @@ public class FileManagementService(ILogger<FileManagementService> logger) : IFil
 
             OrganizeArtists(trackingInformation.Artists.Select(x => x.Name));
 
-            void Move(IEnumerable<TrackingInformation.Item> items, string destinationDirectory)
+            void Move(IEnumerable<TrackingInformation.BaseItem> items, string destinationDirectory)
             {
                 if (!items.Any())
                 {

@@ -13,7 +13,10 @@ public interface ISpotifyClientWrapper
     Task<IList<SimpleAlbum>> GetAllAlbums(string artistId);
 
     /// <inheritdoc cref="IAlbumsClient.GetTracks(string, CancellationToken)"/>>
-    Task<IList<SimpleTrack>> GetAllTracks(string albumId);
+    Task<IList<SimpleTrack>> GetAllAlbumTracks(string albumId);
+
+    /// <inheritdoc cref="IPlaylistsClient.GetItems(string,System.Threading.CancellationToken)"/>>
+    public Task<IList<PlaylistTrack<IPlayableItem>>> GetAllPlaylistTracks(string playlistId);
 }
 
 public class SpotifyClientWrapper(ILogger<SpotifyClientWrapper> _logger, SpotifyClient _spotifyClient) : ISpotifyClientWrapper
@@ -51,7 +54,7 @@ public class SpotifyClientWrapper(ILogger<SpotifyClientWrapper> _logger, Spotify
         });
     }
 
-    public async Task<IList<SimpleTrack>> GetAllTracks(string albumId)
+    public async Task<IList<SimpleTrack>> GetAllAlbumTracks(string albumId)
     {
         return await TooManyRequestsWrapper(async () =>
         {
@@ -61,4 +64,13 @@ public class SpotifyClientWrapper(ILogger<SpotifyClientWrapper> _logger, Spotify
             return albumTracks;
         });
     }
+
+    public Task<IList<PlaylistTrack<IPlayableItem>>> GetAllPlaylistTracks(string playlistId)
+        => TooManyRequestsWrapper(async () =>
+        {
+            var firstTrack = await _spotifyClient.Playlists.GetItems(playlistId);
+            var playlistTracks = await _spotifyClient.PaginateAll(firstTrack);
+            
+            return playlistTracks;
+        });
 }
