@@ -59,7 +59,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         return result;
     }
     
-    private async Task<int> ProcessArtist(TrackingInformation.Item artist)
+    private async Task<int> ProcessArtist(TrackingInformation.ArtistItem artist)
     {
         string itemDirectory = $"{GlobalConfiguration.ARTISTS_DIRECTORY}/{artist.Name.ToValidPathString()}";
 
@@ -118,7 +118,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         }
     }
 
-    private async Task ProcessPlaylist(TrackingInformation.Item playlist)
+    private async Task ProcessPlaylist(TrackingInformation.PlaylistItem playlist)
     {
         string itemDirectory = $"{GlobalConfiguration.PLAYLISTS_DIRECTORY}/{playlist.Name}";
 
