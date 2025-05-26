@@ -102,6 +102,7 @@ IHost Build()
         x.AddSingleton<ITrackingService, TrackingService>();
         x.AddSingleton<IDownloadingService, DownloadingService>();
         x.AddScoped<IArtistsService, ArtistsService>();
+        x.AddScoped<PlaylistsService>();
 
         x.ApplyResulation<CronJob>(options =>
         {
