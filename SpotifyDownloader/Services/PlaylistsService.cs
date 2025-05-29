@@ -83,13 +83,15 @@ public class PlaylistsService(ILogger<ArtistsService> logger, ISpotifyClientWrap
         List<string> missingTracks = [];
         foreach (var file in local)
         {
-            var fullPath = file.Name;
-            var fileName = Path.GetFileNameWithoutExtension(fullPath);
-            var remoteTrack = remote
-                .FirstOrDefault(x => fileName == $"{string.Join(", ", x.Track.Artists.Select(x => x.Name))} - {x.Track.Name}");
+            var existsRemoteTrack = remote
+                .Any(x =>
+                    x.Track.Artists.Select(x => x.Name).ToHashSet().SetEquals(file.Tag.Performers)
+                    && x.Track.Name == file.Tag.Title);
             
-            if (remoteTrack is null)
+            if (!existsRemoteTrack)
             {
+                var fullPath = file.Name;
+                var fileName = Path.GetFileNameWithoutExtension(fullPath);
                 logger.LogInformation("The track \"{track}\" has been marked for deletion as it is no longer present in the remote playlist.", fileName);
                 missingTracks.Add(fullPath);
             }
