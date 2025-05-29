@@ -90,12 +90,12 @@ public class PlaylistsService(ILogger<ArtistsService> logger, ISpotifyClientWrap
             
             if (remoteTrack is null)
             {
-                logger.LogError("The track \"{track}\" has been marked for deletion as it is no longer present in the remote playlist.", fileName);
+                logger.LogInformation("The track \"{track}\" has been marked for deletion as it is no longer present in the remote playlist.", fileName);
                 missingTracks.Add(fullPath);
             }
         }
         
-        logger.LogError("Deleting {num} selected tracks...", missingTracks.Count);
+        logger.LogInformation("Deleting {num} selected tracks...", missingTracks.Count);
         missingTracks.ForEach(x => Try(() => System.IO.File.Delete(x)).Ignore().Execute());
         logger.LogInformation("The playlist \"{name}\" has been synced with Spotify.", playlist.Name);
     }
