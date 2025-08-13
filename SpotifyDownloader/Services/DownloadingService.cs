@@ -270,17 +270,29 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             });
 
             // Wait for the process to finish or for the timeout to expire
-            if (await Task.WhenAny(exitTask, Task.Delay(-1, cts.Token)) == exitTask)
+            try
             {
                 // The process finished
                 await exitTask;
-                await Task.WhenAll(outputReadingTask, errorReadingTask); // Ensure output was logged
             }
-            else
+            catch (OperationCanceledException) when (cts.IsCancellationRequested)
             {
                 // Timeout
-                process.Kill();
+                Try(() =>
+                {
+                    if (!process.HasExited)
+                        process.Kill(entireProcessTree: true);
+                }).Ignore().Execute();
+
                 throw new TimeoutException("Process timeout: spotdl took too long and was terminated.");
+            }
+            finally
+            {
+                try
+                {
+                    await Task.WhenAll(outputReadingTask, errorReadingTask); // Ensure output was logged
+                }
+                catch { /* Ignore */ }
             }
         }
 
