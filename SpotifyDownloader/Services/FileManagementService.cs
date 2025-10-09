@@ -107,7 +107,7 @@ public class FileManagementService(ILogger<FileManagementService> logger) : IFil
                         continue;
                     }
                     
-                    logger.LogInformation("Removing the duplicated subdirectory for the playlist {name}.", playlistName);
+                    logger.LogInformation("Removing the duplicated subdirectory for the playlist \"{name}\".", playlistName);
                     
                     foreach (var file in Directory.GetFiles(playlistSubDirectory, "*", SearchOption.AllDirectories))
                     {
@@ -120,7 +120,7 @@ public class FileManagementService(ILogger<FileManagementService> logger) : IFil
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Unexpected error while fixing the playlist subdirectory duplication issue for the playlist {name}.", playlistDirectory);
+                    logger.LogError(ex, "Unexpected error while fixing the playlist subdirectory duplication issue for the playlist \"{name}\".", playlistDirectory);
                 }
             }
         }
