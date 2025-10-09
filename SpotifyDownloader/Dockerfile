@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg python3-
     apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN python3 -m venv env && \
     /env/bin/pip install yt-dlp==2025.3.27 && \
-    /env/bin/pip install spotdl==4.2.11
+    /env/bin/pip install spotdl==4.4.3
 WORKDIR /app
 ENV CRON_SCHEDULE=
 ENV CLIENT__ID=
