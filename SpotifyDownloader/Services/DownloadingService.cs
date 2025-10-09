@@ -118,13 +118,49 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         }
     }
 
+    /// <summary>
+    /// Processes a Spotify playlist by downloading all its tracks and syncing it locally (if needed).
+    /// </summary>
     private async Task ProcessPlaylist(TrackingInformation.PlaylistItem playlist)
     {
         string itemDirectory = $"{GlobalConfiguration.PLAYLISTS_DIRECTORY}/{playlist.Name}";
-
-        _ = await DownloadPlaylist(itemDirectory, playlist.Name, playlist.Url);
+        Directory.CreateDirectory(itemDirectory);
+        var existingTracks = Directory.GetFiles(itemDirectory).Select(x => Path.GetFileNameWithoutExtension(x.Split("/")[^1])).ToArray();
         
-        await playlistsService.SyncLocalPlaylist(playlist);
+        // Get all the remote tracks
+        var remoteTracks = await playlistsService.GetRemotePlaylistInfo(playlist.Url);
+
+        foreach (var remoteTrack in remoteTracks)
+        {
+            try
+            {
+                // Read the artists (for logging purposes)
+                var artists = remoteTrack.Track.Artists.Select(x => x.Name).ToArray();
+                var spotDlFileName = $"{string.Join(", ", artists)} - {remoteTrack.Track.Name}";
+            
+                // Skip this track if already downloaded
+                if (existingTracks.Contains(spotDlFileName))
+                {
+                    logger.LogInformation("The track \"{name}\" already exists. Skipping...", spotDlFileName);
+                    continue;
+                }
+                
+                // Recreate the downloading URL from the ID
+                var id = remoteTrack.Track.Uri.Split(':').Last();
+                var trackUrl = $"https://open.spotify.com/intl-es/track/{id}";
+            
+                // Download this track
+                // TODO: Download() triggers an additional Spotify API call inside spotDL - open to ideas 🤔
+                await Download(itemDirectory, "track", spotDlFileName, trackUrl);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An exception occurred while downloading the track \"{trackName}\" for the playlist \"{playlistName}\".",
+                    remoteTrack.Track.Name, playlist.Name);
+            }
+        }
+        
+        await playlistsService.SyncLocalPlaylist(playlist, remoteTracks);
     }
 
     private async Task<bool> DownloadAlbum(string path, SimpleAlbum album)
@@ -193,23 +229,9 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         }
     }
 
-    private async Task<bool> DownloadPlaylist(string path, string name, string url)
+    private async Task Download(string path, string type, string loggingName, string url)
     {
-        try
-        {
-            await Download($"{path}/{name.ToValidPathString()}", "playlist", name, url);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "An exception occurred while downloading the playlist \"{playlist}\".", name);
-            return false;
-        }
-    }
-
-    private async Task Download(string path, string type, string name, string url)
-    {
-        logger.LogInformation("Downloading the {type} \"{name}\" with spotdl.", type, name);
+        logger.LogInformation("Downloading the {type} \"{name}\" with spotdl.", type, loggingName);
 
         Directory.CreateDirectory(path);
 
@@ -296,6 +318,6 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             }
         }
 
-        logger.LogInformation("Downloaded \"{name}\".", name);
+        logger.LogInformation("Downloaded \"{name}\".", loggingName);
     }
 }

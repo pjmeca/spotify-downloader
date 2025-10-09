@@ -61,7 +61,7 @@ public class PlaylistsService(ILogger<ArtistsService> logger, ISpotifyClientWrap
     /// <summary>
     /// Updates a local playlist, removing those tracks that are no longer present in the remote playlist.
     /// </summary>
-    public async Task SyncLocalPlaylist(TrackingInformation.PlaylistItem playlist)
+    public async Task SyncLocalPlaylist(TrackingInformation.PlaylistItem playlist, PlaylistTrack<FullTrack>[]? remotePlaylist = null)
     {
         if (playlist.Mode != PlaylistDownloadMode.Full)
         {
@@ -74,7 +74,7 @@ public class PlaylistsService(ILogger<ArtistsService> logger, ISpotifyClientWrap
         var local = GetLocalPlaylistInfo(playlist.Name);
         
         // 2. Retrieve the remote playlist
-        var remote = await GetRemotePlaylistInfo(playlist.Url);
+        var remote = remotePlaylist ?? await GetRemotePlaylistInfo(playlist.Url);
         
         logger.LogInformation("The playlist \"{name}\" contains {numLocal} local tracks and {numRemote} remote tracks.",
             playlist.Name, local.Length, remote.Length);
