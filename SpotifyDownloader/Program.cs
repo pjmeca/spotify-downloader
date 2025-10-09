@@ -36,11 +36,11 @@ try
     Directory.CreateDirectory(Directory.GetParent(GlobalConfiguration.DB_PATH)!.FullName);
     using var scope = app.Services.CreateScope();
     using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
-    if (pendingMigrations.Any())
+    var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync()).ToList();
+    if (pendingMigrations.Count != 0)
     {
-        logger.LogInformation("Applying {num} pending migrations...", pendingMigrations.Count());
-        pendingMigrations.ToList().ForEach(x => logger.LogDebug("Applying migration \"{name}\".", x));
+        logger.LogInformation("Applying {num} pending migrations...", pendingMigrations.Count);
+        pendingMigrations.ForEach(x => logger.LogDebug("Applying migration \"{name}\".", x));
         await dbContext.Database.MigrateAsync();
     }
 
