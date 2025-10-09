@@ -26,6 +26,11 @@ public class FileManagementService(ILogger<FileManagementService> logger) : IFil
         {
             Migration_2_1_2();
         }
+        
+        if (upgradeFrom <= new AppVersion(2, 3, 1))
+        {
+            Migration_2_3_1();
+        }
 
         void Migration_2_1_2()
         {
@@ -77,6 +82,45 @@ public class FileManagementService(ILogger<FileManagementService> logger) : IFil
                     {
                         logger.LogError(ex, "An error occurred while moving {name}.", item);
                     }
+                }
+            }
+        }
+        
+        void Migration_2_3_1()
+        {
+            // Fixes https://github.com/pjmeca/spotify-downloader/issues/36
+
+            if (!Directory.Exists(GlobalConfiguration.PLAYLISTS_DIRECTORY))
+            {
+                return;
+            }
+
+            var playlistsDirectories = Directory.GetDirectories(GlobalConfiguration.PLAYLISTS_DIRECTORY);
+            foreach (var playlistDirectory in playlistsDirectories)
+            {
+                try
+                {
+                    var playlistName = playlistDirectory.Split('/').Last();
+                    var playlistSubDirectory = Path.Combine(playlistDirectory, playlistName);
+                    if (!Directory.Exists(playlistSubDirectory))
+                    {
+                        continue;
+                    }
+                    
+                    logger.LogInformation("Removing the duplicated subdirectory for the playlist {name}.", playlistName);
+                    
+                    foreach (var file in Directory.GetFiles(playlistSubDirectory, "*", SearchOption.AllDirectories))
+                    {
+                        var relativePath = Path.GetRelativePath(playlistSubDirectory, file);
+                        var destination = Path.Combine(playlistDirectory, relativePath);
+                        File.Move(file, destination, overwrite: true);
+                    }
+                        
+                    Directory.Delete(playlistSubDirectory, recursive: true);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Unexpected error while fixing the playlist subdirectory duplication issue for the playlist {name}.", playlistDirectory);
                 }
             }
         }
