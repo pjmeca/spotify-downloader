@@ -26,7 +26,8 @@ public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<Cron
                 logger.LogInformation("Migrating from latest version: {latestVersion}", latestVersion);
                 fileManagmentService.MigrateFromOlderVersion(trackingInformation, latestVersion);
                 await dbContext.AppVersions.ExecuteUpdateAsync(x =>
-                    x.SetProperty(x => x.Major, currentVersion.Major).SetProperty(x => x.Minor, currentVersion.Minor).SetProperty(x => x.Bugfix, currentVersion.Bugfix));
+                    x.SetProperty(x => x.Major, currentVersion.Major).SetProperty(x => x.Minor, currentVersion.Minor).SetProperty(x => x.Bugfix, currentVersion.Bugfix),
+                    cancellationToken);
             }
 
             var result = await downloadingService.Download(trackingInformation);
