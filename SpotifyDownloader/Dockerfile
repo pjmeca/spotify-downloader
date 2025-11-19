@@ -1,5 +1,5 @@
 # Configuration
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 LABEL org.label-schema.name="pjmeca/spotify-downloader" \
     org.label-schema.description="This Docker image periodically tracks and downloads new music for your library using spotDL." \
     org.label-schema.url="https://hub.docker.com/r/pjmeca/spotify-downloader" \
@@ -21,7 +21,7 @@ ENV CLIENT__SECRET=
 ENV FORMAT="opus"
 ENV OPTIONS=
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR "/src/SpotifyDownloader"
 COPY ["./SpotifyDownloader.csproj", "./"]
