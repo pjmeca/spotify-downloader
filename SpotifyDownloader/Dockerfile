@@ -9,11 +9,23 @@ LABEL org.label-schema.name="pjmeca/spotify-downloader" \
     maintainer="pjmeca"
 WORKDIR /
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg python3-pip python3-venv && \
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    python3-pip \
+    python3-venv \
+    ca-certificates \
+    curl \
+    unzip && \
+    curl -fsSL https://deno.land/install.sh | sh && \
+    ln -s /root/.deno/bin/deno /usr/local/bin/deno && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install yt-dlp and spotdl
 RUN python3 -m venv env && \
     /env/bin/pip install yt-dlp==2025.12.08 && \
     /env/bin/pip install spotdl==4.4.3
+# Configure yt-dlp to use the GitHub EJS extractor
+RUN echo "--remote-components=ejs:github" > /etc/yt-dlp.conf
 WORKDIR /app
 ENV CRON_SCHEDULE=
 ENV CLIENT__ID=
