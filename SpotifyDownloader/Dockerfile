@@ -1,7 +1,7 @@
 # Configuration
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 LABEL org.label-schema.name="pjmeca/spotify-downloader" \
-    org.label-schema.description="This Docker image periodically tracks and downloads new music for your library using spotDL." \
+    org.label-schema.description="This Docker image periodically tracks and downloads new music for your library using yt-dlp." \
     org.label-schema.url="https://hub.docker.com/r/pjmeca/spotify-downloader" \
     org.label-schema.vcs-url="https://github.com/pjmeca/spotify-downloader" \
     org.label-schema.version="2.5.0" \
@@ -22,11 +22,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get purge -y unzip && \
     apt-get autoremove -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-# Install yt-dlp and spotdl
+# Install yt-dlp
 RUN python3 -m venv env && \
     /env/bin/pip install --no-cache-dir \
-        yt-dlp==2025.12.08 \
-        spotdl==4.4.3
+        yt-dlp==2025.12.08
 # Configure yt-dlp to use the GitHub EJS extractor
 RUN echo "--remote-components=ejs:github" > /etc/yt-dlp.conf
 WORKDIR /app

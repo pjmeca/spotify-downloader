@@ -17,6 +17,9 @@ public interface ISpotifyClientWrapper
 
     /// <inheritdoc cref="IPlaylistsClient.GetItems(string,System.Threading.CancellationToken)"/>>
     public Task<IList<PlaylistTrack<IPlayableItem>>> GetAllPlaylistTracks(string playlistId);
+
+    /// <inheritdoc cref="ITracksClient.Get(string,System.Threading.CancellationToken)"/>>
+    public Task<FullTrack> GetTrack(string trackId);
 }
 
 public class SpotifyClientWrapper(ILogger<SpotifyClientWrapper> _logger, SpotifyClient _spotifyClient) : ISpotifyClientWrapper
@@ -73,4 +76,7 @@ public class SpotifyClientWrapper(ILogger<SpotifyClientWrapper> _logger, Spotify
             
             return playlistTracks;
         });
+
+    public Task<FullTrack> GetTrack(string trackId)
+        => TooManyRequestsWrapper(async () => await _spotifyClient.Tracks.Get(trackId));
 }

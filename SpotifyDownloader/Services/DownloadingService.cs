@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using SpotifyDownloader.Helpers;
 using SpotifyDownloader.Models;
@@ -14,46 +12,54 @@ public interface IDownloadingService
     Task<DownloadResult> Download(TrackingInformation trackingInformation);
 }
 
-public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration,
-    ISpotifyClientWrapper spotifyClient, IArtistsService artistsService, PlaylistsService playlistsService) : IDownloadingService
+public class DownloadingService(ILogger<DownloadingService> logger,
+    ISpotifyClientWrapper spotifyClient, IArtistsService artistsService, PlaylistsService playlistsService,
+    ISpotdlService spotdlService) : IDownloadingService
 {
     public async Task<DownloadResult> Download(TrackingInformation trackingInformation)
     {
         DownloadResult result = new();
 
-        // Let's see what's currently in the music directory
-        IEnumerable<string> folders = Directory.GetDirectories(GlobalConfiguration.MUSIC_DIRECTORY);
-        folders = folders.Select(x => x.Split("/")[^1]);
-
-        // Remove those items that already exist and have refresh set to false
-        trackingInformation.Artists.RemoveAll(x => !x.Refresh && folders.Contains(x.Name));
-        trackingInformation.Playlists.RemoveAll(x => !x.Refresh && folders.Contains(x.Name));
-
-        foreach (var artist in trackingInformation.Artists)
+        try
         {
-            try
+            // Let's see what's currently in the music directory
+            IEnumerable<string> folders = Directory.GetDirectories(GlobalConfiguration.MUSIC_DIRECTORY);
+            folders = folders.Select(x => x.Split("/")[^1]);
+
+            // Remove those items that already exist and have refresh set to false
+            trackingInformation.Artists.RemoveAll(x => !x.Refresh && folders.Contains(x.Name));
+            trackingInformation.Playlists.RemoveAll(x => !x.Refresh && folders.Contains(x.Name));
+
+            foreach (var artist in trackingInformation.Artists)
             {
-                logger.LogInformation("Processing the artist \"{name}\"", artist.Name);
-                result.AlbumsDownloaded += await ProcessArtist(artist);
+                try
+                {
+                    logger.LogInformation("Processing the artist \"{name}\"", artist.Name);
+                    result.AlbumsDownloaded += await ProcessArtist(artist);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An exception occurred while processing the artist \"{item}\".", artist.Name);
+                }
             }
-            catch (Exception ex)
+
+            foreach (var playlist in trackingInformation.Playlists)
             {
-                logger.LogError(ex, "An exception occurred while processing the artist \"{item}\".", artist.Name);
+                try
+                {
+                    logger.LogInformation("Processing the playlist \"{name}\"", playlist.Name);
+                    await ProcessPlaylist(playlist);
+                    result.PlaylistsDownloaded++;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An exception occurred while processing the playlist \"{item}\".", playlist.Name);
+                }
             }
         }
-
-        foreach (var playlist in trackingInformation.Playlists)
+        finally
         {
-            try
-            {
-                logger.LogInformation("Processing the playlist \"{name}\"", playlist.Name);
-                await ProcessPlaylist(playlist);
-                result.PlaylistsDownloaded++;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An exception occurred while processing the playlist \"{item}\".", playlist.Name);
-            }
+            CleanupTemporaryDownloads();
         }
 
         return result;
@@ -107,9 +113,9 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
 
         static List<SimpleAlbum> ClearRepeatedSingles(List<SimpleAlbum> albums, string[] localTracks)
         {
-            // When a single is released in multiple albums, the track gets stuck 
+            // When a single is released in multiple albums, the track gets stuck
             // because, even though the album is different, the track name is the same,
-            // so spotdl skips it and never downloads it. As a result, the album is retrieved
+            // so the downloader skips it and never downloads it. As a result, the album is retrieved
             // for download again in subsequent executions.
             // This method tries to prevent this cases as much as possible without calling the Spotify API.
             return albums
@@ -136,7 +142,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             {
                 // Read the artists (for logging purposes)
                 var artists = remoteTrack.Track.Artists.Select(x => x.Name).ToArray();
-                var spotDlFileName = $"{string.Join(", ", artists)} - {remoteTrack.Track.Name}";
+                var spotDlFileName = $"{string.Join(", ", artists)} - {remoteTrack.Track.Name}".ToValidPathString();
             
                 // Skip this track if already downloaded
                 if (existingTracks.Contains(spotDlFileName))
@@ -145,13 +151,8 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
                     continue;
                 }
                 
-                // Recreate the downloading URL from the ID
-                var id = remoteTrack.Track.Uri.Split(':').Last();
-                var trackUrl = $"https://open.spotify.com/intl-es/track/{id}";
-            
                 // Download this track
-                // TODO: Download() triggers an additional Spotify API call inside spotDL - open to ideas 🤔
-                await Download(itemDirectory, "track", spotDlFileName, trackUrl);
+                await spotdlService.DownloadTrack(itemDirectory, remoteTrack.Track);
             }
             catch (Exception ex)
             {
@@ -170,7 +171,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             : path;
         try
         {
-            await Download(downloadPath, "album", album.Name, album.ExternalUrls["spotify"]);
+            await spotdlService.DownloadAlbum(downloadPath, album);
             return true;
         }
         catch (Exception ex)
@@ -207,7 +208,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
 
             foreach (var track in tracksToDownload)
             {
-                await Download(downloadPath, "track", track.Name, track.ExternalUrls["spotify"]);
+                await spotdlService.DownloadTrack(downloadPath, track, album);
             }
 
             return true;
@@ -229,95 +230,22 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         }
     }
 
-    private async Task Download(string path, string type, string loggingName, string url)
+    private void CleanupTemporaryDownloads()
     {
-        logger.LogInformation("Downloading the {type} \"{name}\" with spotdl.", type, loggingName);
-
-        Directory.CreateDirectory(path);
-
-        var arguments = new StringBuilder()
-            .Append($"download {url}")
-            .Append($" --format {configuration.FORMAT}")
-            .Append($" --threads {Process.GetCurrentProcess().Threads.Count}")
-            .Append($" --client-id {configuration.SPOTIFY_CLIENT_ID} --client-secret {configuration.SPOTIFY_CLIENT_SECRET}");
-
-        if (configuration.OPTIONS is null || !configuration.OPTIONS.Contains("--bitrate"))
+        var tempDirectory = Path.Combine(GlobalConfiguration.MUSIC_DIRECTORY, ".tmp");
+        if (!Directory.Exists(tempDirectory))
         {
-            arguments.Append(" --bitrate disable"); // Fixes https://github.com/pjmeca/spotify-downloader/issues/32
-        }
-        
-        if (configuration.OPTIONS is not null)
-        {
-            arguments.Append($" {configuration.OPTIONS}");
+            return;
         }
 
-        ProcessStartInfo startInfo = new()
+        try
         {
-            WorkingDirectory = path,
-            FileName = @"/env/bin/spotdl",
-            Arguments = arguments.ToString(),
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-
-        using Process? process = Process.Start(startInfo);
-        if (process != null)
-        {
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-            var exitTask = process.WaitForExitAsync(cts.Token);
-
-            var outputReadingTask = Task.Run(async () =>
-            {
-                while (!process.StandardOutput.EndOfStream)
-                {
-                    var line = await process.StandardOutput.ReadLineAsync();
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        logger.LogInformation("{output}", line);
-                    }
-                }
-            });
-
-            var errorReadingTask = Task.Run(async () =>
-            {
-                while (!process.StandardError.EndOfStream)
-                {
-                    var line = await process.StandardError.ReadLineAsync();
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        logger.LogError("{error}", line);
-                    }
-                }
-            });
-
-            // Wait for the process to finish or for the timeout to expire
-            try
-            {
-                // The process finished
-                await exitTask;
-            }
-            catch (OperationCanceledException) when (cts.IsCancellationRequested)
-            {
-                // Timeout
-                Try(() =>
-                {
-                    if (!process.HasExited)
-                        process.Kill(entireProcessTree: true);
-                }).Ignore().Execute();
-
-                throw new TimeoutException("Process timeout: spotdl took too long and was terminated.");
-            }
-            finally
-            {
-                try
-                {
-                    await Task.WhenAll(outputReadingTask, errorReadingTask); // Ensure output was logged
-                }
-                catch { /* Ignore */ }
-            }
+            Directory.Delete(tempDirectory, recursive: true);
         }
-
-        logger.LogInformation("Downloaded \"{name}\".", loggingName);
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to clean temporary downloads directory: {path}", tempDirectory);
+        }
     }
+
 }
