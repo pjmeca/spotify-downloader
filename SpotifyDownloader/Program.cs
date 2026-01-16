@@ -48,6 +48,18 @@ try
     
     logger.LogInformation("Ready!");
 
+    var hostEnvironment = app.Services.GetRequiredService<IHostEnvironment>();
+    var envName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+        ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+        ?? hostEnvironment.EnvironmentName;
+    if (string.Equals(envName, Environments.Development, StringComparison.OrdinalIgnoreCase))
+    {
+        logger.LogInformation("Development environment detected. Running job immediately.");
+        using var devScope = app.Services.CreateScope();
+        var job = ActivatorUtilities.CreateInstance<CronJob>(devScope.ServiceProvider);
+        await job.DoWork(CancellationToken.None);
+    }
+
     // The cron job will take it from here
     await app.RunAsync();
 }
