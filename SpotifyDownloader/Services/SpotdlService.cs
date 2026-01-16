@@ -204,6 +204,12 @@ public class SpotdlService(
             "--no-warnings",
             "--quiet",
             "--ignore-errors",
+            "--extractor-args",
+            "youtube:player_client=android",
+            "--retries",
+            "0",
+            "--fragment-retries",
+            "0",
             $"ytsearch{limit}:{searchTerm}"
         };
 
@@ -362,6 +368,12 @@ public class SpotdlService(
             "--no-playlist",
             "--no-warnings",
             "--quiet",
+            "--extractor-args",
+            "youtube:player_client=android",
+            "--retries",
+            "0",
+            "--fragment-retries",
+            "0",
             "-x",
             "--audio-format",
             configuration.FORMAT,
@@ -475,11 +487,17 @@ public class SpotdlService(
 
         var outputLines = new List<string>();
         var errorLines = new List<string>();
+        var abortRequested = false;
 
         var outputTask = Task.Run(async () =>
         {
             while (true)
             {
+                if (abortRequested)
+                {
+                    break;
+                }
+
                 var line = await process.StandardOutput.ReadLineAsync();
                 if (line is null)
                 {
@@ -494,15 +512,38 @@ public class SpotdlService(
         {
             while (true)
             {
+                if (abortRequested)
+                {
+                    break;
+                }
+
                 var line = await process.StandardError.ReadLineAsync();
                 if (line is null)
                 {
                     break;
                 }
 
-                if (!string.IsNullOrWhiteSpace(line))
+                if (string.IsNullOrWhiteSpace(line))
                 {
-                    errorLines.Add(line);
+                    continue;
+                }
+                
+                errorLines.Add(line);
+                if (IsBotChallenge(line))
+                {
+                    abortRequested = true;
+                    try
+                    {
+                        if (!process.HasExited)
+                        {
+                            process.Kill(entireProcessTree: true);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore kill failures
+                    }
+                    break;
                 }
             }
         });
@@ -533,6 +574,15 @@ public class SpotdlService(
             await Task.WhenAll(outputTask, errorTask);
         }
 
+        if (abortRequested)
+        {
+            var combinedError = string.Join(Environment.NewLine, errorLines);
+            throw new InvalidOperationException(
+                "yt-dlp was stopped due to a bot verification challenge. " +
+                "Provide cookies or reduce request intensity. " +
+                combinedError);
+        }
+
         if (process.ExitCode != 0)
         {
             var combinedError = string.Join(Environment.NewLine, errorLines);
@@ -544,6 +594,13 @@ public class SpotdlService(
             StandardOutput = outputLines,
             StandardError = errorLines
         };
+    }
+
+    private static bool IsBotChallenge(string line)
+    {
+        return line.Contains("Sign in to confirm you're not a bot", StringComparison.OrdinalIgnoreCase)
+               || line.Contains("Use --cookies", StringComparison.OrdinalIgnoreCase)
+               || line.Contains("cookies-from-browser", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
