@@ -54,7 +54,7 @@ public class SpotdlService(
         var spotdlTrack = SpotdlTrack.FromFullTrack(track);
         await DownloadTrackInternal(outputDirectory, spotdlTrack);
     }
-    
+
     /// <inheritdoc />
     public async Task DownloadTrack(string outputDirectory, SimpleTrack track, SimpleAlbum album)
     {
@@ -210,8 +210,10 @@ public class SpotdlService(
             "0",
             "--fragment-retries",
             "0",
-            $"ytsearch{limit}:{searchTerm}"
         };
+
+        args.AddRange(GetCookieOptions());
+        args.Add($"ytsearch{limit}:{searchTerm}");
 
         var output = await RunYtDlp(args, SearchTimeout);
         var results = new List<SpotdlResult>();
@@ -344,6 +346,7 @@ public class SpotdlService(
                     result.Add(current.ToString());
                     current.Clear();
                 }
+
                 continue;
             }
 
@@ -404,7 +407,8 @@ public class SpotdlService(
         var skipOptions = new HashSet<string>(skipOptionNames, StringComparer.OrdinalIgnoreCase);
         var longOptions = skipOptionNames.Where(option => option.StartsWith("--", StringComparison.Ordinal)).ToArray();
         var shortOptions = skipOptionNames
-            .Where(option => option.StartsWith("-", StringComparison.Ordinal) && !option.StartsWith("--", StringComparison.Ordinal))
+            .Where(option => option.StartsWith("-", StringComparison.Ordinal) &&
+                             !option.StartsWith("--", StringComparison.Ordinal))
             .ToArray();
 
         for (var index = 0; index < extraArgs.Count; index++)
@@ -416,6 +420,7 @@ public class SpotdlService(
                 {
                     index += 1;
                 }
+
                 continue;
             }
 
@@ -527,7 +532,7 @@ public class SpotdlService(
                 {
                     continue;
                 }
-                
+
                 errorLines.Add(line);
                 if (IsBotChallenge(line))
                 {
@@ -543,6 +548,7 @@ public class SpotdlService(
                     {
                         // Ignore kill failures
                     }
+
                     break;
                 }
             }
@@ -600,7 +606,8 @@ public class SpotdlService(
     {
         return line.Contains("Sign in to confirm you're not a bot", StringComparison.OrdinalIgnoreCase)
                || line.Contains("Use --cookies", StringComparison.OrdinalIgnoreCase)
-               || line.Contains("cookies-from-browser", StringComparison.OrdinalIgnoreCase);
+               || line.Contains("cookies-from-browser", StringComparison.OrdinalIgnoreCase)
+               || line.Contains("Cookies file must be Netscape formatted, not JSON.", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -734,7 +741,7 @@ public class SpotdlService(
         {
             return new BestMatch { Result = best.Result, Score = best.Score };
         }
-        
+
         var views = bestResults.Select(x => x.Result.Views ?? 0).ToList();
         var highestViews = views.Max();
         var lowestViews = views.Min();
@@ -1123,7 +1130,8 @@ public class SpotdlService(
         var sb = new StringBuilder();
         var lastDash = false;
 
-        foreach (var ch in normalized.Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark))
+        foreach (var ch in normalized.Where(ch =>
+                     CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark))
         {
             if (char.IsLetterOrDigit(ch) || ch == '-' || ch == '!' || ch == '@' || ch == '$')
             {
@@ -1199,5 +1207,50 @@ public class SpotdlService(
         }
 
         return d[n, m];
+    }
+
+    private List<string> GetCookieOptions()
+    {
+        var extraArgs = ParseArgs(configuration.OPTIONS);
+        if (extraArgs.Count == 0)
+        {
+            return [];
+        }
+
+        var cookieOptions = new List<string>();
+        var cookieNames = new[]
+        {
+            "--cookies",
+            "--cookies-from-browser"
+        };
+
+        for (var index = 0; index < extraArgs.Count; index++)
+        {
+            var arg = extraArgs[index];
+
+            if (cookieNames.Any(option => string.Equals(arg, option, StringComparison.OrdinalIgnoreCase)))
+            {
+                if (index + 1 < extraArgs.Count)
+                {
+                    cookieOptions.Add(arg);
+                    cookieOptions.Add(extraArgs[index + 1]);
+                    index += 1;
+                }
+
+                continue;
+            }
+
+            foreach (var option in cookieNames)
+            {
+                var prefix = $"{option}=";
+                if (arg.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    cookieOptions.Add(arg);
+                    break;
+                }
+            }
+        }
+
+        return cookieOptions;
     }
 }
