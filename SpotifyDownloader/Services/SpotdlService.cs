@@ -204,8 +204,10 @@ public class SpotdlService(
             "--no-warnings",
             "--quiet",
             "--ignore-errors",
+            "--format",
+            "bestaudio/best",
             "--extractor-args",
-            "youtube:player_client=android",
+            "youtube:player_client=web",
             "--retries",
             "0",
             "--fragment-retries",
@@ -215,7 +217,7 @@ public class SpotdlService(
         args.AddRange(GetCookieOptions());
         args.Add($"ytsearch{limit}:{searchTerm}");
 
-        var output = await RunYtDlp(args, SearchTimeout);
+        var output = await RunYtDlp(args, SearchTimeout, allowNonZeroExitWhenOutput: true);
         var results = new List<SpotdlResult>();
 
         foreach (var line in output.StandardOutput.Where(line => !string.IsNullOrWhiteSpace(line)))
@@ -372,7 +374,7 @@ public class SpotdlService(
             "--no-warnings",
             "--quiet",
             "--extractor-args",
-            "youtube:player_client=android",
+            "youtube:player_client=web",
             "--retries",
             "0",
             "--fragment-retries",
@@ -468,7 +470,10 @@ public class SpotdlService(
     /// <summary>
     /// Executes yt-dlp and captures stdout/stderr.
     /// </summary>
-    private static async Task<ProcessOutput> RunYtDlp(IReadOnlyList<string> args, TimeSpan timeout)
+    private async Task<ProcessOutput> RunYtDlp(
+        IReadOnlyList<string> args,
+        TimeSpan timeout,
+        bool allowNonZeroExitWhenOutput = false)
     {
         var ytDlpPath = File.Exists("/env/bin/yt-dlp") ? "/env/bin/yt-dlp" : "yt-dlp";
         var startInfo = new ProcessStartInfo
@@ -492,13 +497,13 @@ public class SpotdlService(
 
         var outputLines = new List<string>();
         var errorLines = new List<string>();
-        var abortRequested = false;
+        var botVerificationChallengeTriggered = false;
 
         var outputTask = Task.Run(async () =>
         {
             while (true)
             {
-                if (abortRequested)
+                if (botVerificationChallengeTriggered)
                 {
                     break;
                 }
@@ -517,7 +522,7 @@ public class SpotdlService(
         {
             while (true)
             {
-                if (abortRequested)
+                if (botVerificationChallengeTriggered)
                 {
                     break;
                 }
@@ -536,7 +541,7 @@ public class SpotdlService(
                 errorLines.Add(line);
                 if (IsBotChallenge(line))
                 {
-                    abortRequested = true;
+                    botVerificationChallengeTriggered = true;
                     try
                     {
                         if (!process.HasExited)
@@ -580,7 +585,7 @@ public class SpotdlService(
             await Task.WhenAll(outputTask, errorTask);
         }
 
-        if (abortRequested)
+        if (botVerificationChallengeTriggered)
         {
             var combinedError = string.Join(Environment.NewLine, errorLines);
             throw new InvalidOperationException(
@@ -592,7 +597,18 @@ public class SpotdlService(
         if (process.ExitCode != 0)
         {
             var combinedError = string.Join(Environment.NewLine, errorLines);
-            throw new InvalidOperationException($"yt-dlp failed with exit code {process.ExitCode}: {combinedError}");
+            if (allowNonZeroExitWhenOutput && outputLines.Count > 0)
+            {
+                logger.LogWarning(
+                    "yt-dlp exited with {code} during search. Continuing with {count} results. Errors: {errors}",
+                    process.ExitCode,
+                    outputLines.Count,
+                    combinedError);
+            }
+            else
+            {
+                throw new InvalidOperationException($"yt-dlp failed with exit code {process.ExitCode}: {combinedError}");
+            }
         }
 
         return new ProcessOutput
