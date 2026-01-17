@@ -176,7 +176,7 @@ public class SpotdlService(
             .DistinctBy(x => x.Url)
             .ToList();
 
-        var ordered = OrderResults(combinedResults, track);
+        var ordered = OrderResults(combinedResults, track, searchQuery);
         foreach (var entry in ordered)
         {
             results[entry.Key] = entry.Value;
@@ -660,7 +660,10 @@ public class SpotdlService(
     /// <summary>
     /// Scores results using the spotdl matching logic.
     /// </summary>
-    private static Dictionary<SpotdlResult, double> OrderResults(IEnumerable<SpotdlResult> results, SpotdlTrack song)
+    private static Dictionary<SpotdlResult, double> OrderResults(
+        IEnumerable<SpotdlResult> results,
+        SpotdlTrack song,
+        string? searchQuery)
     {
         var linksWithMatchValue = new Dictionary<SpotdlResult, double>();
 
@@ -677,10 +680,10 @@ public class SpotdlService(
             artistsMatch = artistsMatch / (song.Artists.Count > 1 ? 2 : 1);
 
             artistsMatch = ArtistsMatchFixup1(song, result, artistsMatch);
-            artistsMatch = ArtistsMatchFixup2(song, result, artistsMatch);
+            artistsMatch = ArtistsMatchFixup2(song, result, artistsMatch, searchQuery);
             artistsMatch = ArtistsMatchFixup3(song, result, artistsMatch);
 
-            var nameMatch = CalcNameMatch(song, result);
+            var nameMatch = CalcNameMatch(song, result, searchQuery);
 
             var (containsForbidden, forbiddenWords) = CheckForbiddenWords(song, result);
             if (containsForbidden)
@@ -690,6 +693,8 @@ public class SpotdlService(
 
             var albumMatch = CalcAlbumMatch(song, result);
             var timeMatch = CalcTimeMatch(song, result);
+            var timeDiff = Math.Abs(song.DurationSeconds - result.Duration);
+            const double maxTimeDiffSeconds = 45;
 
             if (nameMatch <= 60)
             {
@@ -708,12 +713,7 @@ public class SpotdlService(
                 averageMatch = (averageMatch + albumMatch) / 2;
             }
 
-            if (timeMatch < 25)
-            {
-                continue;
-            }
-
-            if (timeMatch < 50 && averageMatch < 75)
+            if (timeDiff > maxTimeDiffSeconds)
             {
                 continue;
             }
@@ -838,10 +838,13 @@ public class SpotdlService(
     /// <summary>
     /// Creates normalized strings for name matching.
     /// </summary>
-    private static (string, string) CreateMatchStrings(SpotdlTrack song, SpotdlResult result)
+    private static (string, string) CreateMatchStrings(SpotdlTrack song, SpotdlResult result, string? searchQuery)
     {
         var slugSongName = Slugify(song.Name);
-        var slugSongTitle = Slugify(CreateSongTitle(song.Name, song.Artists));
+        var titleArtists = !string.IsNullOrWhiteSpace(searchQuery) && !string.IsNullOrWhiteSpace(song.Artist)
+            ? new[] { song.Artist }
+            : song.Artists;
+        var slugSongTitle = Slugify(CreateSongTitle(song.Name, titleArtists));
         var testStr1 = Slugify(result.Name);
         var testStr2 = result.Verified ? slugSongName : slugSongTitle;
 
@@ -1006,13 +1009,25 @@ public class SpotdlService(
         if (score <= 70)
         {
             var resultName = Slugify(result.Name).Replace("-", "");
-            var artistTitleMatch = song.Artists
+            var songArtists = song.Artists
                 .Select(artist => Slugify(artist).Replace("-", ""))
-                .Where(slugArtist => resultName.Contains(slugArtist))
-                .Sum(x => 1.0);
+                .Where(slugArtist => !string.IsNullOrWhiteSpace(slugArtist))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
 
-            artistTitleMatch = (artistTitleMatch / song.Artists.Count) * 100;
-            score = Math.Max(score, artistTitleMatch);
+            if (songArtists.Count > 0)
+            {
+                var matchCount = songArtists.Count(slugArtist => resultName.Contains(slugArtist));
+                var denominator = songArtists.Count;
+                if (denominator > 5 && (result.Artists is null || result.Artists.Count <= 1))
+                {
+                    denominator = 5;
+                }
+
+                var cappedMatch = Math.Min(matchCount, denominator);
+                var artistTitleMatch = (cappedMatch / (double)denominator) * 100;
+                score = Math.Max(score, artistTitleMatch);
+            }
         }
 
         if (score <= 70)
@@ -1029,7 +1044,11 @@ public class SpotdlService(
     /// <summary>
     /// Fixups for verified results when artist score is low.
     /// </summary>
-    private static double ArtistsMatchFixup2(SpotdlTrack song, SpotdlResult result, double score)
+    private static double ArtistsMatchFixup2(
+        SpotdlTrack song,
+        SpotdlResult result,
+        double score,
+        string? searchQuery)
     {
         if (score > 70 || !result.Verified)
         {
@@ -1040,7 +1059,7 @@ public class SpotdlService(
         var slugResultName = Slugify(result.Name);
 
         var hasMainArtist = (score / (song.Artists.Count > 1 ? 2 : 1)) > 50;
-        var (_, matchStr2) = CreateMatchStrings(song, result);
+        var (_, matchStr2) = CreateMatchStrings(song, result, searchQuery);
 
         var artistsToCheck = song.Artists.Skip(hasMainArtist ? 1 : 0);
         score = artistsToCheck
@@ -1090,9 +1109,9 @@ public class SpotdlService(
     /// <summary>
     /// Scores the title match between Spotify and YouTube.
     /// </summary>
-    private static double CalcNameMatch(SpotdlTrack song, SpotdlResult result)
+    private static double CalcNameMatch(SpotdlTrack song, SpotdlResult result, string? searchQuery)
     {
-        var (matchStr1, matchStr2) = CreateMatchStrings(song, result);
+        var (matchStr1, matchStr2) = CreateMatchStrings(song, result, searchQuery);
         var resultName = Slugify(result.Name);
         var songName = Slugify(song.Name);
 
@@ -1105,6 +1124,21 @@ public class SpotdlService(
         {
             var secondMatch = Ratio(matchStr1, matchStr2);
             nameMatch = Math.Max(nameMatch, secondMatch);
+        }
+
+        if (nameMatch <= 60)
+        {
+            var songTokens = songName.Split("-", StringSplitOptions.RemoveEmptyEntries);
+            if (songTokens.Length >= 3)
+            {
+                var collapsedSong = songName.Replace("-", "");
+                var collapsedResult = resultName.Replace("-", "");
+                if (!string.IsNullOrWhiteSpace(collapsedSong) &&
+                    collapsedResult.Contains(collapsedSong, StringComparison.Ordinal))
+                {
+                    nameMatch = 61;
+                }
+            }
         }
 
         return nameMatch;
