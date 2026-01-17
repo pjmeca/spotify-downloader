@@ -845,7 +845,10 @@ public class SpotdlService(
     private static (string, string) CreateMatchStrings(SpotdlTrack song, SpotdlResult result, string? searchQuery)
     {
         var slugSongName = Slugify(song.Name);
-        var titleArtists = !string.IsNullOrWhiteSpace(searchQuery) && !string.IsNullOrWhiteSpace(song.Artist)
+        var useShortTitle = !string.IsNullOrWhiteSpace(searchQuery)
+            && song.Artists.Count > 3
+            && !string.IsNullOrWhiteSpace(song.Artist);
+        var titleArtists = useShortTitle
             ? new[] { song.Artist }
             : song.Artists;
         var slugSongTitle = Slugify(CreateSongTitle(song.Name, titleArtists));
