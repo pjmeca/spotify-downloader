@@ -903,7 +903,8 @@ public class SpotdlService(
 
         var map = basedOn
             .Select((value, index) => new { value, index })
-            .ToDictionary(x => x.value, x => x.index);
+            .GroupBy(x => x.value)
+            .ToDictionary(group => group.Key, group => group.Max(x => x.index));
 
         var sorted = strings.OrderByDescending(x => map.TryGetValue(x, out var index) ? index : -1).ToList();
         basedOn.Reverse();
