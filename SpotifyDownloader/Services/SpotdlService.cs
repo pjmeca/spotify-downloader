@@ -805,6 +805,18 @@ public class SpotdlService(
         var sentenceWords = Slugify(song.Name).Split("-", StringSplitOptions.RemoveEmptyEntries);
         var toCheck = Slugify(result.Name).Replace("-", "");
 
+        if (sentenceWords.Length == 0)
+        {
+            var artistWords = song.Artists
+                .SelectMany(artist => Slugify(artist).Split("-", StringSplitOptions.RemoveEmptyEntries))
+                .Select(word => word.Replace("-", ""))
+                .Where(word => !string.IsNullOrWhiteSpace(word))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            return artistWords.Count > 0 && artistWords.Any(word => toCheck.Contains(word));
+        }
+
         return sentenceWords.Any(word => word.Length > 0 && toCheck.Contains(word));
     }
 
