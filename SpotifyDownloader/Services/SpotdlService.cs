@@ -94,12 +94,15 @@ public class SpotdlService(
     {
         Directory.CreateDirectory(outputDirectory);
 
-        var outputFileName = $"{string.Join(", ", track.Artists)} - {track.Name}".ToValidPathString();
-        var existingFiles = Directory.GetFiles(outputDirectory, $"{outputFileName}.*");
-        if (existingFiles.Length > 0)
+        var outputFileNameCandidates = GetOutputFileNameCandidates(track);
+        foreach (var candidate in outputFileNameCandidates)
         {
-            logger.LogInformation("The track \"{name}\" already exists. Skipping...", outputFileName);
-            return;
+            var existingFiles = Directory.GetFiles(outputDirectory, $"{candidate}.*");
+            if (existingFiles.Length > 0)
+            {
+                logger.LogInformation("The track \"{name}\" already exists. Skipping...", candidate);
+                return;
+            }
         }
 
         var bestResult = await SearchBestMatch(track);
@@ -147,6 +150,7 @@ public class SpotdlService(
             extension = $".{configuration.FORMAT}";
         }
 
+        var outputFileName = GetSafeOutputFileName(outputFileNameCandidates, extension);
         var outputFilePath = Path.Combine(outputDirectory, $"{outputFileName}{extension}");
         File.Move(downloadedFilePath, outputFilePath, overwrite: false);
 
@@ -1142,6 +1146,53 @@ public class SpotdlService(
         }
 
         return nameMatch;
+    }
+
+    /// <summary>
+    /// Builds candidate file names, preferring full artists and falling back to the primary artist.
+    /// </summary>
+    private static IReadOnlyList<string> GetOutputFileNameCandidates(SpotdlTrack track)
+    {
+        var candidates = new List<string>();
+
+        AddCandidate($"{string.Join(", ", track.Artists)} - {track.Name}");
+        AddCandidate(track.DisplayName);
+
+        return candidates;
+
+        void AddCandidate(string value)
+        {
+            var candidate = value.ToValidPathString();
+            if (string.IsNullOrWhiteSpace(candidate))
+            {
+                return;
+            }
+
+            if (!candidates.Contains(candidate, StringComparer.OrdinalIgnoreCase))
+            {
+                candidates.Add(candidate);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Selects a filename that fits common filesystem limits, truncating if needed.
+    /// </summary>
+    private static string GetSafeOutputFileName(IReadOnlyList<string> candidates, string extension)
+    {
+        const int maxFileNameLength = 255;
+        var maxBaseLength = Math.Max(1, maxFileNameLength - extension.Length);
+
+        foreach (var candidate in candidates)
+        {
+            if (candidate.Length <= maxBaseLength)
+            {
+                return candidate;
+            }
+        }
+
+        var fallback = candidates.Count > 0 ? candidates[0] : "track";
+        return fallback.Length <= maxBaseLength ? fallback : fallback[..maxBaseLength];
     }
 
     /// <summary>
