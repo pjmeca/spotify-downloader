@@ -170,6 +170,18 @@ public class SpotdlService(
         if (!string.IsNullOrWhiteSpace(track.Isrc))
         {
             isrcResults = await Search(track.Isrc!, isrcSearch: true, limit: 5);
+            if (isrcResults.Count > 0)
+            {
+                var orderedIsrc = OrderResults(isrcResults, track, searchQuery: null);
+                if (orderedIsrc.Count > 0)
+                {
+                    var bestIsrc = GetBestResult(orderedIsrc);
+                    if (bestIsrc.Score >= 60)
+                    {
+                        return bestIsrc.Result;
+                    }
+                }
+            }
         }
 
         var searchQuery = CreateSongTitle(track.Name, track.Artists);
@@ -705,7 +717,8 @@ public class SpotdlService(
                 continue;
             }
 
-            if (artistsMatch < 70)
+            var minArtistsMatch = result.IsrcSearch ? 60 : 70;
+            if (artistsMatch < minArtistsMatch)
             {
                 continue;
             }
@@ -745,6 +758,11 @@ public class SpotdlService(
     /// </summary>
     private static double CalculateArtistBoost(SpotdlTrack song, SpotdlResult result)
     {
+        if (result.IsrcSearch)
+        {
+            return 0;
+        }
+
         if (string.IsNullOrWhiteSpace(result.Author) || song.Artists.Count == 0)
         {
             return 0;
