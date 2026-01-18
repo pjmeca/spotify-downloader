@@ -711,6 +711,7 @@ public class SpotdlService(
             }
 
             var averageMatch = (artistsMatch + nameMatch) / 2;
+            averageMatch = Math.Clamp(averageMatch + CalculateArtistBoost(song, result), 0, 100);
 
             if (result.Verified && !result.IsrcSearch && !string.IsNullOrWhiteSpace(result.Album) && albumMatch <= 80)
             {
@@ -737,6 +738,32 @@ public class SpotdlService(
         }
 
         return linksWithMatchValue;
+    }
+
+    /// <summary>
+    /// Adds a small boost when the channel name matches a track artist.
+    /// </summary>
+    private static double CalculateArtistBoost(SpotdlTrack song, SpotdlResult result)
+    {
+        if (string.IsNullOrWhiteSpace(result.Author) || song.Artists.Count == 0)
+        {
+            return 0;
+        }
+
+        var authorSlug = Slugify(result.Author);
+        if (string.IsNullOrWhiteSpace(authorSlug))
+        {
+            return 0;
+        }
+
+        var matchesArtist = song.Artists.Any(artist =>
+        {
+            var slugArtist = Slugify(artist);
+            return !string.IsNullOrWhiteSpace(slugArtist) &&
+                string.Equals(authorSlug, slugArtist, StringComparison.Ordinal);
+        });
+
+        return matchesArtist ? 10 : -10;
     }
 
     /// <summary>
@@ -841,6 +868,14 @@ public class SpotdlService(
             "slowed",
             "instrumental",
             "cover",
+            "speedup",
+            "speed-up",
+            "spedup",
+            "sped-up",
+            "speed up",
+            "sped up",
+            "nightcore",
+            "karaoke",
         };
 
         var songName = Slugify(song.Name).Replace("-", "");
@@ -864,7 +899,7 @@ public class SpotdlService(
             ? new[] { song.Artist }
             : song.Artists;
         var slugSongTitle = Slugify(CreateSongTitle(song.Name, titleArtists));
-        var testStr1 = Slugify(result.Name);
+        var testStr1 = CleanResultTitleForMatch(result.Name);
         var testStr2 = result.Verified ? slugSongName : slugSongTitle;
 
         testStr1 = FillString(song.Artists, testStr1, testStr2);
@@ -875,6 +910,39 @@ public class SpotdlService(
         testStr2 = string.Join("-", testList2);
 
         return (testStr1, testStr2);
+    }
+
+    private static readonly HashSet<string> IgnoredTitleTokens = new(StringComparer.Ordinal)
+    {
+        "official",
+        "oficial",
+        "video",
+        "videoclip",
+        "visualizer",
+        "audio",
+        "clip",
+        "mv",
+    };
+
+    /// <summary>
+    /// Removes common non-title tokens from result titles for matching.
+    /// </summary>
+    private static string CleanResultTitleForMatch(string title)
+    {
+        var slug = Slugify(title);
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            return string.Empty;
+        }
+
+        var tokens = slug.Split("-", StringSplitOptions.RemoveEmptyEntries);
+        if (tokens.Length == 0)
+        {
+            return slug;
+        }
+
+        var filtered = tokens.Where(token => !IgnoredTitleTokens.Contains(token)).ToList();
+        return filtered.Count == 0 ? slug : string.Join("-", filtered);
     }
 
     /// <summary>
@@ -1131,8 +1199,10 @@ public class SpotdlService(
     private static double CalcNameMatch(SpotdlTrack song, SpotdlResult result, string? searchQuery)
     {
         var (matchStr1, matchStr2) = CreateMatchStrings(song, result, searchQuery);
-        var resultName = Slugify(result.Name);
-        var songName = Slugify(song.Name);
+        var rawResultName = CleanResultTitleForMatch(result.Name);
+        var rawSongName = Slugify(song.Name);
+        var resultName = rawResultName;
+        var songName = rawSongName;
 
         var (resList, songList) = BasedSort(resultName.Split("-").ToList(), songName.Split("-").ToList());
         resultName = string.Join("-", resList);
@@ -1150,12 +1220,29 @@ public class SpotdlService(
             var songTokens = songName.Split("-", StringSplitOptions.RemoveEmptyEntries);
             if (songTokens.Length >= 3)
             {
-                var collapsedSong = songName.Replace("-", "");
-                var collapsedResult = resultName.Replace("-", "");
+                var collapsedSong = rawSongName.Replace("-", "");
+                var collapsedResult = rawResultName.Replace("-", "");
                 if (!string.IsNullOrWhiteSpace(collapsedSong) &&
                     collapsedResult.Contains(collapsedSong, StringComparison.Ordinal))
                 {
                     nameMatch = 61;
+                }
+            }
+            else
+            {
+                var collapsedSong = rawSongName.Replace("-", "");
+                if (collapsedSong.Length >= 4)
+                {
+                    var collapsedResult = rawResultName.Replace("-", "");
+                    var collapsedArtist = Slugify(song.Artist).Replace("-", "");
+                    var collapsedAuthor = Slugify(result.Author).Replace("-", "");
+                    if (collapsedResult.Contains(collapsedSong, StringComparison.Ordinal) &&
+                        !string.IsNullOrWhiteSpace(collapsedArtist) &&
+                        (collapsedResult.Contains(collapsedArtist, StringComparison.Ordinal) ||
+                         collapsedAuthor.Contains(collapsedArtist, StringComparison.Ordinal)))
+                    {
+                        nameMatch = 61;
+                    }
                 }
             }
         }
