@@ -768,7 +768,7 @@ public class SpotdlService(
             return 0;
         }
 
-        var authorSlug = Slugify(result.Author);
+        var authorSlug = NormalizeArtistSlug(result.Author);
         if (string.IsNullOrWhiteSpace(authorSlug))
         {
             return 0;
@@ -789,7 +789,7 @@ public class SpotdlService(
     /// </summary>
     private static BestMatch GetBestResult(Dictionary<SpotdlResult, double> results)
     {
-        var bestResults = GetBestMatches(results, 8);
+        var bestResults = GetBestMatches(results, 15);
         if (bestResults.Count == 1)
         {
             return new BestMatch { Result = bestResults[0].Result, Score = bestResults[0].Score };
@@ -819,7 +819,7 @@ public class SpotdlService(
         for (var index = 0; index < bestResults.Count; index++)
         {
             var resultViews = views[index];
-            var viewsScore = (double)(resultViews - lowestViews) / (highestViews - lowestViews) * 15;
+            var viewsScore = (double)(resultViews - lowestViews) / (highestViews - lowestViews) * 25;
             var score = Math.Min(bestResults[index].Score + viewsScore, 100);
             weighted.Add(new BestMatch { Result = bestResults[index].Result, Score = score });
         }
@@ -1030,7 +1030,7 @@ public class SpotdlService(
         }
 
         var songArtists = song.Artists.Select(Slugify).ToList();
-        var resultArtists = result.Artists.Select(Slugify).ToList();
+        var resultArtists = result.Artists.Select(NormalizeArtistSlug).ToList();
         var (sortedSongArtists, sortedResultArtists) = BasedSort(songArtists, resultArtists);
 
         var slugSongMainArtist = Slugify(song.Artists[0]);
@@ -1080,7 +1080,7 @@ public class SpotdlService(
         }
 
         var artist1List = song.Artists.Select(Slugify).ToList();
-        var artist2List = result.Artists.Select(Slugify).ToList();
+        var artist2List = result.Artists.Select(NormalizeArtistSlug).ToList();
         var (sortedArtist1, sortedArtist2) = BasedSort(artist1List, artist2List);
 
         sortedArtist1 = sortedArtist1.Skip(1).ToList();
@@ -1108,7 +1108,7 @@ public class SpotdlService(
             return score;
         }
 
-        var channelMatch = Ratio(Slugify(song.Artist), Slugify(result.Author));
+        var channelMatch = Ratio(Slugify(song.Artist), NormalizeArtistSlug(result.Author));
         score = Math.Max(score, channelMatch);
 
         if (score <= 70)
@@ -1138,7 +1138,7 @@ public class SpotdlService(
         if (score <= 70)
         {
             var artistList1 = song.Artists.SelectMany(x => Slugify(x).Split("-")).ToList();
-            var artistList2 = result.Artists?.SelectMany(x => Slugify(x).Split("-")).ToList() ?? [];
+            var artistList2 = result.Artists?.SelectMany(x => NormalizeArtistSlug(x).Split("-")).ToList() ?? [];
             var artistTitleMatch = Ratio(string.Join("", artistList1), string.Join("", artistList2));
             score = Math.Max(score, artistTitleMatch);
         }
@@ -1335,6 +1335,25 @@ public class SpotdlService(
         }
 
         return Ratio(Slugify(song.AlbumName), Slugify(result.Album));
+    }
+
+    /// <summary>
+    /// Normalizes an artist or channel name for matching.
+    /// </summary>
+    private static string NormalizeArtistSlug(string? value)
+    {
+        var slug = Slugify(value ?? string.Empty);
+        if (slug.EndsWith("-topic", StringComparison.Ordinal))
+        {
+            slug = slug[..^"-topic".Length].TrimEnd('-');
+        }
+
+        if (slug.EndsWith("-vevo", StringComparison.Ordinal))
+        {
+            slug = slug[..^"-vevo".Length].TrimEnd('-');
+        }
+
+        return slug;
     }
 
     /// <summary>
