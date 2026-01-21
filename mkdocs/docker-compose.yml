@@ -1,0 +1,12 @@
+services:
+  docs:
+    container_name: spotify-downloader-docs
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    ports:
+      - "80:80"
+    volumes:
+      - ./docs:/app/docs
+      - ./mkdocs.yml:/app/mkdocs.yml
