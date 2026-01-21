@@ -1,5 +1,6 @@
 services:
   docs:
+    image: pjmeca/spotify-downloader-docs
     container_name: spotify-downloader-docs
     build:
       context: .
