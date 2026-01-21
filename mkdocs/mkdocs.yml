@@ -68,6 +68,9 @@ plugins:
 
 markdown_extensions:
   - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
   - pymdownx.highlight:
       use_pygments: true         # use pygments library    
       pygments_style: default    # use 'default' style
