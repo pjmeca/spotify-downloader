@@ -54,7 +54,7 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/pjmeca/spotify-downloader
     - icon: fontawesome/solid/at
-      link: <!--email_off-->mailto:hello@pjmeca.com?subject=[spotify-downloader]<!--/email_off--> # Disable Cloudflare Email Address Obfuscation
+      link: mailto:hello@pjmeca.com?subject=[spotify-downloader]
       name: email me!
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/pjmeca/
