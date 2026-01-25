@@ -3,3 +3,7 @@
   --md-primary-fg-color--light: #4ac776;
   --md-primary-fg-color--dark:  #1aa64b;
 }
+
+::selection {
+  background: #5aee8e75;
+}
