@@ -31,7 +31,10 @@ pipeline {
         }
         stage('Docs Deploy Prod') {
             steps {
-                sh 'docker run -d --name spotify-downloader-docs --restart unless-stopped -p 14666:80 ${DOCS_IMAGE_NAME}'
+                sh '''
+                    docker rm -f spotify-downloader-docs
+                    docker run -d --name spotify-downloader-docs --restart unless-stopped -p 14666:80 ${DOCS_IMAGE_NAME}
+                '''
             }
         }
     }
