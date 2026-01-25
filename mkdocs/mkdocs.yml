@@ -58,6 +58,24 @@ extra:
       name: email me!
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/pjmeca/
+  analytics:
+    provider: google
+    property: G-MWWY42S7F0
+    extra:
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/thumb-up-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/thumb-down-outline
+          name: This page could be improved
+          data: -1
+          note: >- 
+            Thanks for your feedback! Help us improve this page by
+            submitting and issue on <a href="https://github.com/pjmeca/spotify-downloader/issues/new/?title=[Feedback]+{title}+-+{url}">GitHub</a>.
 
 plugins:
   - search
@@ -83,7 +101,6 @@ extra_css:
 
 # TODO
 # - cookies
-# - analytics
 # - social cards
 # - versioning
 # - code actions
