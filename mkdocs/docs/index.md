@@ -14,7 +14,7 @@ hide:
 
 # Home
 
-Spotify Downloader is a Docker image that tracks artists and playlists on Spotify and automatically downloads new music to your library using [spotDL](https://github.com/spotDL/spotify-downloader). Tracks are sourced from YouTube and tagged with Spotify metadata, so everything lands neatly organized and ready to play.
+Spotify Downloader is a Docker image that tracks artists and playlists on Spotify and automatically downloads new music to your library using [spotDL](https://github.com/spotDL/spotify-downloader) and [yt-dlp](https://github.com/yt-dlp/yt-dlp). Tracks are sourced from YouTube and tagged with Spotify metadata, so everything lands neatly organized and ready to play.
 
 ## Why you will like it
 
