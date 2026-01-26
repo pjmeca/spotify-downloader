@@ -1,6 +1,6 @@
 site_name: pjmeca/spotify-downloader
 site_url: https://spotify-downloader.pjmeca.com
-copyright: Copyright &copy; 2024 - 2026 Pablo Meca
+copyright: Copyright &copy; 2024 - 2026 Pablo Meca – <a href="#__consent">Change cookie settings</a>
 repo_url: https://github.com/pjmeca/spotify-downloader
 repo_name: pjmeca/spotify-downloader
 
@@ -58,6 +58,13 @@ extra:
       name: email me!
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/pjmeca/
+  consent:
+    title: Cookie consent
+    description: >- 
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
   analytics:
     provider: google
     property: G-MWWY42S7F0
