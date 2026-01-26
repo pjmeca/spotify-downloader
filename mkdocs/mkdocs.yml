@@ -83,6 +83,8 @@ plugins:
   - awesome-nav
   - open-in-new-tab
   - optimize
+  - social:
+      cards_layout: default/variant
 
 markdown_extensions:
   - attr_list
