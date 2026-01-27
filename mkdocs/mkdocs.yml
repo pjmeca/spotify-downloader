@@ -106,10 +106,3 @@ markdown_extensions:
 
 extra_css:
   - assets/stylesheets/custom-color.css
-
-# TODO
-# - cookies
-# - social cards
-# - versioning
-# - code actions
-# - revisioning
