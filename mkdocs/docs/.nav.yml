@@ -1,0 +1,7 @@
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Configuration: configuration.md
+  - Operations: operations.md
+  - Advanced: advanced.md
+  - About: about.md

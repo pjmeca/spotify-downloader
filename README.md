@@ -1,11 +1,17 @@
-# pjmeca/spotify-downloader
+<p align="center">
+  <img src="mkdocs/docs/assets/images/banner-dark.webp" alt="banner"/>
+</p>
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/pjmeca/spotify-downloader?style=flat&logo=github&label=Star%20this%20repo!)](https://github.com/pjmeca/spotify-downloader)
 [![Docker Image Version (tag)](https://img.shields.io/docker/v/pjmeca/spotify-downloader/latest?logo=docker)](https://hub.docker.com/r/pjmeca/spotify-downloader)
 
-This Docker image periodically tracks and downloads new music for your library using [spotDL](https://github.com/spotDL/spotify-downloader). New tracks are downloaded from YouTube and Spotify's metadata is embedded. You can chose from various formats (the default is `opus`) and add custom options to the spotDL execution command. For more information, [read the docs](https://spotdl.readthedocs.io).
+This Docker image periodically tracks new music from Spotify and downloads it using [spotDL](https://github.com/spotDL/spotify-downloader) and [yt-dlp](https://github.com/yt-dlp/yt-dlp). Tracks are downloaded from YouTube with Spotify metadata embedded.
 
-You can find the Dockerfile and all the resources used to create this image in [my GitHub repository](https://github.com/pjmeca/spotify-downloader). If you find this useful, please leave a ⭐. Feel free to request new features *or make a pull request if you're up for it!* 💪
+If you find this useful, please leave a ⭐. Feel free to request new features *or make a pull request if you're up for it!* 💪
+
+## Full documentation
+
+This README is just a quick launch, you can find the complete documentation [here](https://spotify-downloader.pjmeca.com).
 
 ## Usage
 

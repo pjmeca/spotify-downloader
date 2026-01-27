@@ -1,0 +1,11 @@
+mkdocs
+mkdocs-material
+mkdocs-awesome-nav
+mkdocs-open-in-new-tab
+
+# Python Markdown Extensions
+pygments
+pymdown-extensions
+
+# Image processing
+mkdocs-material[imaging]
