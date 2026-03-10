@@ -9,6 +9,15 @@ This Docker image periodically tracks new music from Spotify and downloads it us
 
 If you find this useful, please leave a ⭐. Feel free to request new features *or make a pull request if you're up for it!* 💪
 
+> [!WARNING]
+> **Recent Spotify Developer policy changes**
+>
+> Spotify has recently changed its **Spotify for Developers** policy and the API now requires the **app owner to have an active Spotify Premium subscription**.
+>
+> This affects how this project works and may cause it to stop functioning if the app owner does not have Premium.
+>
+> See the full discussion in **[#51](https://github.com/pjmeca/spotify-downloader/issues/51)**.
+
 ## Full documentation
 
 This README is just a quick launch, you can find the complete documentation [here](https://spotify-downloader.pjmeca.com).

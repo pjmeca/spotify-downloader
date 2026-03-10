@@ -16,6 +16,13 @@ hide:
 
 Spotify Downloader is a Docker image that tracks artists and playlists on Spotify and automatically downloads new music to your library using [spotDL](https://github.com/spotDL/spotify-downloader) and [yt-dlp](https://github.com/yt-dlp/yt-dlp). Tracks are sourced from YouTube and tagged with Spotify metadata, so everything lands neatly organized and ready to play.
 
+???+ warning "Recent Spotify Developer policy changes"
+    Spotify has recently changed its **Spotify for Developers** policy and the API now requires the **app owner to have an active Spotify Premium subscription**.
+
+    This affects how this project works and may cause it to stop functioning if the app owner does not have Premium.
+
+    See the full discussion in **[#51](https://github.com/pjmeca/spotify-downloader/issues/51)**.
+
 ## Why you will like it
 
 - 🚀 **Set it and forget it**: run on a schedule and keep your library updated.

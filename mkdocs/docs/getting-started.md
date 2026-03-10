@@ -21,6 +21,13 @@ Copy the **Client ID** and **Client Secret**. These values go into `CLIENT__ID` 
 
 Note: client credentials only allow access to **public** playlists.
 
+???+ warning "Spotify Developer policy changes (March 9, 2026)"
+    Spotify now requires the **app owner** to have an **active Spotify Premium subscription** for Development Mode Web API access. If the app owner does not have Premium, this project may stop working.
+
+    Spotify also introduced stricter Development Mode limits (for example, fewer supported endpoints/fields, one Client ID per developer, and up to five authorized users). These limits can affect functionality depending on your setup.
+
+    See the full discussion in **[#51](https://github.com/pjmeca/spotify-downloader/issues/51)**.
+
 ## 2) Create a tracking file
 
 Create a `tracking.yaml` file on your host:
