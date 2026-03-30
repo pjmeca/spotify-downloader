@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using SpotifyDownloader.Helpers;
@@ -17,6 +18,18 @@ public interface IDownloadingService
 public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration,
     ISpotifyClientWrapper spotifyClient, IArtistsService artistsService, PlaylistsService playlistsService) : IDownloadingService
 {
+    private static readonly string[] SpotdlFailureMarkers =
+    [
+        "AudioProviderError:",
+        "DownloaderError:",
+        "FFmpegError:",
+        "LookupError:",
+        "MetadataError:",
+        "SpotifyError:"
+    ];
+
+    private static readonly Regex AnsiEscapeRegex = new(@"\x1B\[[0-?]*[ -/]*[@-~]", RegexOptions.Compiled);
+
     public async Task<DownloadResult> Download(TrackingInformation trackingInformation)
     {
         DownloadResult result = new();
@@ -262,62 +275,111 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         };
 
         using Process? process = Process.Start(startInfo);
-        if (process != null)
+        if (process is null)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-            var exitTask = process.WaitForExitAsync(cts.Token);
+            throw new SpotdlException("Failed to start spotdl process.");
+        }
 
-            var outputReadingTask = Task.Run(async () =>
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+        var exitTask = process.WaitForExitAsync(cts.Token);
+        var standardOutputLines = new List<string>();
+        var standardErrorLines = new List<string>();
+
+        var outputReadingTask = Task.Run(async () =>
+        {
+            while (!process.StandardOutput.EndOfStream)
             {
-                while (!process.StandardOutput.EndOfStream)
+                var line = await process.StandardOutput.ReadLineAsync();
+                if (!string.IsNullOrWhiteSpace(line))
                 {
-                    var line = await process.StandardOutput.ReadLineAsync();
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        logger.LogInformation("{output}", line);
-                    }
+                    standardOutputLines.Add(line);
+                    logger.LogInformation("{output}", line);
                 }
-            });
+            }
+        });
 
-            var errorReadingTask = Task.Run(async () =>
+        var errorReadingTask = Task.Run(async () =>
+        {
+            while (!process.StandardError.EndOfStream)
             {
-                while (!process.StandardError.EndOfStream)
+                var line = await process.StandardError.ReadLineAsync();
+                if (!string.IsNullOrWhiteSpace(line))
                 {
-                    var line = await process.StandardError.ReadLineAsync();
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        logger.LogError("{error}", line);
-                    }
+                    standardErrorLines.Add(line);
+                    logger.LogError("{error}", line);
                 }
-            });
+            }
+        });
 
-            // Wait for the process to finish or for the timeout to expire
+        // Wait for the process to finish or for the timeout to expire
+        try
+        {
+            // The process finished
+            await exitTask;
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            // Timeout
+            Try(() =>
+            {
+                if (!process.HasExited)
+                    process.Kill(entireProcessTree: true);
+            }).Ignore().Execute();
+
+            throw new TimeoutException("Process timeout: spotdl took too long and was terminated.");
+        }
+        finally
+        {
             try
             {
-                // The process finished
-                await exitTask;
+                await Task.WhenAll(outputReadingTask, errorReadingTask); // Ensure output was logged
             }
-            catch (OperationCanceledException) when (cts.IsCancellationRequested)
-            {
-                // Timeout
-                Try(() =>
-                {
-                    if (!process.HasExited)
-                        process.Kill(entireProcessTree: true);
-                }).Ignore().Execute();
+            catch { /* Ignore */ }
+        }
 
-                throw new TimeoutException("Process timeout: spotdl took too long and was terminated.");
-            }
-            finally
-            {
-                try
-                {
-                    await Task.WhenAll(outputReadingTask, errorReadingTask); // Ensure output was logged
-                }
-                catch { /* Ignore */ }
-            }
+        if (process.ExitCode != 0)
+        {
+            throw new SpotdlException($"spotdl failed with exit code {process.ExitCode}.");
+        }
+
+        var reportedFailure = GetSpotdlReportedFailure(standardOutputLines, standardErrorLines);
+        if (reportedFailure is not null)
+        {
+            throw new SpotdlException($"spotdl reported a download failure: {reportedFailure}");
         }
 
         logger.LogInformation("Downloaded \"{name}\".", loggingName);
+    }
+
+    private static string? GetSpotdlReportedFailure(IReadOnlyList<string> standardOutputLines, IReadOnlyList<string> standardErrorLines)
+    {
+        var allLines = standardOutputLines
+            .Concat(standardErrorLines)
+            .Select((line, index) => new
+            {
+                Index = index,
+                Clean = AnsiEscapeRegex.Replace(line, string.Empty).Trim()
+            })
+            .ToList();
+
+        foreach (var line in allLines)
+        {
+            if (!SpotdlFailureMarkers.Any(marker => line.Clean.Contains(marker, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            var details = new List<string> { line.Clean };
+            var nextLine = allLines.ElementAtOrDefault(line.Index + 1)?.Clean;
+            if (!string.IsNullOrWhiteSpace(nextLine) &&
+                Uri.IsWellFormedUriString(nextLine, UriKind.Absolute))
+            {
+                details.Add(nextLine);
+            }
+
+            return string.Join(Environment.NewLine, details);
+        }
+
+        return null;
     }
 }
