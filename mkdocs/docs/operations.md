@@ -74,7 +74,9 @@ You can delete the cache if needed. The app will rebuild it over time, but you m
 ???+ question "YT-DLP errors"
     YouTube tends to be the source of many issues due to frequent changes aimed at preventing scraping. If you encounter a YT-DLP error:
 
-    - Make sure you are using the latest image. You can check it out [here](https://github.com/pjmeca/spotify-downloader/releases/latest).
+    - By default, each cron run refreshes `yt-dlp` before downloading. Check the logs to confirm which `yt-dlp` version was used for the failing run.
+    - If you disabled updates with `YT_DLP_UPDATE_POLICY=never`, switch back to `before-run` or pin a known-good version.
+    - You can pin a version with `YT_DLP_UPDATE_POLICY=<version>` to stabilize a setup without rebuilding the image.
     - YouTube may be blocking your IP. Changing your IP (or using a different network) may resolve the issue.
     - It could be caused by a recent change on YouTube. Please check our [repo](https://github.com/pjmeca/spotify-downloader/issues) and open an issue so we can look into it as soon as possible.
 

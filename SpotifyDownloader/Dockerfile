@@ -35,6 +35,7 @@ ENV CLIENT__ID=
 ENV CLIENT__SECRET=
 ENV FORMAT="opus"
 ENV OPTIONS=
+ENV YT_DLP_UPDATE_POLICY="before-run"
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release

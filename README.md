@@ -46,6 +46,7 @@ services:
       TZ: Europe/Madrid # (Recommended) Your timezone
       FORMAT: "opus" # (Optional) Music format. Must be compatible with spotDL. Defaults to "opus".
       OPTIONS: "" # (Optional) Additional spotDL options. Don't add here your Spotify credentials.
+      YT_DLP_UPDATE_POLICY: "before-run" # (Optional) Use before-run, never, or pin a yt-dlp version such as 2026.03.17.
 ```
 
 Then run:

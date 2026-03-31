@@ -113,6 +113,7 @@ IHost Build()
         x.AddSingleton<IFileManagementService, FileManagementService>();
         x.AddSingleton<ITrackingService, TrackingService>();
         x.AddSingleton<IDownloadingService, DownloadingService>();
+        x.AddSingleton<IYtDlpService, YtDlpService>();
         x.AddScoped<IArtistsService, ArtistsService>();
         x.AddScoped<PlaylistsService>();
 

@@ -72,6 +72,7 @@ services:
       TZ: Europe/Madrid
       FORMAT: "opus"
       OPTIONS: ""
+      YT_DLP_UPDATE_POLICY: "before-run"
 ```
 
 Then start the container:

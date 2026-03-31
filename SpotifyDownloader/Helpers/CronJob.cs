@@ -8,7 +8,7 @@ namespace SpotifyDownloader.Helpers;
 
 public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<CronJob> logger, ApplicationDbContext dbContext,
     IFileManagementService fileManagmentService, ITrackingService trackingService, IDownloadingService downloadingService,
-    IArtistsService artistsService)
+    IArtistsService artistsService, IYtDlpService ytDlpService)
     : CronJobService(cronConfiguration.CronExpression, cronConfiguration.TimeZoneInfo, cronConfiguration.CronFormat)
 {
     public override async Task DoWork(CancellationToken cancellationToken)
@@ -16,6 +16,7 @@ public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<Cron
         try
         {
             logger.LogInformation("Job started");
+            await ytDlpService.EnsureReadyForRun(cancellationToken);
 
             var trackingInformation = trackingService.ReadTrackingInformation();
             

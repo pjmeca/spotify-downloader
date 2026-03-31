@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using SpotifyDownloader.Data;
 using SpotifyDownloader.Utils;
 
@@ -19,6 +19,7 @@ public class GlobalConfiguration
     public string SPOTIFY_CLIENT_SECRET { get; }
     public string FORMAT { get; }
     public string? OPTIONS { get; }
+    public string YT_DLP_UPDATE_POLICY { get; }
 
     public const string MUSIC_DIRECTORY = "/music";
     public const string ARTISTS_DIRECTORY = $"{MUSIC_DIRECTORY}/Artists";
@@ -33,5 +34,6 @@ public class GlobalConfiguration
         SPOTIFY_CLIENT_SECRET = configuration.GetSection("CLIENT").GetValue<string>("SECRET").ThrowExceptionIfNullOrWhiteSpace("CLIENT__SECRET", false);
         FORMAT = configuration.GetValue<string>("FORMAT").ThrowExceptionIfNullOrWhiteSpace("FORMAT", false);
         OPTIONS = configuration.GetValue<string?>("OPTIONS").ValueOrNull()?.Trim();
+        YT_DLP_UPDATE_POLICY = configuration.GetValue<string?>("YT_DLP_UPDATE_POLICY").ValueOrNull()?.Trim() ?? "before-run";
     }
 }

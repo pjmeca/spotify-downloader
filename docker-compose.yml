@@ -17,3 +17,4 @@ services:
       CLIENT__SECRET: "" # Required
       FORMAT: "opus" # Music format. Must be compatible with spotdl. Defaults to "opus".
       OPTIONS: "" # Additional spotdl options.
+      YT_DLP_UPDATE_POLICY: "before-run" # before-run, never, or a fixed yt-dlp version like 2026.03.17

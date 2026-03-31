@@ -11,6 +11,7 @@ Everything you need to configure and run the container, without the noise.
 | `CLIENT__SECRET` | yes | none | Spotify Client Secret. |
 | `FORMAT` | no | `opus` | Audio format for spotDL (ffmpeg-compatible). |
 | `OPTIONS` | no | empty | Extra spotDL flags. **Do not put credentials here.** |
+| `YT_DLP_UPDATE_POLICY` | no | `before-run` | `before-run` updates `yt-dlp` at the start of each scheduled run. `never` keeps the currently installed version. Any other value is treated as a fixed `yt-dlp` version to install before the run. |
 | `TZ` | no | container default | Time zone for scheduling. |
 | `DOTNET_ENVIRONMENT` or `ASPNETCORE_ENVIRONMENT` | no | none | Set to `Development` to run immediately on startup. |
 
