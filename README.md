@@ -22,6 +22,12 @@ If you find this useful, please leave a ⭐. Feel free to request new features *
 
 This README is just a quick launch, you can find the complete documentation [here](https://spotify-downloader.pjmeca.com).
 
+## Related projects
+
+This project works especially well together with [volume-normalizer](https://github.com/pjmeca/volume-normalizer), another Docker-based tool that I built to normalize the volume of your music library using ReplayGain.
+
+While `spotify-downloader` handles fetching and organizing your music, `volume-normalizer` takes care of keeping your library consistently balanced in terms of loudness, making both tools a good match for a complete self-hosted music pipeline.
+
 ## Usage
 
 The following `docker-compose` creates a container that downloads new music everyday at 00:00 AM.
