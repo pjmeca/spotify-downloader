@@ -12,6 +12,7 @@ The command includes:
 - `--format <FORMAT>`
 - `--threads <process thread count>`
 - `--client-id` and `--client-secret` (from your environment)
+- `--use-official-api`
 
 If `OPTIONS` does not include `--bitrate`, the container adds `--bitrate disable` by default.
 

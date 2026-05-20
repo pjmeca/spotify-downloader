@@ -252,7 +252,8 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
             .Append($"download {url}")
             .Append($" --format {configuration.FORMAT}")
             .Append($" --threads {Process.GetCurrentProcess().Threads.Count}")
-            .Append($" --client-id {configuration.SPOTIFY_CLIENT_ID} --client-secret {configuration.SPOTIFY_CLIENT_SECRET}");
+            .Append($" --client-id {configuration.SPOTIFY_CLIENT_ID} --client-secret {configuration.SPOTIFY_CLIENT_SECRET}")
+            .Append(" --use-official-api");
 
         if (configuration.OPTIONS is null || !configuration.OPTIONS.Contains("--bitrate"))
         {

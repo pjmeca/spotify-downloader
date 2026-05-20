@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python3 -m venv env && \
     /env/bin/pip install --no-cache-dir \
         yt-dlp==2026.03.17 \
-        spotdl==4.4.3
+        spotdl==4.5.0
 # Configure yt-dlp to use the GitHub EJS extractor
 RUN echo "--remote-components=ejs:github" > /etc/yt-dlp.conf
 WORKDIR /app
