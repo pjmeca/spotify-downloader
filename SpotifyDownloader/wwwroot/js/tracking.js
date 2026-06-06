@@ -5,6 +5,40 @@ const deleteModal = document.getElementById('delete-modal');
 const modeField = document.getElementById('mode-field');
 const entryMode = document.getElementById('entry-mode');
 const modals = document.querySelectorAll('dialog.modal');
+const scrollStateKey = 'tracking-editor-scroll-state';
+
+function getActiveTab() {
+    return document.querySelector('[data-tab-button].active')?.dataset.tabButton ?? 'artists';
+}
+
+function saveScrollState() {
+    sessionStorage.setItem(scrollStateKey, JSON.stringify({
+        tab: getActiveTab(),
+        scrollY: window.scrollY
+    }));
+}
+
+function restoreScrollState() {
+    const rawState = sessionStorage.getItem(scrollStateKey);
+    if (!rawState) {
+        return;
+    }
+
+    sessionStorage.removeItem(scrollStateKey);
+
+    try {
+        const state = JSON.parse(rawState);
+        if (state.tab) {
+            setActiveTab(state.tab);
+        }
+
+        if (Number.isFinite(state.scrollY)) {
+            requestAnimationFrame(() => window.scrollTo(0, state.scrollY));
+        }
+    } catch {
+        // Ignore stale or malformed state; it is only a UI convenience.
+    }
+}
 
 function closeModal(modal) {
     if (!modal.open || modal.classList.contains('closing')) {
@@ -34,6 +68,12 @@ function setActiveTab(tabName) {
 tabButtons.forEach((button) => {
     button.addEventListener('click', () => setActiveTab(button.dataset.tabButton));
 });
+
+document.querySelectorAll('form[method="post"]').forEach((form) => {
+    form.addEventListener('submit', saveScrollState);
+});
+
+restoreScrollState();
 
 document.querySelectorAll('[data-open-editor]').forEach((button) => {
     button.addEventListener('click', () => {

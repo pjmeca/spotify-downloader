@@ -9,8 +9,11 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
 {
     public TrackingInformation TrackingInformation { get; private set; } = new();
     public bool IsTrackingFileWritable { get; private set; }
-    public string? AlertMessage { get; private set; }
-    public bool AlertIsSuccess { get; private set; }
+    [TempData]
+    public string? AlertMessage { get; set; }
+
+    [TempData]
+    public bool AlertIsSuccess { get; set; }
 
     [BindProperty]
     public TrackingEntryInput Entry { get; set; } = new();
@@ -26,22 +29,22 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
     public IActionResult OnPostSave()
     {
         var result = trackingEditorService.SaveEntry(Entry);
-        LoadPageState(result);
-        return Page();
+        AlertMessage = result.Message;
+        AlertIsSuccess = result.Success;
+        return RedirectToPage();
     }
 
     public IActionResult OnPostDelete()
     {
         var result = trackingEditorService.DeleteEntry(DeleteEntryType, DeleteIndex);
-        LoadPageState(result);
-        return Page();
+        AlertMessage = result.Message;
+        AlertIsSuccess = result.Success;
+        return RedirectToPage();
     }
 
-    private void LoadPageState(TrackingEditorResult? result = null)
+    private void LoadPageState()
     {
         TrackingInformation = trackingEditorService.GetTrackingInformation();
         IsTrackingFileWritable = trackingEditorService.IsTrackingFileWritable();
-        AlertMessage = result?.Message;
-        AlertIsSuccess = result?.Success ?? false;
     }
 }
