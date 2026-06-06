@@ -37,11 +37,6 @@
                     @(Model.IsTrackingFileWritable ? "Writable" : "Read-only")
                 </div>
             </div>
-            <div class="hero-stats" aria-label="Tracking summary">
-                <span><strong>@artists.Count</strong> artists</span>
-                <span><strong>@playlists.Count</strong> playlists</span>
-                <span><strong>@(artists.Count(x => x.Refresh) + playlists.Count(x => x.Refresh))</strong> refreshed</span>
-            </div>
         </section>
 
         @if (!Model.IsTrackingFileWritable)
@@ -61,15 +56,15 @@
 
         <section class="panel">
             <div class="tabs" role="tablist" aria-label="Tracking sections">
-                <button class="tab active" type="button" data-tab-button="artists" role="tab" aria-selected="true">Artists</button>
-                <button class="tab" type="button" data-tab-button="playlists" role="tab" aria-selected="false">Playlists</button>
+                <button class="tab active" type="button" data-tab-button="artists" role="tab" aria-selected="true">Artists (@artists.Count)</button>
+                <button class="tab" type="button" data-tab-button="playlists" role="tab" aria-selected="false">Playlists (@playlists.Count)</button>
             </div>
 
             <section class="tab-panel active" data-tab-panel="artists" role="tabpanel">
                 <div class="section-header">
                     <div>
                         <h2>Artists</h2>
-                        <p>@artists.Count tracked artist@(artists.Count == 1 ? string.Empty : "s") · new albums are discovered from Spotify and saved under your artists folder.</p>
+                        <p>New albums are discovered from Spotify and saved under your artists folder.</p>
                     </div>
                     <button class="primary-action" type="button" data-open-editor data-entry-type="Artist">+ Add artist</button>
                 </div>
@@ -101,7 +96,7 @@
                 <div class="section-header">
                     <div>
                         <h2>Playlists</h2>
-                        <p>@playlists.Count tracked playlist@(playlists.Count == 1 ? string.Empty : "s") · choose whether scheduled runs only add tracks or fully mirror Spotify.</p>
+                        <p>Choose whether scheduled runs only add tracks or fully mirror Spotify.</p>
                     </div>
                     <button class="primary-action" type="button" data-open-editor data-entry-type="Playlist">+ Add playlist</button>
                 </div>

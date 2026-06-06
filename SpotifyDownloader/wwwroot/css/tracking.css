@@ -77,8 +77,7 @@ code {
 }
 
 .hero-topline,
-.resource-links,
-.hero-stats {
+.resource-links {
     display: flex;
     align-items: center;
     gap: .75rem;
@@ -179,25 +178,6 @@ h1 {
     font-weight: 800;
     text-transform: uppercase;
     box-shadow: 0 12px 32px rgb(29 185 84 / 18%);
-}
-
-.hero-stats {
-    position: relative;
-    z-index: 1;
-    flex-wrap: wrap;
-    margin-top: 1.25rem;
-}
-
-.hero-stats span {
-    color: var(--muted);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: rgb(0 0 0 / 22%);
-    padding: .6rem .85rem;
-}
-
-.hero-stats strong {
-    color: var(--text);
 }
 
 .status-ok {
