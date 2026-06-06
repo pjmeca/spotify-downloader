@@ -26,6 +26,7 @@ public class GlobalConfiguration
     public const string PLAYLISTS_DIRECTORY = $"{MUSIC_DIRECTORY}/Playlists";
 
     public const string DB_PATH = "/app/cache/application.db";
+    public const string DATA_PROTECTION_KEYS_DIRECTORY = "/app/cache/data-protection-keys";
 
     public GlobalConfiguration(IConfiguration configuration)
     {

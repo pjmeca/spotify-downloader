@@ -1,5 +1,6 @@
 using EasyCronJob.Core;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -105,6 +106,10 @@ WebApplication Build()
     });
     builder.Services.AddRazorPages();
     builder.Services.AddHealthChecks();
+    Directory.CreateDirectory(GlobalConfiguration.DATA_PROTECTION_KEYS_DIRECTORY);
+    builder.Services.AddDataProtection()
+        .SetApplicationName("spotify-downloader")
+        .PersistKeysToFileSystem(new DirectoryInfo(GlobalConfiguration.DATA_PROTECTION_KEYS_DIRECTORY));
 
     builder.Services.AddSingleton<GlobalConfiguration>();
 

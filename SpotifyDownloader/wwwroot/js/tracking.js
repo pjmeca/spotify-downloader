@@ -3,6 +3,20 @@ const tabPanels = document.querySelectorAll('[data-tab-panel]');
 const entryModal = document.getElementById('entry-modal');
 const deleteModal = document.getElementById('delete-modal');
 const modeField = document.getElementById('mode-field');
+const modals = document.querySelectorAll('dialog.modal');
+
+function closeModal(modal) {
+    if (!modal.open || modal.classList.contains('closing')) {
+        return;
+    }
+
+    modal.classList.add('closing');
+
+    window.setTimeout(() => {
+        modal.classList.remove('closing');
+        modal.close();
+    }, 140);
+}
 
 function setActiveTab(tabName) {
     tabButtons.forEach((button) => {
@@ -54,6 +68,24 @@ document.querySelectorAll('[data-open-delete]').forEach((button) => {
 
 document.querySelectorAll('[data-close-modal]').forEach((button) => {
     button.addEventListener('click', () => {
-        button.closest('dialog').close();
+        closeModal(button.closest('dialog'));
+    });
+});
+
+modals.forEach((modal) => {
+    modal.addEventListener('click', (event) => {
+        if (event.target !== modal) {
+            return;
+        }
+
+        const rect = modal.getBoundingClientRect();
+        const isBackdropClick = event.clientX < rect.left
+            || event.clientX > rect.right
+            || event.clientY < rect.top
+            || event.clientY > rect.bottom;
+
+        if (isBackdropClick) {
+            closeModal(modal);
+        }
     });
 });

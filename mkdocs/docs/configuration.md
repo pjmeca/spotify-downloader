@@ -21,7 +21,7 @@ Everything you need to configure and run the container, without the noise.
 | --- | --- | --- |
 | `/music` | yes | Download destination. |
 | `/app/tracking.yaml` | yes | Tracking config. Use read-only for manual editing, or writable when using the web UI to save changes. |
-| `/app/cache` | no | SQLite cache to persist state. |
+| `/app/cache` | no | SQLite cache and ASP.NET Data Protection keys. Persist this path to keep web UI antiforgery tokens valid across container recreations. |
 | `/app/logs` | no | Log files. |
 
 On disk, files are organized like this:
