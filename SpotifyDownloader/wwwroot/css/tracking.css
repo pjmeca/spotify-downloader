@@ -47,6 +47,10 @@ code {
     padding: .1rem .35rem;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 .shell {
     width: min(1100px, calc(100% - 2rem));
     margin: 0 auto;

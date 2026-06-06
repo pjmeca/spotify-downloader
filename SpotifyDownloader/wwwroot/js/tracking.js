@@ -3,6 +3,7 @@ const tabPanels = document.querySelectorAll('[data-tab-panel]');
 const entryModal = document.getElementById('entry-modal');
 const deleteModal = document.getElementById('delete-modal');
 const modeField = document.getElementById('mode-field');
+const entryMode = document.getElementById('entry-mode');
 const modals = document.querySelectorAll('dialog.modal');
 
 function closeModal(modal) {
@@ -46,7 +47,8 @@ document.querySelectorAll('[data-open-editor]').forEach((button) => {
         document.getElementById('entry-name').value = button.dataset.name ?? '';
         document.getElementById('entry-url').value = button.dataset.url ?? '';
         document.getElementById('entry-refresh').checked = button.dataset.refresh === undefined ? true : button.dataset.refresh === 'true';
-        document.getElementById('entry-mode').value = button.dataset.mode ?? 'Add';
+        entryMode.value = button.dataset.mode ?? 'Add';
+        entryMode.disabled = !isPlaylist;
         modeField.hidden = !isPlaylist;
 
         entryModal.showModal();

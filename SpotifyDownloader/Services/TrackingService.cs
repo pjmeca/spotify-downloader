@@ -48,6 +48,7 @@ public class TrackingService(ILogger<TrackingService> logger) : ITrackingService
         var serializer = new SerializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .WithTypeConverter(new PlaylistDownloadModeYamlConverter())
+            .WithIndentedSequences()
             .DisableAliases()
             .Build();
 
