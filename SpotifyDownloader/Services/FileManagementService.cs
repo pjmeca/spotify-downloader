@@ -16,6 +16,11 @@ public interface IFileManagementService
     /// Groups tracks by albums in the file system. If an album only has one track, it won't be moved.
     /// </summary>
     void OrganizeArtists(IEnumerable<string> artistsNames);
+
+    /// <summary>
+    /// Renames the local directory for a tracked artist or playlist.
+    /// </summary>
+    void RenameTrackedItemDirectory(TrackingEntryType entryType, string oldName, string newName);
 }
 
 public class FileManagementService(ILogger<FileManagementService> logger) : IFileManagementService
@@ -192,5 +197,30 @@ public class FileManagementService(ILogger<FileManagementService> logger) : IFil
 
             logger.LogInformation("Organized artist \"{name}\".", artistName);
         }
+    }
+
+    public void RenameTrackedItemDirectory(TrackingEntryType entryType, string oldName, string newName)
+    {
+        var sanitizedOldName = oldName.ToValidPathString();
+        var sanitizedNewName = newName.ToValidPathString();
+        if (sanitizedOldName == sanitizedNewName)
+        {
+            return;
+        }
+
+        var baseDirectory = entryType == TrackingEntryType.Artist
+            ? GlobalConfiguration.ARTISTS_DIRECTORY
+            : GlobalConfiguration.PLAYLISTS_DIRECTORY;
+        var source = Path.Combine(baseDirectory, sanitizedOldName);
+        var destination = Path.Combine(baseDirectory, sanitizedNewName);
+
+        if (!Directory.Exists(source))
+        {
+            logger.LogInformation("Directory for {entryType} \"{name}\" does not exist yet. Skipping rename.", entryType, sanitizedOldName);
+            return;
+        }
+
+        logger.LogInformation("Renaming {entryType} directory from \"{source}\" to \"{destination}\".", entryType, source, destination);
+        DirectoryUtils.MoveAndMerge(source, destination, logger);
     }
 }

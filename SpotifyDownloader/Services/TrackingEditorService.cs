@@ -10,7 +10,7 @@ public interface ITrackingEditorService
     TrackingEditorResult DeleteEntry(TrackingEntryType entryType, int index);
 }
 
-public class TrackingEditorService(ITrackingService trackingService) : ITrackingEditorService
+public class TrackingEditorService(ITrackingService trackingService, IFileManagementService fileManagementService) : ITrackingEditorService
 {
     public TrackingInformation GetTrackingInformation() => trackingService.ReadTrackingInformation();
 
@@ -27,9 +27,12 @@ public class TrackingEditorService(ITrackingService trackingService) : ITracking
         try
         {
             var trackingInformation = trackingService.ReadTrackingInformation();
+            string? previousName = null;
+            bool oldNameStillInUse;
 
             if (input.EntryType == TrackingEntryType.Artist)
             {
+                previousName = GetPreviousName(trackingInformation.Artists, input.Index);
                 var artist = new TrackingInformation.ArtistItem
                 {
                     Name = input.Name.Trim(),
@@ -38,9 +41,11 @@ public class TrackingEditorService(ITrackingService trackingService) : ITracking
                 };
 
                 Upsert(trackingInformation.Artists, input.Index, artist);
+                oldNameStillInUse = IsNameInUse(trackingInformation.Artists, previousName);
             }
             else
             {
+                previousName = GetPreviousName(trackingInformation.Playlists, input.Index);
                 var playlist = new TrackingInformation.PlaylistItem
                 {
                     Name = input.Name.Trim(),
@@ -50,6 +55,12 @@ public class TrackingEditorService(ITrackingService trackingService) : ITracking
                 };
 
                 Upsert(trackingInformation.Playlists, input.Index, playlist);
+                oldNameStillInUse = IsNameInUse(trackingInformation.Playlists, previousName);
+            }
+
+            if (previousName is not null && !oldNameStillInUse)
+            {
+                fileManagementService.RenameTrackedItemDirectory(input.EntryType, previousName, input.Name);
             }
 
             trackingService.WriteTrackingInformation(trackingInformation);
@@ -97,6 +108,26 @@ public class TrackingEditorService(ITrackingService trackingService) : ITracking
         {
             return new TrackingEditorResult(false, "tracking.yaml could not be saved. Check that the file exists and is mounted writable (Docker users should remove :ro from the /app/tracking.yaml mount).");
         }
+    }
+
+    private static string? GetPreviousName<T>(IList<T> items, int? index) where T : TrackingInformation.BaseItem
+    {
+        if (index is null)
+        {
+            return null;
+        }
+
+        if (index.Value < 0 || index.Value >= items.Count)
+        {
+            throw new IOException("The selected tracking entry no longer exists.");
+        }
+
+        return items[index.Value].Name;
+    }
+
+    private static bool IsNameInUse<T>(IEnumerable<T> items, string? name) where T : TrackingInformation.BaseItem
+    {
+        return name is not null && items.Any(x => x.Name == name);
     }
 
     private static string? Validate(TrackingEntryInput input)
