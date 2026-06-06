@@ -20,7 +20,7 @@ public class TrackingEntryInput
     public string Url { get; set; } = string.Empty;
 
     public bool Refresh { get; set; } = true;
-    public PlaylistDownloadMode Mode { get; set; } = PlaylistDownloadMode.Add;
+    public PlaylistDownloadMode Mode { get; set; } = PlaylistDownloadMode.Full;
 }
 
 public record TrackingEditorResult(bool Success, string Message);

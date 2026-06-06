@@ -42,6 +42,12 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
         return RedirectToPage();
     }
 
+    public static string GetPlaylistModeLabel(PlaylistDownloadMode mode) => mode switch
+    {
+        PlaylistDownloadMode.Full => "Mirrors Spotify",
+        _ => "Downloads new songs only"
+    };
+
     private void LoadPageState()
     {
         TrackingInformation = trackingEditorService.GetTrackingInformation();

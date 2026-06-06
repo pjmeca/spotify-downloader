@@ -4,6 +4,8 @@ const entryModal = document.getElementById('entry-modal');
 const deleteModal = document.getElementById('delete-modal');
 const modeField = document.getElementById('mode-field');
 const entryMode = document.getElementById('entry-mode');
+const entryNameHint = document.getElementById('entry-name-hint');
+const entryUrlHint = document.getElementById('entry-url-hint');
 const modals = document.querySelectorAll('dialog.modal');
 const scrollStateKey = 'tracking-editor-scroll-state';
 
@@ -82,12 +84,18 @@ document.querySelectorAll('[data-open-editor]').forEach((button) => {
         const isEdit = button.dataset.index !== undefined;
 
         document.getElementById('entry-modal-title').textContent = `${isEdit ? 'Edit' : 'Add'} ${entryType.toLowerCase()}`;
+        entryNameHint.textContent = isPlaylist
+            ? 'The folder name used under Playlists.'
+            : 'The folder name used under Artists.';
+        entryUrlHint.textContent = isPlaylist
+            ? 'Paste the Spotify playlist URL exactly as it appears in your browser.'
+            : 'Paste the Spotify artist URL exactly as it appears in your browser.';
         document.getElementById('entry-type').value = entryType;
         document.getElementById('entry-index').value = button.dataset.index ?? '';
         document.getElementById('entry-name').value = button.dataset.name ?? '';
         document.getElementById('entry-url').value = button.dataset.url ?? '';
         document.getElementById('entry-refresh').checked = button.dataset.refresh === undefined ? true : button.dataset.refresh === 'true';
-        entryMode.value = button.dataset.mode ?? 'Add';
+        entryMode.value = button.dataset.mode ?? 'Full';
         entryMode.disabled = !isPlaylist;
         modeField.hidden = !isPlaylist;
 

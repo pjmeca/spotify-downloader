@@ -81,7 +81,7 @@
                             <div class="entry-copy">
                                 <h3>@artist.Name</h3>
                                 <a href="@artist.Url" target="_blank" rel="noopener noreferrer">@artist.Url</a>
-                                <span class="metadata"><span class="dot @(artist.Refresh ? "dot-on" : "dot-off")"></span>Refresh on scheduled runs: @(artist.Refresh ? "yes" : "no")</span>
+                                <span class="metadata"><span class="dot @(artist.Refresh ? "dot-on" : "dot-off")"></span>Update automatically: @(artist.Refresh ? "yes" : "no")</span>
                             </div>
                             <div class="entry-actions">
                                 <button type="button" data-open-editor data-entry-type="Artist" data-index="@i" data-name="@artist.Name" data-url="@artist.Url" data-refresh="@artist.Refresh.ToString().ToLowerInvariant()">Edit</button>
@@ -113,7 +113,7 @@
                             <div class="entry-copy">
                                 <h3>@playlist.Name</h3>
                                 <a href="@playlist.Url" target="_blank" rel="noopener noreferrer">@playlist.Url</a>
-                                <span class="metadata"><span class="dot @(playlist.Refresh ? "dot-on" : "dot-off")"></span>Refresh: @(playlist.Refresh ? "yes" : "no") · Mode: @playlist.Mode.ToString().ToLowerInvariant()</span>
+                                <span class="metadata"><span class="dot @(playlist.Refresh ? "dot-on" : "dot-off")"></span>Update automatically: @(playlist.Refresh ? "yes" : "no") · @IndexModel.GetPlaylistModeLabel(playlist.Mode)</span>
                             </div>
                             <div class="entry-actions">
                                 <button type="button" data-open-editor data-entry-type="Playlist" data-index="@i" data-name="@playlist.Name" data-url="@playlist.Url" data-refresh="@playlist.Refresh.ToString().ToLowerInvariant()" data-mode="@playlist.Mode">Edit</button>
@@ -136,27 +136,26 @@
             </header>
             <label>
                 Name
-                <span class="field-hint">A friendly folder name for this tracked item.</span>
+                <span class="field-hint" id="entry-name-hint">A friendly folder name for this tracked item.</span>
                 <input asp-for="Entry.Name" id="entry-name" autocomplete="off" required />
             </label>
             <label>
                 URL
-                <span class="field-hint">Paste the Spotify artist or playlist URL exactly as it appears in your browser.</span>
+                <span class="field-hint" id="entry-url-hint">Paste the Spotify URL exactly as it appears in your browser.</span>
                 <input asp-for="Entry.Url" id="entry-url" type="url" required />
             </label>
             <label class="checkbox-row">
                 <input asp-for="Entry.Refresh" id="entry-refresh" checked />
                 <span>
-                    Refresh on scheduled runs
-                    <small>When enabled, the cron job checks this item again. Turn it off to keep already-downloaded music untouched.</small>
+                    Update automatically
+                    <small>When enabled, the scheduled downloader checks this item again. Turn it off to keep already-downloaded music untouched.</small>
                 </span>
             </label>
             <label id="mode-field">
-                Mode
-                <span class="field-hint"><strong>add</strong> downloads missing tracks only. <strong>full</strong> also removes local playlist tracks that no longer exist on Spotify.</span>
+                Playlist updates
                 <select asp-for="Entry.Mode" id="entry-mode">
-                    <option value="Add">add</option>
-                    <option value="Full">full</option>
+                    <option value="Full">Mirror Spotify and remove deleted songs</option>
+                    <option value="Add">Download new songs only</option>
                 </select>
             </label>
             <footer class="modal-actions">
