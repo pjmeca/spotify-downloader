@@ -6,9 +6,11 @@ services:
     build: ./SpotifyDownloader
     container_name: spotify-downloader
     restart: unless-stopped
+    ports:
+      - "8080:8080"
     volumes:
       - ./Music:/music
-      - ./tracking.yaml:/app/tracking.yaml:ro
+      - ./tracking.yaml:/app/tracking.yaml
       - ./app/cache:/app/cache
       - ./app/logs:/app/logs
     environment:

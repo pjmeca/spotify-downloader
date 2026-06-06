@@ -1,4 +1,7 @@
 using EasyCronJob.Core;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,11 +72,11 @@ catch (Exception ex)
     Environment.FailFast("Stopped program because of exception", ex);
 }
 
-IHost Build()
+WebApplication Build()
 {
-    var builder = Host.CreateDefaultBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
-    builder.ConfigureAppConfiguration((context, config) =>
+    builder.Host.ConfigureAppConfiguration((context, config) =>
     {
         var env = context.HostingEnvironment;
         config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -81,50 +84,58 @@ IHost Build()
               .AddEnvironmentVariables();
     });
 
-    builder.ConfigureServices(x =>
+    builder.Services.AddSerilog(config =>
     {
-        x.AddSerilog(config =>
-        {
-            config
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
-                .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .Enrich.WithMachineName()
-                .Enrich.WithEnvironmentName()
-                .WriteTo.Console()
-                .WriteTo.File("/app/logs/debug-.log", restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug, rollingInterval: RollingInterval.Day, fileSizeLimitBytes: null, retainedFileCountLimit: 5)
-                .WriteTo.File("/app/logs/info-.log", restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information, rollingInterval: RollingInterval.Day, fileSizeLimitBytes: null, retainedFileCountLimit: 31)
-                .WriteTo.File("/app/logs/error-.log", restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error, rollingInterval: RollingInterval.Day, fileSizeLimitBytes: null, retainedFileCountLimit: 31);
-        });
+        config
+            .MinimumLevel.Debug()
+            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+            .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
+            .Enrich.FromLogContext()
+            .Enrich.WithMachineName()
+            .Enrich.WithEnvironmentName()
+            .WriteTo.Console()
+            .WriteTo.File("/app/logs/debug-.log", restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug, rollingInterval: RollingInterval.Day, fileSizeLimitBytes: null, retainedFileCountLimit: 5)
+            .WriteTo.File("/app/logs/info-.log", restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information, rollingInterval: RollingInterval.Day, fileSizeLimitBytes: null, retainedFileCountLimit: 31)
+            .WriteTo.File("/app/logs/error-.log", restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error, rollingInterval: RollingInterval.Day, fileSizeLimitBytes: null, retainedFileCountLimit: 31);
+    });
 
-        x.AddSingleton<GlobalConfiguration>();
+    builder.Services.Configure<RouteOptions>(options =>
+    {
+        options.LowercaseUrls = true;
+    });
+    builder.Services.AddRazorPages();
+    builder.Services.AddHealthChecks();
 
-        x.AddDbContext<ApplicationDbContext>();
+    builder.Services.AddSingleton<GlobalConfiguration>();
 
-        var config = SpotifyClientConfig
-            .CreateDefault()
-            .WithAuthenticator(new ClientCredentialsAuthenticator(
-                SPOTIFY_CLIENT_ID,
-                SPOTIFY_CLIENT_SECRET));
-        x.AddSingleton(new SpotifyClient(config));
-        x.AddScoped<ISpotifyClientWrapper, SpotifyClientWrapper>();
+    builder.Services.AddDbContext<ApplicationDbContext>();
 
-        x.AddSingleton<IFileManagementService, FileManagementService>();
-        x.AddSingleton<ITrackingService, TrackingService>();
-        x.AddSingleton<IDownloadingService, DownloadingService>();
-        x.AddSingleton<IYtDlpService, YtDlpService>();
-        x.AddScoped<IArtistsService, ArtistsService>();
-        x.AddScoped<PlaylistsService>();
+    var config = SpotifyClientConfig
+        .CreateDefault()
+        .WithAuthenticator(new ClientCredentialsAuthenticator(
+            SPOTIFY_CLIENT_ID,
+            SPOTIFY_CLIENT_SECRET));
+    builder.Services.AddSingleton(new SpotifyClient(config));
+    builder.Services.AddScoped<ISpotifyClientWrapper, SpotifyClientWrapper>();
 
-        x.ApplyResulation<CronJob>(options =>
-        {
-            options.CronExpression = CRON_SCHEDULE;
-            options.TimeZoneInfo = TimeZoneInfo.Local;
-            options.CronFormat = Cronos.CronFormat.Standard;
-        });
+    builder.Services.AddSingleton<IFileManagementService, FileManagementService>();
+    builder.Services.AddSingleton<ITrackingService, TrackingService>();
+    builder.Services.AddSingleton<ITrackingEditorService, TrackingEditorService>();
+    builder.Services.AddSingleton<IDownloadingService, DownloadingService>();
+    builder.Services.AddSingleton<IYtDlpService, YtDlpService>();
+    builder.Services.AddScoped<IArtistsService, ArtistsService>();
+    builder.Services.AddScoped<PlaylistsService>();
+
+    builder.Services.ApplyResulation<CronJob>(options =>
+    {
+        options.CronExpression = CRON_SCHEDULE;
+        options.TimeZoneInfo = TimeZoneInfo.Local;
+        options.CronFormat = Cronos.CronFormat.Standard;
     });
 
     var app = builder.Build();
+    app.UseStaticFiles();
+    app.MapRazorPages();
+    app.MapHealthChecks("/health");
     return app;
 }

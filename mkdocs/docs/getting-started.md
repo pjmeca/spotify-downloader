@@ -60,9 +60,11 @@ services:
     image: pjmeca/spotify-downloader:latest
     container_name: spotify-downloader
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080" # Optional web UI
     volumes:
       - /your/main/music/path:/music
-      - /path/to/tracking.yaml:/app/tracking.yaml:ro
+      - /path/to/tracking.yaml:/app/tracking.yaml
       - /path/to/cache:/app/cache
       - /path/to/logs:/app/logs
     environment:
@@ -75,10 +77,14 @@ services:
       YT_DLP_UPDATE_POLICY: "before-run"
 ```
 
+Mount `tracking.yaml` without `:ro` if you want to use the web UI to save edits. If you only edit the file manually, you can keep using `/path/to/tracking.yaml:/app/tracking.yaml:ro`.
+
 Then start the container:
 
 ```bash
 docker compose up -d
 ```
+
+Open <http://localhost:8080> to use the optional web UI, or continue editing `tracking.yaml` manually.
 
 If you want to build the image locally instead of pulling from Docker Hub, see [Advanced](advanced.md).

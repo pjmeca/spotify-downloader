@@ -20,7 +20,7 @@ Everything you need to configure and run the container, without the noise.
 | Container path | Required | Purpose |
 | --- | --- | --- |
 | `/music` | yes | Download destination. |
-| `/app/tracking.yaml` | yes | Tracking config (read-only). |
+| `/app/tracking.yaml` | yes | Tracking config. Use read-only for manual editing, or writable when using the web UI to save changes. |
 | `/app/cache` | no | SQLite cache to persist state. |
 | `/app/logs` | no | Log files. |
 
@@ -35,6 +35,26 @@ On disk, files are organized like this:
   /Playlists
     /Playlist Name
       track.ext
+```
+
+## Optional web UI
+
+The app serves a Razor Pages web UI on port `8080`. Publish the port in Docker Compose, then open `http://localhost:8080` to manage tracked artists and playlists. The UI validates that names and URLs are present, checks that URLs are parseable absolute URIs, and persists changes back to `tracking.yaml` when the file is writable.
+
+If `tracking.yaml` does not appear writable, the page remains available as a read-only view and shows a warning. To enable UI edits in Docker, mount `/app/tracking.yaml` without `:ro`:
+
+```yaml
+ports:
+  - "127.0.0.1:8080:8080"
+volumes:
+  - /path/to/tracking.yaml:/app/tracking.yaml
+```
+
+If you do not want UI-based editing, you can keep the existing read-only mount:
+
+```yaml
+volumes:
+  - /path/to/tracking.yaml:/app/tracking.yaml:ro
 ```
 
 ## tracking.yaml

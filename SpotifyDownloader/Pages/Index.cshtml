@@ -1,0 +1,169 @@
+@page
+@model IndexModel
+@{
+    var artists = Model.TrackingInformation.Artists;
+    var playlists = Model.TrackingInformation.Playlists;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>spotify-downloader tracking</title>
+    <link rel="stylesheet" href="~/css/tracking.css" asp-append-version="true" />
+</head>
+<body>
+    <main class="shell">
+        <section class="hero">
+            <p class="eyebrow">spotify-downloader</p>
+            <div class="hero-title-row">
+                <div>
+                    <h1>Tracked music</h1>
+                    <p>Manage the artists and playlists stored in <code>tracking.yaml</code>.</p>
+                </div>
+                <div class="status-pill @(Model.IsTrackingFileWritable ? "status-ok" : "status-warning")">
+                    @(Model.IsTrackingFileWritable ? "Writable" : "Read-only")
+                </div>
+            </div>
+        </section>
+
+        @if (!Model.IsTrackingFileWritable)
+        {
+            <section class="warning-banner" role="alert">
+                <strong><code>tracking.yaml</code> does not appear to be writable.</strong>
+                <span>You can still view tracked artists and playlists, but changes may not be saved. If you are using Docker, mount <code>/app/tracking.yaml</code> without <code>:ro</code> to enable editing.</span>
+            </section>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.AlertMessage))
+        {
+            <section class="alert @(Model.AlertIsSuccess ? "alert-success" : "alert-error")" role="alert">
+                @Model.AlertMessage
+            </section>
+        }
+
+        <section class="panel">
+            <div class="tabs" role="tablist" aria-label="Tracking sections">
+                <button class="tab active" type="button" data-tab-button="artists" role="tab" aria-selected="true">Artists</button>
+                <button class="tab" type="button" data-tab-button="playlists" role="tab" aria-selected="false">Playlists</button>
+            </div>
+
+            <section class="tab-panel active" data-tab-panel="artists" role="tabpanel">
+                <div class="section-header">
+                    <div>
+                        <h2>Artists</h2>
+                        <p>@artists.Count tracked artist@(artists.Count == 1 ? string.Empty : "s")</p>
+                    </div>
+                    <button class="primary-action" type="button" data-open-editor data-entry-type="Artist">+ Add artist</button>
+                </div>
+
+                <div class="entry-list">
+                    @if (artists.Count == 0)
+                    {
+                        <p class="empty-state">No tracked artists yet.</p>
+                    }
+                    @for (var i = 0; i < artists.Count; i++)
+                    {
+                        var artist = artists[i];
+                        <article class="entry-card">
+                            <div class="entry-copy">
+                                <h3>@artist.Name</h3>
+                                <a href="@artist.Url" target="_blank" rel="noopener noreferrer">@artist.Url</a>
+                                <span class="metadata">Refresh: @(artist.Refresh ? "yes" : "no")</span>
+                            </div>
+                            <div class="entry-actions">
+                                <button type="button" data-open-editor data-entry-type="Artist" data-index="@i" data-name="@artist.Name" data-url="@artist.Url" data-refresh="@artist.Refresh.ToString().ToLowerInvariant()">Edit</button>
+                                <button class="danger" type="button" data-open-delete data-entry-type="Artist" data-index="@i" data-name="@artist.Name">Delete</button>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </section>
+
+            <section class="tab-panel" data-tab-panel="playlists" role="tabpanel">
+                <div class="section-header">
+                    <div>
+                        <h2>Playlists</h2>
+                        <p>@playlists.Count tracked playlist@(playlists.Count == 1 ? string.Empty : "s")</p>
+                    </div>
+                    <button class="primary-action" type="button" data-open-editor data-entry-type="Playlist">+ Add playlist</button>
+                </div>
+
+                <div class="entry-list">
+                    @if (playlists.Count == 0)
+                    {
+                        <p class="empty-state">No tracked playlists yet.</p>
+                    }
+                    @for (var i = 0; i < playlists.Count; i++)
+                    {
+                        var playlist = playlists[i];
+                        <article class="entry-card">
+                            <div class="entry-copy">
+                                <h3>@playlist.Name</h3>
+                                <a href="@playlist.Url" target="_blank" rel="noopener noreferrer">@playlist.Url</a>
+                                <span class="metadata">Refresh: @(playlist.Refresh ? "yes" : "no") · Mode: @playlist.Mode.ToString().ToLowerInvariant()</span>
+                            </div>
+                            <div class="entry-actions">
+                                <button type="button" data-open-editor data-entry-type="Playlist" data-index="@i" data-name="@playlist.Name" data-url="@playlist.Url" data-refresh="@playlist.Refresh.ToString().ToLowerInvariant()" data-mode="@playlist.Mode">Edit</button>
+                                <button class="danger" type="button" data-open-delete data-entry-type="Playlist" data-index="@i" data-name="@playlist.Name">Delete</button>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <dialog class="modal" id="entry-modal">
+        <form method="post" asp-page-handler="Save" class="modal-card">
+            <input type="hidden" asp-for="Entry.EntryType" id="entry-type" />
+            <input type="hidden" asp-for="Entry.Index" id="entry-index" />
+            <header class="modal-header">
+                <h2 id="entry-modal-title">Add entry</h2>
+                <button type="button" class="ghost icon-button" data-close-modal aria-label="Close dialog">×</button>
+            </header>
+            <label>
+                Name
+                <input asp-for="Entry.Name" id="entry-name" autocomplete="off" required />
+            </label>
+            <label>
+                URL
+                <input asp-for="Entry.Url" id="entry-url" type="url" required />
+            </label>
+            <label class="checkbox-row">
+                <input asp-for="Entry.Refresh" id="entry-refresh" checked />
+                Refresh on scheduled runs
+            </label>
+            <label id="mode-field">
+                Mode
+                <select asp-for="Entry.Mode" id="entry-mode">
+                    <option value="Add">add</option>
+                    <option value="Full">full</option>
+                </select>
+            </label>
+            <footer class="modal-actions">
+                <button type="button" class="ghost" data-close-modal>Cancel</button>
+                <button type="submit" class="primary-action">Save</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <dialog class="modal" id="delete-modal">
+        <form method="post" asp-page-handler="Delete" class="modal-card">
+            <input type="hidden" asp-for="DeleteEntryType" id="delete-entry-type" />
+            <input type="hidden" asp-for="DeleteIndex" id="delete-index" />
+            <header class="modal-header">
+                <h2>Remove entry?</h2>
+                <button type="button" class="ghost icon-button" data-close-modal aria-label="Close dialog">×</button>
+            </header>
+            <p id="delete-copy" class="delete-copy"></p>
+            <footer class="modal-actions">
+                <button type="button" class="ghost" data-close-modal>Cancel</button>
+                <button type="submit" class="danger primary-danger">Confirm delete</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <script src="~/js/tracking.js" asp-append-version="true"></script>
+</body>
+</html>
