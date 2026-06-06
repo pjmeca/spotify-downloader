@@ -8,8 +8,9 @@ services:
     restart: unless-stopped
     volumes:
       - ./Music:/music
-      - ./app:/app
       - ./tracking.yaml:/app/tracking.yaml:ro
+      - ./app/cache:/app/cache
+      - ./app/logs:/app/logs
     environment:
       TZ: Europe/Madrid
       CRON_SCHEDULE: "0 0 * * *"
