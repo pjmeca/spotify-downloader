@@ -55,9 +55,16 @@ public class TrackingService(ILogger<TrackingService> logger) : ITrackingService
         var directory = Path.GetDirectoryName(trackingFile) ?? Directory.GetCurrentDirectory();
         Directory.CreateDirectory(directory);
 
-        var tempFile = Path.Combine(directory, $".{Path.GetFileName(trackingFile)}.{Guid.NewGuid():N}.tmp");
-        System.IO.File.WriteAllText(tempFile, yaml);
-        System.IO.File.Move(tempFile, trackingFile, true);
+        if (System.IO.File.Exists(trackingFile))
+        {
+            System.IO.File.WriteAllText(trackingFile, yaml);
+        }
+        else
+        {
+            var tempFile = Path.Combine(directory, $".{Path.GetFileName(trackingFile)}.{Guid.NewGuid():N}.tmp");
+            System.IO.File.WriteAllText(tempFile, yaml);
+            System.IO.File.Move(tempFile, trackingFile, true);
+        }
 
         logger.LogInformation("Tracking information written to {trackingFile}.", trackingFile);
     }
