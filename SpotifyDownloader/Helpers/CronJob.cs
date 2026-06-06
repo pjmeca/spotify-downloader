@@ -1,14 +1,14 @@
 ﻿using EasyCronJob.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SpotifyDownloader.Data;
 using SpotifyDownloader.Services;
 
 namespace SpotifyDownloader.Helpers;
 
-public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<CronJob> logger, ApplicationDbContext dbContext,
-    IFileManagementService fileManagmentService, ITrackingService trackingService, IDownloadingService downloadingService,
-    IArtistsService artistsService, IYtDlpService ytDlpService)
+public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<CronJob> logger, IServiceScopeFactory scopeFactory,
+    IFileManagementService fileManagmentService, ITrackingService trackingService, IYtDlpService ytDlpService)
     : CronJobService(cronConfiguration.CronExpression, cronConfiguration.TimeZoneInfo, cronConfiguration.CronFormat)
 {
     public override async Task DoWork(CancellationToken cancellationToken)
@@ -17,6 +17,11 @@ public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<Cron
         {
             logger.LogInformation("Job started");
             await ytDlpService.EnsureReadyForRun(cancellationToken);
+
+            using var scope = scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var downloadingService = scope.ServiceProvider.GetRequiredService<IDownloadingService>();
+            var artistsService = scope.ServiceProvider.GetRequiredService<IArtistsService>();
 
             var trackingInformation = trackingService.ReadTrackingInformation();
             

@@ -121,7 +121,7 @@ WebApplication Build()
     builder.Services.AddSingleton<IFileManagementService, FileManagementService>();
     builder.Services.AddSingleton<ITrackingService, TrackingService>();
     builder.Services.AddSingleton<ITrackingEditorService, TrackingEditorService>();
-    builder.Services.AddSingleton<IDownloadingService, DownloadingService>();
+    builder.Services.AddScoped<IDownloadingService, DownloadingService>();
     builder.Services.AddSingleton<IYtDlpService, YtDlpService>();
     builder.Services.AddScoped<IArtistsService, ArtistsService>();
     builder.Services.AddScoped<PlaylistsService>();
