@@ -24,6 +24,12 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
     [BindProperty]
     public int DeleteIndex { get; set; }
 
+    [BindProperty]
+    public TrackingEntryType ReorderEntryType { get; set; }
+
+    [BindProperty]
+    public string OrderedIndexes { get; set; } = string.Empty;
+
     public void OnGet() => LoadPageState();
 
     public IActionResult OnPostSave()
@@ -37,6 +43,18 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
     public IActionResult OnPostDelete()
     {
         var result = trackingEditorService.DeleteEntry(DeleteEntryType, DeleteIndex);
+        AlertMessage = result.Message;
+        AlertIsSuccess = result.Success;
+        return RedirectToPage();
+    }
+
+    public IActionResult OnPostReorder()
+    {
+        var orderedIndexes = OrderedIndexes
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(x => int.TryParse(x, out var index) ? index : -1)
+            .ToList();
+        var result = trackingEditorService.ReorderEntries(ReorderEntryType, orderedIndexes);
         AlertMessage = result.Message;
         AlertIsSuccess = result.Success;
         return RedirectToPage();

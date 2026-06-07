@@ -8,6 +8,11 @@ const entryNameHint = document.getElementById('entry-name-hint');
 const entryUrlHint = document.getElementById('entry-url-hint');
 const modals = document.querySelectorAll('dialog.modal');
 const scrollStateKey = 'tracking-editor-scroll-state';
+const orderModeKey = 'tracking-editor-order-mode';
+const orderToggles = document.querySelectorAll('[data-order-toggle]');
+const entryLists = document.querySelectorAll('[data-entry-list]');
+let draggedCard = null;
+let draggedList = null;
 
 function getActiveTab() {
     return document.querySelector('[data-tab-button].active')?.dataset.tabButton ?? 'artists';
@@ -42,6 +47,65 @@ function restoreScrollState() {
     }
 }
 
+function getOrderMode() {
+    return document.querySelector('[data-order-toggle]:checked') ? 'yaml' : 'alpha';
+}
+
+function getCardOrder(list) {
+    return Array.from(list.querySelectorAll('[data-entry-card]'))
+        .map((card) => card.dataset.yamlIndex)
+        .join(',');
+}
+
+function setDragState(card, enabled) {
+    card.draggable = enabled;
+}
+
+function applyOrderMode(mode) {
+    orderToggles.forEach((input) => {
+        input.checked = mode === 'yaml';
+    });
+
+    entryLists.forEach((list) => {
+        const cards = Array.from(list.querySelectorAll('[data-entry-card]'));
+        const sortedCards = cards.slice().sort((a, b) => {
+            if (mode === 'alpha') {
+                return (a.dataset.entryName ?? '').localeCompare(b.dataset.entryName ?? '', undefined, { sensitivity: 'base' });
+            }
+
+            return Number(a.dataset.yamlIndex) - Number(b.dataset.yamlIndex);
+        });
+
+        sortedCards.forEach((card) => {
+            setDragState(card, mode === 'yaml');
+            list.append(card);
+        });
+    });
+
+    document.body.dataset.orderMode = mode;
+}
+
+function getDragInsertBefore(list, y) {
+    const candidates = Array.from(list.querySelectorAll('[data-entry-card]:not(.dragging)'));
+    return candidates.reduce((closest, card) => {
+        const rect = card.getBoundingClientRect();
+        const offset = y - rect.top - rect.height / 2;
+
+        if (offset < 0 && offset > closest.offset) {
+            return { offset, card };
+        }
+
+        return closest;
+    }, { offset: Number.NEGATIVE_INFINITY, card: null }).card;
+}
+
+function submitReorder(list) {
+    const form = list.closest('[data-reorder-form]');
+    form.querySelector('[data-ordered-indexes]').value = getCardOrder(list);
+    saveScrollState();
+    form.requestSubmit();
+}
+
 function closeModal(modal) {
     if (!modal.open || modal.classList.contains('closing')) {
         return;
@@ -71,10 +135,74 @@ tabButtons.forEach((button) => {
     button.addEventListener('click', () => setActiveTab(button.dataset.tabButton));
 });
 
+orderToggles.forEach((input) => {
+    input.addEventListener('change', () => {
+        const mode = input.checked ? 'yaml' : 'alpha';
+        localStorage.setItem(orderModeKey, mode);
+        applyOrderMode(mode);
+    });
+});
+
+entryLists.forEach((list) => {
+    list.addEventListener('dragstart', (event) => {
+        if (getOrderMode() !== 'yaml') {
+            event.preventDefault();
+            return;
+        }
+
+        draggedCard = event.target.closest('[data-entry-card]');
+        if (!draggedCard) {
+            return;
+        }
+
+        list.dataset.orderBeforeDrag = getCardOrder(list);
+        draggedList = list;
+        draggedCard.classList.add('dragging');
+        event.dataTransfer.effectAllowed = 'move';
+    });
+
+    list.addEventListener('dragover', (event) => {
+        if (getOrderMode() !== 'yaml' || !draggedCard || draggedList !== list) {
+            return;
+        }
+
+        event.preventDefault();
+        const insertBefore = getDragInsertBefore(list, event.clientY);
+        if (insertBefore) {
+            list.insertBefore(draggedCard, insertBefore);
+        } else {
+            list.append(draggedCard);
+        }
+    });
+
+    list.addEventListener('drop', (event) => {
+        if (getOrderMode() !== 'yaml' || !draggedCard || draggedList !== list) {
+            return;
+        }
+
+        event.preventDefault();
+        if (list.dataset.orderBeforeDrag !== getCardOrder(list)) {
+            submitReorder(list);
+        }
+    });
+
+    list.addEventListener('dragend', () => {
+        draggedCard?.classList.remove('dragging');
+        draggedCard = null;
+        draggedList = null;
+        delete list.dataset.orderBeforeDrag;
+    });
+});
+
 document.querySelectorAll('form[method="post"]').forEach((form) => {
     form.addEventListener('submit', saveScrollState);
 });
 
+const savedOrderMode = localStorage.getItem(orderModeKey);
+applyOrderMode(savedOrderMode === 'alpha' || savedOrderMode === 'yaml' ? savedOrderMode : 'yaml');
+requestAnimationFrame(() => {
+    document.body.dataset.orderReady = 'true';
+});
 restoreScrollState();
 
 document.querySelectorAll('[data-open-editor]').forEach((button) => {

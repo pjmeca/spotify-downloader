@@ -8,6 +8,7 @@ public interface ITrackingEditorService
     bool IsTrackingFileWritable();
     TrackingEditorResult SaveEntry(TrackingEntryInput input);
     TrackingEditorResult DeleteEntry(TrackingEntryType entryType, int index);
+    TrackingEditorResult ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes);
 }
 
 public class TrackingEditorService(ITrackingService trackingService, IFileManagementService fileManagementService) : ITrackingEditorService
@@ -110,6 +111,29 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
     }
 
+    public TrackingEditorResult ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes)
+    {
+        try
+        {
+            var trackingInformation = trackingService.ReadTrackingInformation();
+            if (entryType == TrackingEntryType.Artist)
+            {
+                Reorder(trackingInformation.Artists, orderedIndexes);
+            }
+            else
+            {
+                Reorder(trackingInformation.Playlists, orderedIndexes);
+            }
+
+            trackingService.WriteTrackingInformation(trackingInformation);
+            return new TrackingEditorResult(true, "Order saved to tracking.yaml.");
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
+        {
+            return new TrackingEditorResult(false, "tracking.yaml could not be saved. Check that the file exists and is mounted writable (Docker users should remove :ro from the /app/tracking.yaml mount).");
+        }
+    }
+
     private static string? GetPreviousName<T>(IList<T> items, int? index) where T : TrackingInformation.BaseItem
     {
         if (index is null)
@@ -164,5 +188,30 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
 
         items[index.Value] = value;
+    }
+
+    private static void Reorder<T>(IList<T> items, IReadOnlyList<int> orderedIndexes)
+    {
+        if (orderedIndexes.Count != items.Count || orderedIndexes.Distinct().Count() != items.Count)
+        {
+            throw new IOException("The submitted order does not match the current tracking entries.");
+        }
+
+        var reordered = new List<T>(items.Count);
+        foreach (var index in orderedIndexes)
+        {
+            if (index < 0 || index >= items.Count)
+            {
+                throw new IOException("The submitted order does not match the current tracking entries.");
+            }
+
+            reordered.Add(items[index]);
+        }
+
+        items.Clear();
+        foreach (var item in reordered)
+        {
+            items.Add(item);
+        }
     }
 }

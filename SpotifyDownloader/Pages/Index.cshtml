@@ -65,11 +65,26 @@
                     <div>
                         <h2>Artists</h2>
                         <p>Track Spotify artists so their albums, singles, and new releases can be downloaded into your library.</p>
+                        <div class="order-toolbar" aria-label="Artist order">
+                            <div class="order-toggle-row">
+                                <span>Order:</span>
+                                <span>A-Z</span>
+                                <label class="order-switch">
+                                    <input type="checkbox" data-order-toggle checked />
+                                    <span aria-hidden="true"></span>
+                                </label>
+                                <span>YAML</span>
+                                <small><em>Drag items in YAML mode to save a new file order.</em></small>
+                            </div>
+                        </div>
                     </div>
                     <button class="primary-action" type="button" data-open-editor data-entry-type="Artist">+ Add artist</button>
                 </div>
 
-                <div class="entry-list">
+                <form method="post" asp-page-handler="Reorder" class="reorder-form" data-reorder-form data-entry-type="Artist">
+                    <input type="hidden" name="ReorderEntryType" value="Artist" />
+                    <input type="hidden" name="OrderedIndexes" data-ordered-indexes />
+                    <div class="entry-list" data-entry-list data-entry-type="Artist">
                     @if (artists.Count == 0)
                     {
                         <p class="empty-state">No tracked artists yet.</p>
@@ -77,7 +92,7 @@
                     @for (var i = 0; i < artists.Count; i++)
                     {
                         var artist = artists[i];
-                        <article class="entry-card">
+                        <article class="entry-card" data-entry-card data-entry-name="@artist.Name" data-yaml-index="@i">
                             <div class="entry-copy">
                                 <h3>@artist.Name</h3>
                                 <a href="@artist.Url" target="_blank" rel="noopener noreferrer">@artist.Url</a>
@@ -89,7 +104,8 @@
                             </div>
                         </article>
                     }
-                </div>
+                    </div>
+                </form>
             </section>
 
             <section class="tab-panel" data-tab-panel="playlists" role="tabpanel">
@@ -97,11 +113,26 @@
                     <div>
                         <h2>Playlists</h2>
                         <p>Track Spotify playlists and keep their songs organized under your playlist folders.</p>
+                        <div class="order-toolbar" aria-label="Playlist order">
+                            <div class="order-toggle-row">
+                                <span>Order:</span>
+                                <span>A-Z</span>
+                                <label class="order-switch">
+                                    <input type="checkbox" data-order-toggle checked />
+                                    <span aria-hidden="true"></span>
+                                </label>
+                                <span>YAML</span>
+                                <small><em>Drag items in YAML mode to save a new file order.</em></small>
+                            </div>
+                        </div>
                     </div>
                     <button class="primary-action" type="button" data-open-editor data-entry-type="Playlist">+ Add playlist</button>
                 </div>
 
-                <div class="entry-list">
+                <form method="post" asp-page-handler="Reorder" class="reorder-form" data-reorder-form data-entry-type="Playlist">
+                    <input type="hidden" name="ReorderEntryType" value="Playlist" />
+                    <input type="hidden" name="OrderedIndexes" data-ordered-indexes />
+                    <div class="entry-list" data-entry-list data-entry-type="Playlist">
                     @if (playlists.Count == 0)
                     {
                         <p class="empty-state">No tracked playlists yet.</p>
@@ -109,7 +140,7 @@
                     @for (var i = 0; i < playlists.Count; i++)
                     {
                         var playlist = playlists[i];
-                        <article class="entry-card">
+                        <article class="entry-card" data-entry-card data-entry-name="@playlist.Name" data-yaml-index="@i">
                             <div class="entry-copy">
                                 <h3>@playlist.Name</h3>
                                 <a href="@playlist.Url" target="_blank" rel="noopener noreferrer">@playlist.Url</a>
@@ -121,7 +152,8 @@
                             </div>
                         </article>
                     }
-                </div>
+                    </div>
+                </form>
             </section>
         </section>
     </main>
