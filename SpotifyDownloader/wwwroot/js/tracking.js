@@ -13,6 +13,7 @@ const orderToggles = document.querySelectorAll('[data-order-toggle]');
 const entryLists = document.querySelectorAll('[data-entry-list]');
 let draggedCard = null;
 let draggedList = null;
+let touchDrag = null;
 
 function getActiveTab() {
     return document.querySelector('[data-tab-button].active')?.dataset.tabButton ?? 'artists';
@@ -106,6 +107,67 @@ function submitReorder(list) {
     form.requestSubmit();
 }
 
+function isInteractiveTarget(target) {
+    return target.closest('a, button, input, select, textarea, label');
+}
+
+function startPointerDrag(event, list) {
+    if (event.pointerType === 'mouse' || getOrderMode() !== 'yaml' || isInteractiveTarget(event.target)) {
+        return;
+    }
+
+    const card = event.target.closest('[data-entry-card]');
+    if (!card) {
+        return;
+    }
+
+    touchDrag = {
+        card,
+        list,
+        startY: event.clientY,
+        orderBeforeDrag: getCardOrder(list),
+        active: false
+    };
+
+    card.setPointerCapture(event.pointerId);
+}
+
+function movePointerDrag(event) {
+    if (!touchDrag) {
+        return;
+    }
+
+    const distance = Math.abs(event.clientY - touchDrag.startY);
+    if (!touchDrag.active && distance < 8) {
+        return;
+    }
+
+    event.preventDefault();
+    touchDrag.active = true;
+    touchDrag.card.classList.add('dragging');
+
+    const insertBefore = getDragInsertBefore(touchDrag.list, event.clientY);
+    if (insertBefore) {
+        touchDrag.list.insertBefore(touchDrag.card, insertBefore);
+    } else {
+        touchDrag.list.append(touchDrag.card);
+    }
+}
+
+function endPointerDrag() {
+    if (!touchDrag) {
+        return;
+    }
+
+    const { card, list, orderBeforeDrag, active } = touchDrag;
+    card.classList.remove('dragging');
+    touchDrag = null;
+
+    if (active && orderBeforeDrag !== getCardOrder(list)) {
+        submitReorder(list);
+    }
+}
+
 function closeModal(modal) {
     if (!modal.open || modal.classList.contains('closing')) {
         return;
@@ -144,6 +206,11 @@ orderToggles.forEach((input) => {
 });
 
 entryLists.forEach((list) => {
+    list.addEventListener('pointerdown', (event) => startPointerDrag(event, list));
+    list.addEventListener('pointermove', movePointerDrag);
+    list.addEventListener('pointerup', endPointerDrag);
+    list.addEventListener('pointercancel', endPointerDrag);
+
     list.addEventListener('dragstart', (event) => {
         if (getOrderMode() !== 'yaml') {
             event.preventDefault();
