@@ -29,7 +29,7 @@ Spotify Downloader is a Docker image that tracks artists and playlists on Spotif
 - 🧠 **Smart tracking**: skip rarely updated artists, or fully sync playlists when you want.
 - 🎚️ **Flexible formats**: use `opus`, `mp3`, or any spotDL-compatible format.
 - 🗂️ **Clean structure**: artists and playlists are organized automatically.
-- 🖥️ **Optional web UI**: manage `tracking.yaml` from a simple browser interface when you mount it writable.
+- 🖥️ **Optional web UI**: manage, sort, and reorder `tracking.yaml` from a responsive browser interface.
 
 ## How it works
 

@@ -41,6 +41,26 @@ On disk, files are organized like this:
 
 The app serves a Razor Pages web UI on port `8080`. Publish the port in Docker Compose, then open `http://localhost:8080` to manage tracked artists and playlists. The UI validates that names and URLs are present, checks that URLs are parseable absolute URIs, and persists changes back to `tracking.yaml` when the file is writable.
 
+The editor can:
+
+- Add, edit, delete, and rename tracked artists and playlists.
+- Configure `refresh` for artists and playlists.
+- Configure playlist `mode` as `add` or `full`.
+- Rename the existing local folder when an entry name changes, when the folder can be found and moved safely.
+- Show entries in `A-Z` order without changing `tracking.yaml`.
+- Show entries in `YAML` order and reorder them with drag-and-drop; YAML-order changes are saved immediately.
+- Remember the selected order mode in the browser.
+- Keep the current page position after form submissions.
+- Show validation and save errors without adding success messages that shift the page layout.
+- Adapt the layout for mobile screens, including compact status, documentation, and GitHub links.
+
+<p align="center">
+  <img src="assets/images/webui-landing.webp" alt="Desktop web UI example"/>
+</p>
+<p align="center">
+  <img src="assets/images/webui-dialog.webp" alt="Desktop web UI dialog example"/>
+</p>
+
 If `tracking.yaml` does not appear writable, the page remains available as a read-only view and shows a warning. To enable UI edits in Docker, mount `/app/tracking.yaml` without `:ro`:
 
 ```yaml

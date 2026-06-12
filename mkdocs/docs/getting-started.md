@@ -85,6 +85,6 @@ Then start the container:
 docker compose up -d
 ```
 
-Open <http://localhost:8080> to use the optional web UI, or continue editing `tracking.yaml` manually.
+Open <http://localhost:8080> to use the optional web UI, or continue editing `tracking.yaml` manually. The UI can add, edit, delete, rename, sort, and reorder entries when `tracking.yaml` is mounted writable.
 
 If you want to build the image locally instead of pulling from Docker Hub, see [Advanced](advanced.md).

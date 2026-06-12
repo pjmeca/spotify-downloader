@@ -94,7 +94,13 @@ playlists:
 
 ## Optional web UI
 
-The container also serves a lightweight web UI for editing `tracking.yaml`. Publish port `8080` and open <http://localhost:8080> to add, edit, or delete tracked artists and playlists.
+The container also serves a lightweight web UI for editing `tracking.yaml`. Publish port `8080` and open <http://localhost:8080> to add, edit, delete, rename, sort, and reorder tracked artists and playlists.
+
+<p align="center">
+  <img src="mkdocs/docs/assets/images/webui-landing.webp" alt="Desktop web UI example"/>
+</p>
+
+The editor supports artist `refresh`, playlist `refresh`, and playlist `mode` options. It can show entries in `A-Z` order without changing the file, or in `YAML` order where drag-and-drop reordering is saved back to `tracking.yaml` immediately.
 
 If `tracking.yaml` is mounted read-only, the UI still shows your current entries and displays a warning that changes may not be saved. Docker users who want to edit from the UI should mount `/app/tracking.yaml` without `:ro`. Users who keep editing the YAML manually can continue using a read-only mount.
 
