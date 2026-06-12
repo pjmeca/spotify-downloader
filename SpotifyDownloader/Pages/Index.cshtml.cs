@@ -35,16 +35,14 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
     public IActionResult OnPostSave()
     {
         var result = trackingEditorService.SaveEntry(Entry);
-        AlertMessage = result.Message;
-        AlertIsSuccess = result.Success;
+        SetErrorAlert(result);
         return RedirectToPage();
     }
 
     public IActionResult OnPostDelete()
     {
         var result = trackingEditorService.DeleteEntry(DeleteEntryType, DeleteIndex);
-        AlertMessage = result.Message;
-        AlertIsSuccess = result.Success;
+        SetErrorAlert(result);
         return RedirectToPage();
     }
 
@@ -55,8 +53,7 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
             .Select(x => int.TryParse(x, out var index) ? index : -1)
             .ToList();
         var result = trackingEditorService.ReorderEntries(ReorderEntryType, orderedIndexes);
-        AlertMessage = result.Message;
-        AlertIsSuccess = result.Success;
+        SetErrorAlert(result);
         return RedirectToPage();
     }
 
@@ -70,5 +67,16 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
     {
         TrackingInformation = trackingEditorService.GetTrackingInformation();
         IsTrackingFileWritable = trackingEditorService.IsTrackingFileWritable();
+    }
+
+    private void SetErrorAlert(TrackingEditorResult result)
+    {
+        if (result.Success)
+        {
+            return;
+        }
+
+        AlertMessage = result.Message;
+        AlertIsSuccess = false;
     }
 }
