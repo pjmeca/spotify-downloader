@@ -319,6 +319,7 @@ body[data-order-ready="true"] .order-switch span::after {
 
 .tab,
 .entry-actions button,
+.primary-danger,
 .ghost {
     color: var(--text);
     border: 0;
@@ -331,12 +332,14 @@ body[data-order-ready="true"] .order-switch span::after {
 .tab:hover,
 .entry-actions button:hover,
 .ghost:hover,
-.primary-action:hover {
+.primary-action:hover,
+.primary-danger:hover {
     transform: translateY(-1px);
 }
 
 .tab.active,
-.primary-action {
+.primary-action,
+.primary-danger {
     color: #07140c;
     background: var(--spotify-green);
     border: 0;
@@ -444,6 +447,10 @@ body[data-order-mode="yaml"] .entry-card {
 .primary-danger {
     color: #fff !important;
     background: #9d2727 !important;
+}
+
+.primary-danger {
+    box-shadow: 0 10px 24px rgb(157 39 39 / 24%);
 }
 
 .modal {
