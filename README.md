@@ -75,6 +75,8 @@ Playlists support an optional `mode` field. It accepts two values:
 - `add` (default): new tracks found in the remote playlist are added to the local folder, but no files are removed.
 - `full`: the local folder is synchronized with the remote playlist. Any local tracks no longer present in the remote playlist will be removed.
 
+For compatibility with older `tracking.yaml` files, playlists without `mode` keep using `add`. New playlists created from the web UI may explicitly set a mode when saved.
+
 ```yaml
 artists:
   - name: Dua Lipa

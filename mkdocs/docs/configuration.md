@@ -105,6 +105,8 @@ Define what to download. The file is read on every run.
 | `refresh` | no | boolean | `true` | If `false`, skip scanning if the playlist already exists locally. |
 | `mode` | no | string | `add` | `add` downloads only new tracks. `full` syncs the folder and deletes local tracks no longer present remotely. |
 
+For compatibility with older `tracking.yaml` files, playlists without `mode` keep using `add`. New playlists created from the web UI may explicitly set a mode when saved.
+
 ### Example
 
 ```yaml
