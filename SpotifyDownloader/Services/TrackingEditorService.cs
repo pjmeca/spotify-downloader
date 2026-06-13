@@ -232,6 +232,11 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
             return "Name is required.";
         }
 
+        if (IsPathLikeName(input.Name))
+        {
+            return "Name must be a folder name, not a path.";
+        }
+
         if (string.IsNullOrWhiteSpace(input.Url))
         {
             return "URL is required.";
@@ -243,6 +248,15 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
 
         return null;
+    }
+
+    private static bool IsPathLikeName(string name)
+    {
+        var trimmedName = name.Trim();
+        return Path.IsPathRooted(trimmedName)
+            || trimmedName.Contains('/')
+            || trimmedName.Contains('\\')
+            || trimmedName.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries).Any(x => x is "." or "..");
     }
 
     private static void Upsert<T>(IList<T> items, int? index, T value)
