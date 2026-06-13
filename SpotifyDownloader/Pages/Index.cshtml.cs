@@ -30,29 +30,29 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
     [BindProperty]
     public string OrderedIndexes { get; set; } = string.Empty;
 
-    public void OnGet() => LoadPageState();
+    public async Task OnGetAsync(CancellationToken cancellationToken) => await LoadPageState(cancellationToken);
 
-    public IActionResult OnPostSave()
+    public async Task<IActionResult> OnPostSaveAsync(CancellationToken cancellationToken)
     {
-        var result = trackingEditorService.SaveEntry(Entry);
+        var result = await trackingEditorService.SaveEntry(Entry, cancellationToken);
         SetErrorAlert(result);
         return RedirectToPage();
     }
 
-    public IActionResult OnPostDelete()
+    public async Task<IActionResult> OnPostDeleteAsync(CancellationToken cancellationToken)
     {
-        var result = trackingEditorService.DeleteEntry(DeleteEntryType, DeleteIndex);
+        var result = await trackingEditorService.DeleteEntry(DeleteEntryType, DeleteIndex, cancellationToken);
         SetErrorAlert(result);
         return RedirectToPage();
     }
 
-    public IActionResult OnPostReorder()
+    public async Task<IActionResult> OnPostReorderAsync(CancellationToken cancellationToken)
     {
         var orderedIndexes = OrderedIndexes
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(x => int.TryParse(x, out var index) ? index : -1)
             .ToList();
-        var result = trackingEditorService.ReorderEntries(ReorderEntryType, orderedIndexes);
+        var result = await trackingEditorService.ReorderEntries(ReorderEntryType, orderedIndexes, cancellationToken);
         SetErrorAlert(result);
         return RedirectToPage();
     }
@@ -63,10 +63,10 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
         _ => "Downloads new songs only"
     };
 
-    private void LoadPageState()
+    private async Task LoadPageState(CancellationToken cancellationToken)
     {
-        TrackingInformation = trackingEditorService.GetTrackingInformation();
-        IsTrackingFileWritable = trackingEditorService.IsTrackingFileWritable();
+        TrackingInformation = await trackingEditorService.GetTrackingInformation(cancellationToken);
+        IsTrackingFileWritable = await trackingEditorService.IsTrackingFileWritable(cancellationToken);
     }
 
     private void SetErrorAlert(TrackingEditorResult result)

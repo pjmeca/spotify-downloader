@@ -23,7 +23,7 @@ public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<Cron
             var downloadingService = scope.ServiceProvider.GetRequiredService<IDownloadingService>();
             var artistsService = scope.ServiceProvider.GetRequiredService<IArtistsService>();
 
-            var trackingInformation = trackingService.ReadTrackingInformation();
+            var trackingInformation = await trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
             
             var currentVersion = GlobalConfiguration.CurrentVersion;
             var latestVersion = await dbContext.AppVersions.FirstAsync(cancellationToken);

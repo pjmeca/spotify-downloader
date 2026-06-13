@@ -7,39 +7,47 @@ namespace SpotifyDownloader.Services;
 
 public interface ITrackingService
 {
-    TrackingInformation ReadTrackingInformation(string? trackingFile = null);
-    void WriteTrackingInformation(TrackingInformation trackingInformation, string? trackingFile = null);
-    bool IsTrackingFileWritable(string? trackingFile = null);
+    Task<TrackingInformation> ReadTrackingInformation(string? trackingFile = null, CancellationToken cancellationToken = default);
+    Task WriteTrackingInformation(TrackingInformation trackingInformation, string? trackingFile = null, CancellationToken cancellationToken = default);
+    Task<bool> IsTrackingFileWritable(string? trackingFile = null, CancellationToken cancellationToken = default);
 }
 
 public class TrackingService(ILogger<TrackingService> logger) : ITrackingService
 {
     public const string DEFAULT_TRACKING_FILE = "/app/tracking.yaml";
+    private readonly SemaphoreSlim trackingFileSemaphore = new(1, 1);
 
-    public TrackingInformation ReadTrackingInformation(string? trackingFile = null)
+    public async Task<TrackingInformation> ReadTrackingInformation(string? trackingFile = null, CancellationToken cancellationToken = default)
     {
         trackingFile ??= DEFAULT_TRACKING_FILE;
 
         logger.LogInformation("Reading tracking information...");
 
-        using StreamReader reader = new(trackingFile);
-        string text = reader.ReadToEnd();
+        await trackingFileSemaphore.WaitAsync(cancellationToken);
+        try
+        {
+            string text = await System.IO.File.ReadAllTextAsync(trackingFile, cancellationToken);
 
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .WithTypeConverter(new PlaylistDownloadModeYamlConverter())
-            .Build();
+            var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .WithTypeConverter(new PlaylistDownloadModeYamlConverter())
+                .Build();
 
-        var trackingInformation = deserializer.Deserialize<TrackingInformation>(text) ?? new TrackingInformation();
-        trackingInformation.Artists ??= [];
-        trackingInformation.Playlists ??= [];
+            var trackingInformation = deserializer.Deserialize<TrackingInformation>(text) ?? new TrackingInformation();
+            trackingInformation.Artists ??= [];
+            trackingInformation.Playlists ??= [];
 
-        logger.LogInformation("Found {numArtists} artists and {numPlaylists} playlists.", trackingInformation.Artists.Count, trackingInformation.Playlists.Count);
+            logger.LogInformation("Found {numArtists} artists and {numPlaylists} playlists.", trackingInformation.Artists.Count, trackingInformation.Playlists.Count);
 
-        return trackingInformation;
+            return trackingInformation;
+        }
+        finally
+        {
+            trackingFileSemaphore.Release();
+        }
     }
 
-    public void WriteTrackingInformation(TrackingInformation trackingInformation, string? trackingFile = null)
+    public async Task WriteTrackingInformation(TrackingInformation trackingInformation, string? trackingFile = null, CancellationToken cancellationToken = default)
     {
         trackingFile ??= DEFAULT_TRACKING_FILE;
 
@@ -56,24 +64,33 @@ public class TrackingService(ILogger<TrackingService> logger) : ITrackingService
         var directory = Path.GetDirectoryName(trackingFile) ?? Directory.GetCurrentDirectory();
         Directory.CreateDirectory(directory);
 
-        if (System.IO.File.Exists(trackingFile))
+        await trackingFileSemaphore.WaitAsync(cancellationToken);
+        try
         {
-            System.IO.File.WriteAllText(trackingFile, yaml);
+            if (System.IO.File.Exists(trackingFile))
+            {
+                await System.IO.File.WriteAllTextAsync(trackingFile, yaml);
+            }
+            else
+            {
+                var tempFile = Path.Combine(directory, $".{Path.GetFileName(trackingFile)}.{Guid.NewGuid():N}.tmp");
+                await System.IO.File.WriteAllTextAsync(tempFile, yaml);
+                System.IO.File.Move(tempFile, trackingFile, true);
+            }
         }
-        else
+        finally
         {
-            var tempFile = Path.Combine(directory, $".{Path.GetFileName(trackingFile)}.{Guid.NewGuid():N}.tmp");
-            System.IO.File.WriteAllText(tempFile, yaml);
-            System.IO.File.Move(tempFile, trackingFile, true);
+            trackingFileSemaphore.Release();
         }
 
         logger.LogInformation("Tracking information written to {trackingFile}.", trackingFile);
     }
 
-    public bool IsTrackingFileWritable(string? trackingFile = null)
+    public async Task<bool> IsTrackingFileWritable(string? trackingFile = null, CancellationToken cancellationToken = default)
     {
         trackingFile ??= DEFAULT_TRACKING_FILE;
 
+        await trackingFileSemaphore.WaitAsync(cancellationToken);
         try
         {
             if (System.IO.File.Exists(trackingFile))
@@ -93,6 +110,10 @@ public class TrackingService(ILogger<TrackingService> logger) : ITrackingService
         {
             logger.LogWarning(ex, "Tracking file {trackingFile} does not appear to be writable.", trackingFile);
             return false;
+        }
+        finally
+        {
+            trackingFileSemaphore.Release();
         }
     }
 }

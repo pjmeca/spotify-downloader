@@ -4,20 +4,22 @@ namespace SpotifyDownloader.Services;
 
 public interface ITrackingEditorService
 {
-    TrackingInformation GetTrackingInformation();
-    bool IsTrackingFileWritable();
-    TrackingEditorResult SaveEntry(TrackingEntryInput input);
-    TrackingEditorResult DeleteEntry(TrackingEntryType entryType, int index);
-    TrackingEditorResult ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes);
+    Task<TrackingInformation> GetTrackingInformation(CancellationToken cancellationToken = default);
+    Task<bool> IsTrackingFileWritable(CancellationToken cancellationToken = default);
+    Task<TrackingEditorResult> SaveEntry(TrackingEntryInput input, CancellationToken cancellationToken = default);
+    Task<TrackingEditorResult> DeleteEntry(TrackingEntryType entryType, int index, CancellationToken cancellationToken = default);
+    Task<TrackingEditorResult> ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes, CancellationToken cancellationToken = default);
 }
 
 public class TrackingEditorService(ITrackingService trackingService, IFileManagementService fileManagementService) : ITrackingEditorService
 {
-    public TrackingInformation GetTrackingInformation() => trackingService.ReadTrackingInformation();
+    public Task<TrackingInformation> GetTrackingInformation(CancellationToken cancellationToken = default) =>
+        trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
 
-    public bool IsTrackingFileWritable() => trackingService.IsTrackingFileWritable();
+    public Task<bool> IsTrackingFileWritable(CancellationToken cancellationToken = default) =>
+        trackingService.IsTrackingFileWritable(cancellationToken: cancellationToken);
 
-    public TrackingEditorResult SaveEntry(TrackingEntryInput input)
+    public async Task<TrackingEditorResult> SaveEntry(TrackingEntryInput input, CancellationToken cancellationToken = default)
     {
         var validationError = Validate(input);
         if (validationError is not null)
@@ -27,7 +29,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
         try
         {
-            var trackingInformation = trackingService.ReadTrackingInformation();
+            var trackingInformation = await trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
             string? previousName = null;
             bool oldNameStillInUse;
 
@@ -64,7 +66,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 fileManagementService.RenameTrackedItemDirectory(input.EntryType, previousName, input.Name);
             }
 
-            trackingService.WriteTrackingInformation(trackingInformation);
+            await trackingService.WriteTrackingInformation(trackingInformation, cancellationToken: cancellationToken);
             return new TrackingEditorResult(true, "Changes saved to tracking.yaml.");
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
@@ -73,7 +75,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
     }
 
-    public TrackingEditorResult DeleteEntry(TrackingEntryType entryType, int index)
+    public async Task<TrackingEditorResult> DeleteEntry(TrackingEntryType entryType, int index, CancellationToken cancellationToken = default)
     {
         if (index < 0)
         {
@@ -82,7 +84,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
         try
         {
-            var trackingInformation = trackingService.ReadTrackingInformation();
+            var trackingInformation = await trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
             if (entryType == TrackingEntryType.Artist)
             {
                 if (index >= trackingInformation.Artists.Count)
@@ -102,7 +104,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 trackingInformation.Playlists.RemoveAt(index);
             }
 
-            trackingService.WriteTrackingInformation(trackingInformation);
+            await trackingService.WriteTrackingInformation(trackingInformation, cancellationToken: cancellationToken);
             return new TrackingEditorResult(true, "Entry removed from tracking.yaml.");
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
@@ -111,11 +113,11 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
     }
 
-    public TrackingEditorResult ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes)
+    public async Task<TrackingEditorResult> ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes, CancellationToken cancellationToken = default)
     {
         try
         {
-            var trackingInformation = trackingService.ReadTrackingInformation();
+            var trackingInformation = await trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
             if (entryType == TrackingEntryType.Artist)
             {
                 Reorder(trackingInformation.Artists, orderedIndexes);
@@ -125,7 +127,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 Reorder(trackingInformation.Playlists, orderedIndexes);
             }
 
-            trackingService.WriteTrackingInformation(trackingInformation);
+            await trackingService.WriteTrackingInformation(trackingInformation, cancellationToken: cancellationToken);
             return new TrackingEditorResult(true, "Order saved to tracking.yaml.");
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
