@@ -29,45 +29,46 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
         try
         {
-            var trackingInformation = await trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
-            string? previousName = null;
-            bool oldNameStillInUse;
-
-            if (input.EntryType == TrackingEntryType.Artist)
+            return await trackingService.UpdateTrackingInformation(trackingInformation =>
             {
-                previousName = GetPreviousName(trackingInformation.Artists, input.Index);
-                var artist = new TrackingInformation.ArtistItem
+                string? previousName = null;
+                bool oldNameStillInUse;
+
+                if (input.EntryType == TrackingEntryType.Artist)
                 {
-                    Name = input.Name.Trim(),
-                    Url = input.Url.Trim(),
-                    Refresh = input.Refresh
-                };
+                    previousName = GetPreviousName(trackingInformation.Artists, input.Index);
+                    var artist = new TrackingInformation.ArtistItem
+                    {
+                        Name = input.Name.Trim(),
+                        Url = input.Url.Trim(),
+                        Refresh = input.Refresh
+                    };
 
-                Upsert(trackingInformation.Artists, input.Index, artist);
-                oldNameStillInUse = IsNameInUse(trackingInformation.Artists, previousName);
-            }
-            else
-            {
-                previousName = GetPreviousName(trackingInformation.Playlists, input.Index);
-                var playlist = new TrackingInformation.PlaylistItem
+                    Upsert(trackingInformation.Artists, input.Index, artist);
+                    oldNameStillInUse = IsNameInUse(trackingInformation.Artists, previousName);
+                }
+                else
                 {
-                    Name = input.Name.Trim(),
-                    Url = input.Url.Trim(),
-                    Refresh = input.Refresh,
-                    Mode = input.Mode
-                };
+                    previousName = GetPreviousName(trackingInformation.Playlists, input.Index);
+                    var playlist = new TrackingInformation.PlaylistItem
+                    {
+                        Name = input.Name.Trim(),
+                        Url = input.Url.Trim(),
+                        Refresh = input.Refresh,
+                        Mode = input.Mode
+                    };
 
-                Upsert(trackingInformation.Playlists, input.Index, playlist);
-                oldNameStillInUse = IsNameInUse(trackingInformation.Playlists, previousName);
-            }
+                    Upsert(trackingInformation.Playlists, input.Index, playlist);
+                    oldNameStillInUse = IsNameInUse(trackingInformation.Playlists, previousName);
+                }
 
-            if (previousName is not null && !oldNameStillInUse)
-            {
-                fileManagementService.RenameTrackedItemDirectory(input.EntryType, previousName, input.Name);
-            }
+                if (previousName is not null && !oldNameStillInUse)
+                {
+                    fileManagementService.RenameTrackedItemDirectory(input.EntryType, previousName, input.Name);
+                }
 
-            await trackingService.WriteTrackingInformation(trackingInformation, cancellationToken: cancellationToken);
-            return new TrackingEditorResult(true, "Changes saved to tracking.yaml.");
+                return (new TrackingEditorResult(true, "Changes saved to tracking.yaml."), true);
+            }, cancellationToken: cancellationToken);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
         {
@@ -84,28 +85,29 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
         try
         {
-            var trackingInformation = await trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
-            if (entryType == TrackingEntryType.Artist)
+            return await trackingService.UpdateTrackingInformation(trackingInformation =>
             {
-                if (index >= trackingInformation.Artists.Count)
+                if (entryType == TrackingEntryType.Artist)
                 {
-                    return new TrackingEditorResult(false, "Artist not found.");
+                    if (index >= trackingInformation.Artists.Count)
+                    {
+                        return (new TrackingEditorResult(false, "Artist not found."), false);
+                    }
+
+                    trackingInformation.Artists.RemoveAt(index);
+                }
+                else
+                {
+                    if (index >= trackingInformation.Playlists.Count)
+                    {
+                        return (new TrackingEditorResult(false, "Playlist not found."), false);
+                    }
+
+                    trackingInformation.Playlists.RemoveAt(index);
                 }
 
-                trackingInformation.Artists.RemoveAt(index);
-            }
-            else
-            {
-                if (index >= trackingInformation.Playlists.Count)
-                {
-                    return new TrackingEditorResult(false, "Playlist not found.");
-                }
-
-                trackingInformation.Playlists.RemoveAt(index);
-            }
-
-            await trackingService.WriteTrackingInformation(trackingInformation, cancellationToken: cancellationToken);
-            return new TrackingEditorResult(true, "Entry removed from tracking.yaml.");
+                return (new TrackingEditorResult(true, "Entry removed from tracking.yaml."), true);
+            }, cancellationToken: cancellationToken);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
         {
@@ -117,18 +119,19 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
     {
         try
         {
-            var trackingInformation = await trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
-            if (entryType == TrackingEntryType.Artist)
+            return await trackingService.UpdateTrackingInformation(trackingInformation =>
             {
-                Reorder(trackingInformation.Artists, orderedIndexes);
-            }
-            else
-            {
-                Reorder(trackingInformation.Playlists, orderedIndexes);
-            }
+                if (entryType == TrackingEntryType.Artist)
+                {
+                    Reorder(trackingInformation.Artists, orderedIndexes);
+                }
+                else
+                {
+                    Reorder(trackingInformation.Playlists, orderedIndexes);
+                }
 
-            await trackingService.WriteTrackingInformation(trackingInformation, cancellationToken: cancellationToken);
-            return new TrackingEditorResult(true, "Order saved to tracking.yaml.");
+                return (new TrackingEditorResult(true, "Order saved to tracking.yaml."), true);
+            }, cancellationToken: cancellationToken);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
         {
