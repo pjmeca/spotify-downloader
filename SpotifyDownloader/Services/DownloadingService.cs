@@ -16,7 +16,8 @@ public interface IDownloadingService
 }
 
 public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration,
-    ISpotifyClientWrapper spotifyClient, IArtistsService artistsService, PlaylistsService playlistsService) : IDownloadingService
+    ISpotifyClientWrapper spotifyClient, IArtistsService artistsService, PlaylistsService playlistsService,
+    IFileOperationCoordinator fileOperationCoordinator) : IDownloadingService
 {
     private static readonly string[] SpotdlFailureMarkers =
     [
@@ -31,6 +32,11 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
     private static readonly Regex AnsiEscapeRegex = new(@"\x1B\[[0-?]*[ -/]*[@-~]", RegexOptions.Compiled);
 
     public async Task<DownloadResult> Download(TrackingInformation trackingInformation)
+    {
+        return await fileOperationCoordinator.RunWithExclusiveMusicAccess(() => DownloadWithoutFileOperationLock(trackingInformation));
+    }
+
+    private async Task<DownloadResult> DownloadWithoutFileOperationLock(TrackingInformation trackingInformation)
     {
         DownloadResult result = new();
 

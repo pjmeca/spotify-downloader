@@ -124,6 +124,7 @@ WebApplication Build()
     builder.Services.AddScoped<ISpotifyClientWrapper, SpotifyClientWrapper>();
 
     builder.Services.AddSingleton<IFileManagementService, FileManagementService>();
+    builder.Services.AddSingleton<IFileOperationCoordinator, FileOperationCoordinator>();
     builder.Services.AddSingleton<ITrackingService, TrackingService>();
     builder.Services.AddSingleton<ITrackingEditorService, TrackingEditorService>();
     builder.Services.AddScoped<IDownloadingService, DownloadingService>();

@@ -13,7 +13,8 @@ public interface ITrackingEditorService
     Task<TrackingEditorResult> ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes, CancellationToken cancellationToken = default);
 }
 
-public class TrackingEditorService(ITrackingService trackingService, IFileManagementService fileManagementService, ILogger<TrackingEditorService> logger) : ITrackingEditorService
+public class TrackingEditorService(ITrackingService trackingService, IFileManagementService fileManagementService,
+    IFileOperationCoordinator fileOperationCoordinator, ILogger<TrackingEditorService> logger) : ITrackingEditorService
 {
     public Task<TrackingInformation> GetTrackingInformation(CancellationToken cancellationToken = default) =>
         trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
@@ -81,7 +82,8 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 {
                     if (pendingRename is not null)
                     {
-                        fileManagementService.RenameTrackedItemDirectory(pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
+                        fileOperationCoordinator.RunWithExclusiveMusicAccess(() =>
+                            fileManagementService.RenameTrackedItemDirectory(pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName));
                     }
                 },
                 handleAfterWriteException: (ex, trackingInformation) =>
