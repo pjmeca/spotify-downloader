@@ -104,7 +104,14 @@
                         <article class="entry-card" data-entry-card data-entry-name="@artist.Name" data-entry-url="@artist.Url" data-yaml-index="@i">
                             <div class="entry-copy">
                                 <h3>@artist.Name</h3>
-                                <a href="@artist.Url" target="_blank" rel="noopener noreferrer">@artist.Url</a>
+                                @if (IndexModel.IsClickableTrackingUrl(artist.Url))
+                                {
+                                    <a href="@artist.Url" target="_blank" rel="noopener noreferrer">@artist.Url</a>
+                                }
+                                else
+                                {
+                                    <span>@artist.Url</span>
+                                }
                                 <span class="metadata"><span class="dot @(artist.Refresh ? "dot-on" : "dot-off")"></span>Update automatically: @(artist.Refresh ? "yes" : "no")</span>
                             </div>
                             <div class="entry-actions">
@@ -153,7 +160,14 @@
                         <article class="entry-card" data-entry-card data-entry-name="@playlist.Name" data-entry-url="@playlist.Url" data-yaml-index="@i">
                             <div class="entry-copy">
                                 <h3>@playlist.Name</h3>
-                                <a href="@playlist.Url" target="_blank" rel="noopener noreferrer">@playlist.Url</a>
+                                @if (IndexModel.IsClickableTrackingUrl(playlist.Url))
+                                {
+                                    <a href="@playlist.Url" target="_blank" rel="noopener noreferrer">@playlist.Url</a>
+                                }
+                                else
+                                {
+                                    <span>@playlist.Url</span>
+                                }
                                 <span class="metadata"><span class="dot @(playlist.Refresh ? "dot-on" : "dot-off")"></span>Update automatically: @(playlist.Refresh ? "yes" : "no") · @IndexModel.GetPlaylistModeLabel(playlist.Mode)</span>
                             </div>
                             <div class="entry-actions">

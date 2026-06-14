@@ -258,9 +258,14 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
             return "URL is required.";
         }
 
-        if (!Uri.TryCreate(input.Url.Trim(), UriKind.Absolute, out _))
+        if (!Uri.TryCreate(input.Url.Trim(), UriKind.Absolute, out var uri))
         {
             return "URL must be a valid absolute URI.";
+        }
+
+        if (uri.Scheme is not "http" and not "https")
+        {
+            return "URL must use http or https.";
         }
 
         return null;

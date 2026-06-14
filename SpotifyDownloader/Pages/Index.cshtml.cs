@@ -74,6 +74,9 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
         _ => "Downloads new songs only"
     };
 
+    public static bool IsClickableTrackingUrl(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https";
+
     private async Task LoadPageState(CancellationToken cancellationToken)
     {
         TrackingInformation = await trackingEditorService.GetTrackingInformation(cancellationToken);
