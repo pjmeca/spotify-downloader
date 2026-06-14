@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SpotifyDownloader.Models;
+using System.Runtime.ExceptionServices;
 
 namespace SpotifyDownloader.Services;
 
@@ -31,92 +32,83 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         try
         {
             (TrackingEntryType EntryType, string PreviousName, string NewName, string Url)? pendingRename = null;
-            var result = await trackingService.UpdateTrackingInformation(trackingInformation =>
-            {
-                string? previousName = null;
-                bool oldNameStillInUse;
-                var newName = input.Name.Trim();
-                var url = input.Url.Trim();
-                string savedName;
-
-                if (input.EntryType == TrackingEntryType.Artist)
+            return await trackingService.UpdateTrackingInformation(trackingInformation =>
                 {
-                    previousName = GetPreviousName(trackingInformation.Artists, input.Index);
-                    var artist = new TrackingInformation.ArtistItem
+                    string? previousName = null;
+                    bool oldNameStillInUse;
+                    var newName = input.Name.Trim();
+                    var url = input.Url.Trim();
+                    string savedName;
+
+                    if (input.EntryType == TrackingEntryType.Artist)
                     {
-                        Name = newName,
-                        Url = url,
-                        Refresh = input.Refresh
-                    };
-                    savedName = artist.Name;
+                        previousName = GetPreviousName(trackingInformation.Artists, input.Index);
+                        var artist = new TrackingInformation.ArtistItem
+                        {
+                            Name = newName,
+                            Url = url,
+                            Refresh = input.Refresh
+                        };
+                        savedName = artist.Name;
 
-                    Upsert(trackingInformation.Artists, input.Index, artist);
-                    oldNameStillInUse = IsNameInUse(trackingInformation.Artists, previousName);
-                }
-                else
-                {
-                    previousName = GetPreviousName(trackingInformation.Playlists, input.Index);
-                    var playlist = new TrackingInformation.PlaylistItem
+                        Upsert(trackingInformation.Artists, input.Index, artist);
+                        oldNameStillInUse = IsNameInUse(trackingInformation.Artists, previousName);
+                    }
+                    else
                     {
-                        Name = newName,
-                        Url = url,
-                        Refresh = input.Refresh,
-                        Mode = input.Mode
-                    };
-                    savedName = playlist.Name;
+                        previousName = GetPreviousName(trackingInformation.Playlists, input.Index);
+                        var playlist = new TrackingInformation.PlaylistItem
+                        {
+                            Name = newName,
+                            Url = url,
+                            Refresh = input.Refresh,
+                            Mode = input.Mode
+                        };
+                        savedName = playlist.Name;
 
-                    Upsert(trackingInformation.Playlists, input.Index, playlist);
-                    oldNameStillInUse = IsNameInUse(trackingInformation.Playlists, previousName);
-                }
+                        Upsert(trackingInformation.Playlists, input.Index, playlist);
+                        oldNameStillInUse = IsNameInUse(trackingInformation.Playlists, previousName);
+                    }
 
-                if (previousName is not null && !oldNameStillInUse)
+                    if (previousName is not null && !oldNameStillInUse)
+                    {
+                        pendingRename = (input.EntryType, previousName, savedName, url);
+                    }
+
+                    return (new TrackingEditorResult(true, "Changes saved to tracking.yaml."), true);
+                },
+                afterWrite: () =>
                 {
-                    pendingRename = (input.EntryType, previousName, savedName, url);
-                }
-
-                return (new TrackingEditorResult(true, "Changes saved to tracking.yaml."), true);
-            }, cancellationToken: cancellationToken);
-
-            if (pendingRename is null)
-            {
-                return result;
-            }
-            
-            try
-            {
-                fileManagementService.RenameTrackedItemDirectory(pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
-            }
-            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
-            {
-                logger.LogError(ex, "Failed to rename {entryType} directory from \"{previousName}\" to \"{newName}\" after saving tracking.yaml. Attempting to roll back tracking.yaml.",
-                    pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
-
-                var rolledBack = false;
-                try
+                    if (pendingRename is not null)
+                    {
+                        fileManagementService.RenameTrackedItemDirectory(pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
+                    }
+                },
+                handleAfterWriteException: (ex, trackingInformation) =>
                 {
-                    rolledBack = await RollBackTrackingName(pendingRename.Value.EntryType, pendingRename.Value.NewName, pendingRename.Value.PreviousName, pendingRename.Value.Url, cancellationToken);
-                }
-                catch (Exception rollbackEx) when (rollbackEx is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
-                {
-                    logger.LogError(rollbackEx, "Unexpected error while rolling back tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
+                    if (pendingRename is null || ex is not (UnauthorizedAccessException or IOException or DirectoryNotFoundException))
+                    {
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+                    }
+
+                    logger.LogError(ex, "Failed to rename {entryType} directory from \"{previousName}\" to \"{newName}\" after saving tracking.yaml. Attempting to roll back tracking.yaml.",
                         pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
-                }
 
-                if (!rolledBack)
-                {
-                    logger.LogError("Could not roll back tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
+                    var rolledBack = RollBackTrackingName(trackingInformation, pendingRename.Value.EntryType, pendingRename.Value.NewName, pendingRename.Value.PreviousName, pendingRename.Value.Url);
+
+                    if (!rolledBack)
+                    {
+                        logger.LogError("Could not roll back tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
+                            pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
+                        return (new TrackingEditorResult(false,
+                            "The local directory could not be renamed, and tracking.yaml could not be rolled back. Check the server logs before running the downloader again."), false);
+                    }
+
+                    logger.LogWarning("Rolled back tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
                         pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
-                    return new TrackingEditorResult(false,
-                        "The local directory could not be renamed, and tracking.yaml could not be rolled back. Check the server logs before running the downloader again.");
-                }
-
-                logger.LogWarning("Rolled back tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
-                    pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
-                return new TrackingEditorResult(false,
-                    "The local directory could not be renamed, so tracking.yaml was rolled back. Check /music permissions and try again.");
-            }
-
-            return result;
+                    return (new TrackingEditorResult(false,
+                        "The local directory could not be renamed, so tracking.yaml was rolled back. Check /music permissions and try again."), true);
+                }, cancellationToken: cancellationToken);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
         {
@@ -187,22 +179,19 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
     }
 
-    private async Task<bool> RollBackTrackingName(TrackingEntryType entryType, string currentName, string previousName, string url, CancellationToken cancellationToken)
+    private static bool RollBackTrackingName(TrackingInformation trackingInformation, TrackingEntryType entryType, string currentName, string previousName, string url)
     {
-        return await trackingService.UpdateTrackingInformation(trackingInformation =>
+        var items = entryType == TrackingEntryType.Artist
+            ? trackingInformation.Artists.Cast<TrackingInformation.BaseItem>()
+            : trackingInformation.Playlists.Cast<TrackingInformation.BaseItem>();
+        var item = items.FirstOrDefault(x => x.Name == currentName && x.Url == url);
+        if (item is null)
         {
-            var items = entryType == TrackingEntryType.Artist
-                ? trackingInformation.Artists.Cast<TrackingInformation.BaseItem>()
-                : trackingInformation.Playlists.Cast<TrackingInformation.BaseItem>();
-            var item = items.FirstOrDefault(x => x.Name == currentName && x.Url == url);
-            if (item is null)
-            {
-                return (false, false);
-            }
+            return false;
+        }
 
-            item.Name = previousName;
-            return (true, true);
-        }, cancellationToken: cancellationToken);
+        item.Name = previousName;
+        return true;
     }
 
     private static string? GetPreviousName<T>(IList<T> items, int? index) where T : TrackingInformation.BaseItem

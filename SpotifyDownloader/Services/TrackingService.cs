@@ -10,6 +10,11 @@ public interface ITrackingService
     Task<TrackingInformation> ReadTrackingInformation(string? trackingFile = null, CancellationToken cancellationToken = default);
     Task WriteTrackingInformation(TrackingInformation trackingInformation, string? trackingFile = null, CancellationToken cancellationToken = default);
     Task<TResult> UpdateTrackingInformation<TResult>(Func<TrackingInformation, (TResult Result, bool ShouldWrite)> update, string? trackingFile = null, CancellationToken cancellationToken = default);
+    Task<TResult> UpdateTrackingInformation<TResult>(Func<TrackingInformation, (TResult Result, bool ShouldWrite)> update,
+        Action? afterWrite,
+        Func<Exception, TrackingInformation, (TResult Result, bool ShouldWrite)>? handleAfterWriteException,
+        string? trackingFile = null,
+        CancellationToken cancellationToken = default);
     Task<bool> IsTrackingFileWritable(string? trackingFile = null, CancellationToken cancellationToken = default);
 }
 
@@ -52,6 +57,15 @@ public class TrackingService(ILogger<TrackingService> logger) : ITrackingService
 
     public async Task<TResult> UpdateTrackingInformation<TResult>(Func<TrackingInformation, (TResult Result, bool ShouldWrite)> update, string? trackingFile = null, CancellationToken cancellationToken = default)
     {
+        return await UpdateTrackingInformation(update, null, null, trackingFile, cancellationToken);
+    }
+
+    public async Task<TResult> UpdateTrackingInformation<TResult>(Func<TrackingInformation, (TResult Result, bool ShouldWrite)> update,
+        Action? afterWrite,
+        Func<Exception, TrackingInformation, (TResult Result, bool ShouldWrite)>? handleAfterWriteException,
+        string? trackingFile = null,
+        CancellationToken cancellationToken = default)
+    {
         trackingFile ??= DEFAULT_TRACKING_FILE;
 
         await trackingFileSemaphore.WaitAsync(cancellationToken);
@@ -62,6 +76,21 @@ public class TrackingService(ILogger<TrackingService> logger) : ITrackingService
             if (shouldWrite)
             {
                 await WriteTrackingInformationWithoutLock(trackingInformation, trackingFile);
+
+                try
+                {
+                    afterWrite?.Invoke();
+                }
+                catch (Exception ex) when (handleAfterWriteException is not null)
+                {
+                    var (handledResult, shouldWriteAfterFailure) = handleAfterWriteException(ex, trackingInformation);
+                    if (shouldWriteAfterFailure)
+                    {
+                        await WriteTrackingInformationWithoutLock(trackingInformation, trackingFile);
+                    }
+
+                    return handledResult;
+                }
             }
 
             return result;
