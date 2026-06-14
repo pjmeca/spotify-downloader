@@ -58,6 +58,14 @@ function getCardOrder(list) {
         .join(',');
 }
 
+function getCardOrderEntries(list) {
+    return JSON.stringify(Array.from(list.querySelectorAll('[data-entry-card]')).map((card) => ({
+        index: Number(card.dataset.yamlIndex),
+        name: card.dataset.entryName ?? '',
+        url: card.dataset.entryUrl ?? ''
+    })));
+}
+
 function setDragState(card, enabled) {
     card.draggable = enabled;
 }
@@ -103,6 +111,7 @@ function getDragInsertBefore(list, y) {
 function submitReorder(list) {
     const form = list.closest('[data-reorder-form]');
     form.querySelector('[data-ordered-indexes]').value = getCardOrder(list);
+    form.querySelector('[data-ordered-entries]').value = getCardOrderEntries(list);
     saveScrollState();
     form.requestSubmit();
 }

@@ -10,7 +10,7 @@ public interface ITrackingEditorService
     Task<bool> IsTrackingFileWritable(CancellationToken cancellationToken = default);
     Task<TrackingEditorResult> SaveEntry(TrackingEntryInput input, CancellationToken cancellationToken = default);
     Task<TrackingEditorResult> DeleteEntry(TrackingEntryType entryType, int index, string? originalName, string? originalUrl, CancellationToken cancellationToken = default);
-    Task<TrackingEditorResult> ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes, CancellationToken cancellationToken = default);
+    Task<TrackingEditorResult> ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes, IReadOnlyList<TrackingReorderEntryInput> orderedEntries, CancellationToken cancellationToken = default);
 }
 
 public class TrackingEditorService(ITrackingService trackingService, IFileManagementService fileManagementService,
@@ -167,19 +167,25 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
     }
 
-    public async Task<TrackingEditorResult> ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes, CancellationToken cancellationToken = default)
+    public async Task<TrackingEditorResult> ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes, IReadOnlyList<TrackingReorderEntryInput> orderedEntries, CancellationToken cancellationToken = default)
     {
         try
         {
             return await trackingService.UpdateTrackingInformation(trackingInformation =>
             {
+                string? reorderError;
                 if (entryType == TrackingEntryType.Artist)
                 {
-                    Reorder(trackingInformation.Artists, orderedIndexes);
+                    reorderError = Reorder(trackingInformation.Artists, orderedIndexes, orderedEntries);
                 }
                 else
                 {
-                    Reorder(trackingInformation.Playlists, orderedIndexes);
+                    reorderError = Reorder(trackingInformation.Playlists, orderedIndexes, orderedEntries);
+                }
+
+                if (reorderError is not null)
+                {
+                    return (new TrackingEditorResult(false, reorderError), false);
                 }
 
                 return (new TrackingEditorResult(true, "Order saved to tracking.yaml."), true);
@@ -285,19 +291,27 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         items[index.Value] = value;
     }
 
-    private static void Reorder<T>(IList<T> items, IReadOnlyList<int> orderedIndexes)
+    private static string? Reorder<T>(IList<T> items, IReadOnlyList<int> orderedIndexes, IReadOnlyList<TrackingReorderEntryInput> orderedEntries)
+        where T : TrackingInformation.BaseItem
     {
-        if (orderedIndexes.Count != items.Count || orderedIndexes.Distinct().Count() != items.Count)
+        if (orderedIndexes.Count != items.Count || orderedEntries.Count != items.Count || orderedIndexes.Distinct().Count() != items.Count)
         {
-            throw new IOException("The submitted order does not match the current tracking entries.");
+            return "The submitted order does not match the current tracking entries.";
         }
 
         var reordered = new List<T>(items.Count);
-        foreach (var index in orderedIndexes)
+        for (var i = 0; i < orderedIndexes.Count; i++)
         {
+            var index = orderedIndexes[i];
+            var entry = orderedEntries[i];
             if (index < 0 || index >= items.Count)
             {
-                throw new IOException("The submitted order does not match the current tracking entries.");
+                return "The submitted order does not match the current tracking entries.";
+            }
+
+            if (entry.Index != index || !MatchesOriginalIdentity(items[index], entry.Name, entry.Url))
+            {
+                return "The tracking entries changed since this page was loaded. Reload the page and try again.";
             }
 
             reordered.Add(items[index]);
@@ -308,5 +322,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         {
             items.Add(item);
         }
+
+        return null;
     }
 }

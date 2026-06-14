@@ -25,4 +25,11 @@ public class TrackingEntryInput
     public PlaylistDownloadMode Mode { get; set; } = PlaylistDownloadMode.Full;
 }
 
+public class TrackingReorderEntryInput
+{
+    public int Index { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Url { get; set; } = string.Empty;
+}
+
 public record TrackingEditorResult(bool Success, string Message);

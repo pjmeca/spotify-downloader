@@ -92,6 +92,7 @@
                 <form method="post" asp-page-handler="Reorder" class="reorder-form" data-reorder-form data-entry-type="Artist">
                     <input type="hidden" name="ReorderEntryType" value="Artist" />
                     <input type="hidden" name="OrderedIndexes" data-ordered-indexes />
+                    <input type="hidden" name="OrderedEntries" data-ordered-entries />
                     <div class="entry-list" data-entry-list data-entry-type="Artist">
                     @if (artists.Count == 0)
                     {
@@ -100,7 +101,7 @@
                     @for (var i = 0; i < artists.Count; i++)
                     {
                         var artist = artists[i];
-                        <article class="entry-card" data-entry-card data-entry-name="@artist.Name" data-yaml-index="@i">
+                        <article class="entry-card" data-entry-card data-entry-name="@artist.Name" data-entry-url="@artist.Url" data-yaml-index="@i">
                             <div class="entry-copy">
                                 <h3>@artist.Name</h3>
                                 <a href="@artist.Url" target="_blank" rel="noopener noreferrer">@artist.Url</a>
@@ -140,6 +141,7 @@
                 <form method="post" asp-page-handler="Reorder" class="reorder-form" data-reorder-form data-entry-type="Playlist">
                     <input type="hidden" name="ReorderEntryType" value="Playlist" />
                     <input type="hidden" name="OrderedIndexes" data-ordered-indexes />
+                    <input type="hidden" name="OrderedEntries" data-ordered-entries />
                     <div class="entry-list" data-entry-list data-entry-type="Playlist">
                     @if (playlists.Count == 0)
                     {
@@ -148,7 +150,7 @@
                     @for (var i = 0; i < playlists.Count; i++)
                     {
                         var playlist = playlists[i];
-                        <article class="entry-card" data-entry-card data-entry-name="@playlist.Name" data-yaml-index="@i">
+                        <article class="entry-card" data-entry-card data-entry-name="@playlist.Name" data-entry-url="@playlist.Url" data-yaml-index="@i">
                             <div class="entry-copy">
                                 <h3>@playlist.Name</h3>
                                 <a href="@playlist.Url" target="_blank" rel="noopener noreferrer">@playlist.Url</a>

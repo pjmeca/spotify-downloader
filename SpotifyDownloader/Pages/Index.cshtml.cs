@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Newtonsoft.Json;
 using SpotifyDownloader.Models;
 using SpotifyDownloader.Services;
 
@@ -36,6 +37,9 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
     [BindProperty]
     public string OrderedIndexes { get; set; } = string.Empty;
 
+    [BindProperty]
+    public string OrderedEntries { get; set; } = string.Empty;
+
     public async Task OnGetAsync(CancellationToken cancellationToken) => await LoadPageState(cancellationToken);
 
     public async Task<IActionResult> OnPostSaveAsync(CancellationToken cancellationToken)
@@ -58,7 +62,8 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(x => int.TryParse(x, out var index) ? index : -1)
             .ToList();
-        var result = await trackingEditorService.ReorderEntries(ReorderEntryType, orderedIndexes, cancellationToken);
+        var orderedEntries = ParseOrderedEntries();
+        var result = await trackingEditorService.ReorderEntries(ReorderEntryType, orderedIndexes, orderedEntries, cancellationToken);
         SetErrorAlert(result);
         return RedirectToPage();
     }
@@ -84,5 +89,17 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
 
         AlertMessage = result.Message;
         AlertIsSuccess = false;
+    }
+
+    private IReadOnlyList<TrackingReorderEntryInput> ParseOrderedEntries()
+    {
+        try
+        {
+            return JsonConvert.DeserializeObject<List<TrackingReorderEntryInput>>(OrderedEntries) ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
     }
 }
