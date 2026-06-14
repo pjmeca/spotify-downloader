@@ -308,6 +308,8 @@ document.querySelectorAll('[data-open-delete]').forEach((button) => {
 
         document.getElementById('delete-entry-type').value = entryType;
         document.getElementById('delete-index').value = button.dataset.index;
+        document.getElementById('delete-original-name').value = button.dataset.name ?? '';
+        document.getElementById('delete-original-url').value = button.dataset.url ?? '';
         document.getElementById('delete-copy').textContent = `Are you sure you want to remove "${name}" from ${collectionName}?`;
         deleteModal.showModal();
     });

@@ -9,7 +9,7 @@ public interface ITrackingEditorService
     Task<TrackingInformation> GetTrackingInformation(CancellationToken cancellationToken = default);
     Task<bool> IsTrackingFileWritable(CancellationToken cancellationToken = default);
     Task<TrackingEditorResult> SaveEntry(TrackingEntryInput input, CancellationToken cancellationToken = default);
-    Task<TrackingEditorResult> DeleteEntry(TrackingEntryType entryType, int index, CancellationToken cancellationToken = default);
+    Task<TrackingEditorResult> DeleteEntry(TrackingEntryType entryType, int index, string? originalName, string? originalUrl, CancellationToken cancellationToken = default);
     Task<TrackingEditorResult> ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes, CancellationToken cancellationToken = default);
 }
 
@@ -118,7 +118,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
     }
 
-    public async Task<TrackingEditorResult> DeleteEntry(TrackingEntryType entryType, int index, CancellationToken cancellationToken = default)
+    public async Task<TrackingEditorResult> DeleteEntry(TrackingEntryType entryType, int index, string? originalName, string? originalUrl, CancellationToken cancellationToken = default)
     {
         if (index < 0)
         {
@@ -136,6 +136,11 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                         return (new TrackingEditorResult(false, "Artist not found."), false);
                     }
 
+                    if (!MatchesOriginalIdentity(trackingInformation.Artists[index], originalName, originalUrl))
+                    {
+                        return (new TrackingEditorResult(false, "The selected artist changed since this page was loaded. Reload the page and try again."), false);
+                    }
+
                     trackingInformation.Artists.RemoveAt(index);
                 }
                 else
@@ -143,6 +148,11 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                     if (index >= trackingInformation.Playlists.Count)
                     {
                         return (new TrackingEditorResult(false, "Playlist not found."), false);
+                    }
+
+                    if (!MatchesOriginalIdentity(trackingInformation.Playlists[index], originalName, originalUrl))
+                    {
+                        return (new TrackingEditorResult(false, "The selected playlist changed since this page was loaded. Reload the page and try again."), false);
                     }
 
                     trackingInformation.Playlists.RemoveAt(index);
@@ -216,6 +226,9 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
         return item.Name;
     }
+
+    private static bool MatchesOriginalIdentity(TrackingInformation.BaseItem item, string? originalName, string? originalUrl) =>
+        item.Name == originalName && item.Url == originalUrl;
 
     private static bool IsNameInUse<T>(IEnumerable<T> items, string? name) where T : TrackingInformation.BaseItem
     {

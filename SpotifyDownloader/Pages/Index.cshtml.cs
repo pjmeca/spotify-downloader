@@ -25,6 +25,12 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
     public int DeleteIndex { get; set; }
 
     [BindProperty]
+    public string? DeleteOriginalName { get; set; }
+
+    [BindProperty]
+    public string? DeleteOriginalUrl { get; set; }
+
+    [BindProperty]
     public TrackingEntryType ReorderEntryType { get; set; }
 
     [BindProperty]
@@ -41,7 +47,7 @@ public class IndexModel(ITrackingEditorService trackingEditorService) : PageMode
 
     public async Task<IActionResult> OnPostDeleteAsync(CancellationToken cancellationToken)
     {
-        var result = await trackingEditorService.DeleteEntry(DeleteEntryType, DeleteIndex, cancellationToken);
+        var result = await trackingEditorService.DeleteEntry(DeleteEntryType, DeleteIndex, DeleteOriginalName, DeleteOriginalUrl, cancellationToken);
         SetErrorAlert(result);
         return RedirectToPage();
     }

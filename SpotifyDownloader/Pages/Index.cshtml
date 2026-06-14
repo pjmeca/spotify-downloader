@@ -108,7 +108,7 @@
                             </div>
                             <div class="entry-actions">
                                 <button type="button" data-open-editor data-entry-type="Artist" data-index="@i" data-name="@artist.Name" data-url="@artist.Url" data-refresh="@artist.Refresh.ToString().ToLowerInvariant()">Edit</button>
-                                <button class="danger" type="button" data-open-delete data-entry-type="Artist" data-index="@i" data-name="@artist.Name">Delete</button>
+                                <button class="danger" type="button" data-open-delete data-entry-type="Artist" data-index="@i" data-name="@artist.Name" data-url="@artist.Url">Delete</button>
                             </div>
                         </article>
                     }
@@ -156,7 +156,7 @@
                             </div>
                             <div class="entry-actions">
                                 <button type="button" data-open-editor data-entry-type="Playlist" data-index="@i" data-name="@playlist.Name" data-url="@playlist.Url" data-refresh="@playlist.Refresh.ToString().ToLowerInvariant()" data-mode="@playlist.Mode">Edit</button>
-                                <button class="danger" type="button" data-open-delete data-entry-type="Playlist" data-index="@i" data-name="@playlist.Name">Delete</button>
+                                <button class="danger" type="button" data-open-delete data-entry-type="Playlist" data-index="@i" data-name="@playlist.Name" data-url="@playlist.Url">Delete</button>
                             </div>
                         </article>
                     }
@@ -210,6 +210,8 @@
         <form method="post" asp-page-handler="Delete" class="modal-card">
             <input type="hidden" asp-for="DeleteEntryType" id="delete-entry-type" />
             <input type="hidden" asp-for="DeleteIndex" id="delete-index" />
+            <input type="hidden" asp-for="DeleteOriginalName" id="delete-original-name" />
+            <input type="hidden" asp-for="DeleteOriginalUrl" id="delete-original-url" />
             <header class="modal-header">
                 <h2>Remove entry?</h2>
                 <button type="button" class="ghost icon-button" data-close-modal aria-label="Close dialog">×</button>
