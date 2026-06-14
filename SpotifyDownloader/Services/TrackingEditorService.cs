@@ -42,7 +42,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
                     if (input.EntryType == TrackingEntryType.Artist)
                     {
-                        previousName = GetPreviousName(trackingInformation.Artists, input.Index);
+                        previousName = GetPreviousName(trackingInformation.Artists, input);
                         var artist = new TrackingInformation.ArtistItem
                         {
                             Name = newName,
@@ -56,7 +56,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                     }
                     else
                     {
-                        previousName = GetPreviousName(trackingInformation.Playlists, input.Index);
+                        previousName = GetPreviousName(trackingInformation.Playlists, input);
                         var playlist = new TrackingInformation.PlaylistItem
                         {
                             Name = newName,
@@ -194,19 +194,25 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         return true;
     }
 
-    private static string? GetPreviousName<T>(IList<T> items, int? index) where T : TrackingInformation.BaseItem
+    private static string? GetPreviousName<T>(IList<T> items, TrackingEntryInput input) where T : TrackingInformation.BaseItem
     {
-        if (index is null)
+        if (input.Index is null)
         {
             return null;
         }
 
-        if (index.Value < 0 || index.Value >= items.Count)
+        if (input.Index.Value < 0 || input.Index.Value >= items.Count)
         {
             throw new IOException("The selected tracking entry no longer exists.");
         }
 
-        return items[index.Value].Name;
+        var item = items[input.Index.Value];
+        if (item.Name != input.OriginalName || item.Url != input.OriginalUrl)
+        {
+            throw new IOException("The selected tracking entry changed since this editor was opened. Reload the page and try again.");
+        }
+
+        return item.Name;
     }
 
     private static bool IsNameInUse<T>(IEnumerable<T> items, string? name) where T : TrackingInformation.BaseItem

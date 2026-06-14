@@ -287,6 +287,8 @@ document.querySelectorAll('[data-open-editor]').forEach((button) => {
             : 'Paste the Spotify artist URL exactly as it appears in your browser.';
         document.getElementById('entry-type').value = entryType;
         document.getElementById('entry-index').value = button.dataset.index ?? '';
+        document.getElementById('entry-original-name').value = button.dataset.name ?? '';
+        document.getElementById('entry-original-url').value = button.dataset.url ?? '';
         document.getElementById('entry-name').value = button.dataset.name ?? '';
         document.getElementById('entry-url').value = button.dataset.url ?? '';
         document.getElementById('entry-refresh').checked = button.dataset.refresh === undefined ? true : button.dataset.refresh === 'true';

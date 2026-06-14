@@ -12,6 +12,8 @@ public class TrackingEntryInput
 {
     public TrackingEntryType EntryType { get; set; }
     public int? Index { get; set; }
+    public string? OriginalName { get; set; }
+    public string? OriginalUrl { get; set; }
 
     [Required(ErrorMessage = "Name is required.")]
     public string Name { get; set; } = string.Empty;
