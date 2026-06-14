@@ -268,7 +268,28 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
             return "URL must use http or https.";
         }
 
+        if (!IsSpotifyTrackingUrl(uri, input.EntryType))
+        {
+            return input.EntryType == TrackingEntryType.Artist
+                ? "Artist URL must be a Spotify artist URL."
+                : "Playlist URL must be a Spotify playlist URL.";
+        }
+
         return null;
+    }
+
+    private static bool IsSpotifyTrackingUrl(Uri uri, TrackingEntryType entryType)
+    {
+        if (!uri.Host.Equals("spotify.com", StringComparison.OrdinalIgnoreCase)
+            && !uri.Host.EndsWith(".spotify.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var expectedSegment = entryType == TrackingEntryType.Artist ? "artist" : "playlist";
+        var pathSegments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var segmentIndex = Array.FindIndex(pathSegments, x => x.Equals(expectedSegment, StringComparison.OrdinalIgnoreCase));
+        return segmentIndex >= 0 && segmentIndex < pathSegments.Length - 1;
     }
 
     private static bool IsPathLikeName(string name)
