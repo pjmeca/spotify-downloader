@@ -48,6 +48,9 @@ try
         await dbContext.Database.MigrateAsync();
     }
 
+    var appVersionMigrationService = scope.ServiceProvider.GetRequiredService<IAppVersionMigrationService>();
+    await appVersionMigrationService.MigrateToCurrentVersion();
+
     logger.LogInformation("Cron job configured with: \"{cron}\"", CRON_SCHEDULE);
     
     logger.LogInformation("Ready!");
@@ -127,6 +130,7 @@ WebApplication Build()
     builder.Services.AddSingleton<IFileOperationCoordinator, FileOperationCoordinator>();
     builder.Services.AddSingleton<ITrackingService, TrackingService>();
     builder.Services.AddSingleton<ITrackingEditorService, TrackingEditorService>();
+    builder.Services.AddScoped<IAppVersionMigrationService, AppVersionMigrationService>();
     builder.Services.AddScoped<IDownloadingService, DownloadingService>();
     builder.Services.AddSingleton<IYtDlpService, YtDlpService>();
     builder.Services.AddScoped<IArtistsService, ArtistsService>();
