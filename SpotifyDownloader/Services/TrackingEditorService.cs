@@ -16,6 +16,8 @@ public interface ITrackingEditorService
 public class TrackingEditorService(ITrackingService trackingService, IFileManagementService fileManagementService,
     IFileOperationCoordinator fileOperationCoordinator, ILogger<TrackingEditorService> logger) : ITrackingEditorService
 {
+    private const string DownloadInProgressMessage = "A download is currently in progress. Tracking changes are disabled until it finishes.";
+
     public Task<TrackingInformation> GetTrackingInformation(CancellationToken cancellationToken = default) =>
         trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
 
@@ -33,7 +35,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         try
         {
             (TrackingEntryType EntryType, string PreviousName, string NewName, string Url)? pendingRename = null;
-            return await trackingService.UpdateTrackingInformation(trackingInformation =>
+            var lockResult = await fileOperationCoordinator.TryRunWithExclusiveMusicAccess(() => trackingService.UpdateTrackingInformation(trackingInformation =>
                 {
                     string? previousName = null;
                     bool oldNameStillInUse;
@@ -82,8 +84,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 {
                     if (pendingRename is not null)
                     {
-                        fileOperationCoordinator.RunWithExclusiveMusicAccess(() =>
-                            fileManagementService.RenameTrackedItemDirectory(pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName));
+                        fileManagementService.RenameTrackedItemDirectory(pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
                     }
                 },
                 handleAfterWriteException: (ex, trackingInformation) =>
@@ -110,7 +111,11 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                         pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
                     return (new TrackingEditorResult(false,
                         "The local directory could not be renamed, so tracking.yaml was rolled back. Check /music permissions and try again."), true);
-                }, cancellationToken: cancellationToken);
+                }, cancellationToken: cancellationToken));
+
+            return lockResult.Acquired
+                ? lockResult.Result!
+                : new TrackingEditorResult(false, DownloadInProgressMessage);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
         {
@@ -127,7 +132,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
         try
         {
-            return await trackingService.UpdateTrackingInformation(trackingInformation =>
+            var lockResult = await fileOperationCoordinator.TryRunWithExclusiveMusicAccess(() => trackingService.UpdateTrackingInformation(trackingInformation =>
             {
                 if (entryType == TrackingEntryType.Artist)
                 {
@@ -159,7 +164,11 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 }
 
                 return (new TrackingEditorResult(true, "Entry removed from tracking.yaml."), true);
-            }, cancellationToken: cancellationToken);
+            }, cancellationToken: cancellationToken));
+
+            return lockResult.Acquired
+                ? lockResult.Result!
+                : new TrackingEditorResult(false, DownloadInProgressMessage);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
         {
@@ -171,7 +180,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
     {
         try
         {
-            return await trackingService.UpdateTrackingInformation(trackingInformation =>
+            var lockResult = await fileOperationCoordinator.TryRunWithExclusiveMusicAccess(() => trackingService.UpdateTrackingInformation(trackingInformation =>
             {
                 string? reorderError;
                 if (entryType == TrackingEntryType.Artist)
@@ -189,7 +198,11 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 }
 
                 return (new TrackingEditorResult(true, "Order saved to tracking.yaml."), true);
-            }, cancellationToken: cancellationToken);
+            }, cancellationToken: cancellationToken));
+
+            return lockResult.Acquired
+                ? lockResult.Result!
+                : new TrackingEditorResult(false, DownloadInProgressMessage);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
         {

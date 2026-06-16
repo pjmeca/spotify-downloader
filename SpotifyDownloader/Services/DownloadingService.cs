@@ -13,6 +13,7 @@ namespace SpotifyDownloader.Services;
 public interface IDownloadingService
 {
     Task<DownloadResult> Download(TrackingInformation trackingInformation);
+    Task<DownloadResult> DownloadWithoutFileOperationLock(TrackingInformation trackingInformation);
 }
 
 public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration,
@@ -36,7 +37,7 @@ public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfig
         return await fileOperationCoordinator.RunWithExclusiveMusicAccess(() => DownloadWithoutFileOperationLock(trackingInformation));
     }
 
-    private async Task<DownloadResult> DownloadWithoutFileOperationLock(TrackingInformation trackingInformation)
+    public async Task<DownloadResult> DownloadWithoutFileOperationLock(TrackingInformation trackingInformation)
     {
         DownloadResult result = new();
 

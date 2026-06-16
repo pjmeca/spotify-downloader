@@ -3,6 +3,7 @@ namespace SpotifyDownloader.Services;
 public interface IFileOperationCoordinator
 {
     Task<TResult> RunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation);
+    Task<(bool Acquired, TResult? Result)> TryRunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation);
     void RunWithExclusiveMusicAccess(Action operation);
 }
 
@@ -16,6 +17,23 @@ public class FileOperationCoordinator : IFileOperationCoordinator
         try
         {
             return await operation();
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
+    public async Task<(bool Acquired, TResult? Result)> TryRunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation)
+    {
+        if (!await semaphore.WaitAsync(0))
+        {
+            return (false, default);
+        }
+
+        try
+        {
+            return (true, await operation());
         }
         finally
         {
