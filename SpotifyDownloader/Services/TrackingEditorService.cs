@@ -302,7 +302,9 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         var expectedSegment = entryType == TrackingEntryType.Artist ? "artist" : "playlist";
         var pathSegments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var segmentIndex = Array.FindIndex(pathSegments, x => x.Equals(expectedSegment, StringComparison.OrdinalIgnoreCase));
-        return segmentIndex >= 0 && segmentIndex < pathSegments.Length - 1;
+        return segmentIndex >= 0
+            && segmentIndex == pathSegments.Length - 2
+            && !string.IsNullOrWhiteSpace(pathSegments[^1]);
     }
 
     private static bool IsPathLikeName(string name)
