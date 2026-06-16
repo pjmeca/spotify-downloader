@@ -35,8 +35,7 @@ public class PlaylistsService(ILogger<ArtistsService> logger, ISpotifyClientWrap
 
         if (string.IsNullOrWhiteSpace(playlistId))
         {
-            logger.LogError("Playlist Id not found in URL: {url}", url);
-            return [];
+            throw new InvalidOperationException($"Playlist Id not found in URL: {url}");
         }
 
         var tracks = await spotifyClient.GetAllPlaylistTracks(playlistId);
