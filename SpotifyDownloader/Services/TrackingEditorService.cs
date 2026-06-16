@@ -109,36 +109,9 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         {
             var lockResult = await fileOperationCoordinator.TryRunWithExclusiveMusicAccess(() => trackingService.UpdateTrackingInformation(trackingInformation =>
             {
-                if (entryType == TrackingEntryType.Artist)
-                {
-                    if (index >= trackingInformation.Artists.Count)
-                    {
-                        return (new TrackingEditorResult(false, "Artist not found."), false);
-                    }
-
-                    if (!MatchesOriginalIdentity(trackingInformation.Artists[index], originalName, originalUrl))
-                    {
-                        return (new TrackingEditorResult(false, "The selected artist changed since this page was loaded. Reload the page and try again."), false);
-                    }
-
-                    trackingInformation.Artists.RemoveAt(index);
-                }
-                else
-                {
-                    if (index >= trackingInformation.Playlists.Count)
-                    {
-                        return (new TrackingEditorResult(false, "Playlist not found."), false);
-                    }
-
-                    if (!MatchesOriginalIdentity(trackingInformation.Playlists[index], originalName, originalUrl))
-                    {
-                        return (new TrackingEditorResult(false, "The selected playlist changed since this page was loaded. Reload the page and try again."), false);
-                    }
-
-                    trackingInformation.Playlists.RemoveAt(index);
-                }
-
-                return (new TrackingEditorResult(true, "Entry removed from tracking.yaml."), true);
+                return entryType == TrackingEntryType.Artist
+                    ? DeleteFrom(trackingInformation.Artists, index, originalName, originalUrl, "Artist")
+                    : DeleteFrom(trackingInformation.Playlists, index, originalName, originalUrl, "Playlist");
             }, cancellationToken: cancellationToken));
 
             return lockResult.Acquired
@@ -157,15 +130,9 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         {
             var lockResult = await fileOperationCoordinator.TryRunWithExclusiveMusicAccess(() => trackingService.UpdateTrackingInformation(trackingInformation =>
             {
-                string? reorderError;
-                if (entryType == TrackingEntryType.Artist)
-                {
-                    reorderError = Reorder(trackingInformation.Artists, orderedIndexes, orderedEntries);
-                }
-                else
-                {
-                    reorderError = Reorder(trackingInformation.Playlists, orderedIndexes, orderedEntries);
-                }
+                var reorderError = entryType == TrackingEntryType.Artist
+                    ? Reorder(trackingInformation.Artists, orderedIndexes, orderedEntries)
+                    : Reorder(trackingInformation.Playlists, orderedIndexes, orderedEntries);
 
                 if (reorderError is not null)
                 {
@@ -183,6 +150,23 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         {
             return new TrackingEditorResult(false, "tracking.yaml could not be saved. Check that the file exists and is mounted writable (Docker users should remove :ro from the /app/tracking.yaml mount).");
         }
+    }
+
+    private static (TrackingEditorResult Result, bool ShouldWrite) DeleteFrom<T>(IList<T> items, int index, string? originalName, string? originalUrl, string entryLabel)
+        where T : TrackingInformation.BaseItem
+    {
+        if (index >= items.Count)
+        {
+            return (new TrackingEditorResult(false, $"{entryLabel} not found."), false);
+        }
+
+        if (!MatchesOriginalIdentity(items[index], originalName, originalUrl))
+        {
+            return (new TrackingEditorResult(false, $"The selected {entryLabel.ToLowerInvariant()} changed since this page was loaded. Reload the page and try again."), false);
+        }
+
+        items.RemoveAt(index);
+        return (new TrackingEditorResult(true, "Entry removed from tracking.yaml."), true);
     }
 
     private async Task<TrackingEditorResult> RenameTrackedItemDirectoryWithRollback(
