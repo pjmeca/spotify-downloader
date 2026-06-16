@@ -86,7 +86,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 return pendingRename is null
                     ? result
                     : await RenameTrackedItemDirectoryWithRollback(pendingRename.Value, result, cancellationToken);
-            });
+            }, cancellationToken);
 
             return lockResult.Acquired
                 ? lockResult.Result!
@@ -112,7 +112,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 return entryType == TrackingEntryType.Artist
                     ? DeleteFrom(trackingInformation.Artists, index, originalName, originalUrl, "Artist")
                     : DeleteFrom(trackingInformation.Playlists, index, originalName, originalUrl, "Playlist");
-            }, cancellationToken: cancellationToken));
+            }, cancellationToken: cancellationToken), cancellationToken);
 
             return lockResult.Acquired
                 ? lockResult.Result!
@@ -140,7 +140,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                 }
 
                 return (new TrackingEditorResult(true, "Order saved to tracking.yaml."), true);
-            }, cancellationToken: cancellationToken));
+            }, cancellationToken: cancellationToken), cancellationToken);
 
             return lockResult.Acquired
                 ? lockResult.Result!

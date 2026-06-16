@@ -35,6 +35,6 @@ public class AppVersionMigrationService(ApplicationDbContext dbContext, IFileMan
                 cancellationToken);
 
             return true;
-        });
+        }, cancellationToken);
     }
 }

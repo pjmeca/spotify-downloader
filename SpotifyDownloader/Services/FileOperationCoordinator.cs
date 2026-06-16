@@ -2,18 +2,17 @@ namespace SpotifyDownloader.Services;
 
 public interface IFileOperationCoordinator
 {
-    Task<TResult> RunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation);
-    Task<(bool Acquired, TResult? Result)> TryRunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation);
-    void RunWithExclusiveMusicAccess(Action operation);
+    Task<TResult> RunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken = default);
+    Task<(bool Acquired, TResult? Result)> TryRunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken = default);
 }
 
 public class FileOperationCoordinator : IFileOperationCoordinator
 {
     private readonly SemaphoreSlim semaphore = new(1, 1);
 
-    public async Task<TResult> RunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation)
+    public async Task<TResult> RunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken = default)
     {
-        await semaphore.WaitAsync();
+        await semaphore.WaitAsync(cancellationToken);
         try
         {
             return await operation();
@@ -24,9 +23,9 @@ public class FileOperationCoordinator : IFileOperationCoordinator
         }
     }
 
-    public async Task<(bool Acquired, TResult? Result)> TryRunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation)
+    public async Task<(bool Acquired, TResult? Result)> TryRunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken = default)
     {
-        if (!await semaphore.WaitAsync(0))
+        if (!await semaphore.WaitAsync(0, cancellationToken))
         {
             return (false, default);
         }
@@ -34,19 +33,6 @@ public class FileOperationCoordinator : IFileOperationCoordinator
         try
         {
             return (true, await operation());
-        }
-        finally
-        {
-            semaphore.Release();
-        }
-    }
-
-    public void RunWithExclusiveMusicAccess(Action operation)
-    {
-        semaphore.Wait();
-        try
-        {
-            operation();
         }
         finally
         {

@@ -31,7 +31,7 @@ public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<Cron
                 await artistsService.UpdateLocalArtistsInfo();
 
                 return result;
-            });
+            }, cancellationToken);
             logger.LogInformation("Downloaded {albums} new albums and {playlists} playlists.", result.AlbumsDownloaded, result.PlaylistsDownloaded);
 
             logger.LogInformation("Job finished");
