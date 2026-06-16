@@ -286,7 +286,8 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
             return "URL must use http or https.";
         }
 
-        if (!IsSpotifyTrackingUrl(uri, input.EntryType))
+        var expectedSegment = input.EntryType == TrackingEntryType.Artist ? "artist" : "playlist";
+        if (SpotifyUrlUtils.GetResourceId(uri, expectedSegment) is null)
         {
             return input.EntryType == TrackingEntryType.Artist
                 ? "Artist URL must be a Spotify artist URL."
@@ -294,12 +295,6 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
 
         return null;
-    }
-
-    private static bool IsSpotifyTrackingUrl(Uri uri, TrackingEntryType entryType)
-    {
-        var expectedSegment = entryType == TrackingEntryType.Artist ? "artist" : "playlist";
-        return SpotifyUrlUtils.GetResourceId(uri, expectedSegment) is not null;
     }
 
     private static bool IsPathLikeName(string name)
