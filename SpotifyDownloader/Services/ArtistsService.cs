@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using SpotifyDownloader.Data;
@@ -49,10 +48,9 @@ public class ArtistsService(ILogger<ArtistsService> logger, ISpotifyClientWrappe
 
     public async Task<SimpleAlbum[]> GetRemoteArtistInfo(string url)
     {
-        var artistIdRegex = new Regex(@"/.*\.spotify.com\/.*artist\/([^\?]+)(\?.+)?", RegexOptions.Compiled);
-        var artistId = artistIdRegex.Match(url).Groups[1].Value;
+        var artistId = SpotifyUrlUtils.GetResourceId(url, "artist");
 
-        if (artistId == null)
+        if (string.IsNullOrWhiteSpace(artistId))
         {
             logger.LogError("Artist not found in URL: {url}", url);
             return [];

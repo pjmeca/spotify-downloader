@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using SpotifyDownloader.Data;
@@ -32,13 +31,9 @@ public class PlaylistsService(ILogger<ArtistsService> logger, ISpotifyClientWrap
 
     public async Task<PlaylistTrack<FullTrack>[]> GetRemotePlaylistInfo(string url)
     {
-        var playlistIdRegex = new Regex(@"/.*\.spotify.com\/.*playlist\/([^\?]+)(\?.+)?", RegexOptions.Compiled);
-        var match = playlistIdRegex.Match(url);
-        var playlistId = match.Success
-            ? match.Groups[1].Value
-            : null;
+        var playlistId = SpotifyUrlUtils.GetResourceId(url, "playlist");
 
-        if (playlistId is null)
+        if (string.IsNullOrWhiteSpace(playlistId))
         {
             logger.LogError("Playlist Id not found in URL: {url}", url);
             return [];

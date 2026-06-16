@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SpotifyDownloader.Models;
+using SpotifyDownloader.Utils;
 using System.Runtime.ExceptionServices;
 
 namespace SpotifyDownloader.Services;
@@ -293,18 +294,8 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
     private static bool IsSpotifyTrackingUrl(Uri uri, TrackingEntryType entryType)
     {
-        if (!uri.Host.Equals("spotify.com", StringComparison.OrdinalIgnoreCase)
-            && !uri.Host.EndsWith(".spotify.com", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
         var expectedSegment = entryType == TrackingEntryType.Artist ? "artist" : "playlist";
-        var pathSegments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var segmentIndex = Array.FindIndex(pathSegments, x => x.Equals(expectedSegment, StringComparison.OrdinalIgnoreCase));
-        return segmentIndex >= 0
-            && segmentIndex == pathSegments.Length - 2
-            && !string.IsNullOrWhiteSpace(pathSegments[^1]);
+        return SpotifyUrlUtils.GetResourceId(uri, expectedSegment) is not null;
     }
 
     private static bool IsPathLikeName(string name)
