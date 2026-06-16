@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SpotifyDownloader.Models;
 using SpotifyDownloader.Utils;
-using System.Runtime.ExceptionServices;
 
 namespace SpotifyDownloader.Services;
 
@@ -36,7 +35,9 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         try
         {
             (TrackingEntryType EntryType, string PreviousName, string NewName, string Url)? pendingRename = null;
-            var lockResult = await fileOperationCoordinator.TryRunWithExclusiveMusicAccess(() => trackingService.UpdateTrackingInformation(trackingInformation =>
+            var lockResult = await fileOperationCoordinator.TryRunWithExclusiveMusicAccess(async () =>
+            {
+                var result = await trackingService.UpdateTrackingInformation(trackingInformation =>
                 {
                     string? previousName = null;
                     bool oldNameStillInUse;
@@ -80,39 +81,45 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                     }
 
                     return (new TrackingEditorResult(true, "Changes saved to tracking.yaml."), true);
-                },
-                afterWrite: () =>
+                }, cancellationToken: cancellationToken);
+
+                if (pendingRename is null)
                 {
-                    if (pendingRename is not null)
-                    {
-                        fileManagementService.RenameTrackedItemDirectory(pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
-                    }
-                },
-                handleAfterWriteException: (ex, trackingInformation) =>
+                    return result;
+                }
+
+                try
                 {
-                    if (pendingRename is null || ex is not (UnauthorizedAccessException or IOException or DirectoryNotFoundException))
-                    {
-                        ExceptionDispatchInfo.Capture(ex).Throw();
-                    }
+                    fileManagementService.RenameTrackedItemDirectory(pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
+                    return result;
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
+                {
+                    var rename = pendingRename.Value;
 
                     logger.LogError(ex, "Failed to rename {entryType} directory from \"{previousName}\" to \"{newName}\" after saving tracking.yaml. Attempting to roll back tracking.yaml.",
-                        pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
+                        rename.EntryType, rename.PreviousName, rename.NewName);
 
-                    var rolledBack = RollBackTrackingName(trackingInformation, pendingRename.Value.EntryType, pendingRename.Value.NewName, pendingRename.Value.PreviousName, pendingRename.Value.Url);
+                    var rollbackResult = await trackingService.UpdateTrackingInformation(trackingInformation =>
+                    {
+                        var rolledBack = RollBackTrackingName(trackingInformation, rename.EntryType, rename.NewName, rename.PreviousName, rename.Url);
+                        return (rolledBack, rolledBack);
+                    }, cancellationToken: cancellationToken);
 
-                    if (!rolledBack)
+                    if (!rollbackResult)
                     {
                         logger.LogError("Could not roll back tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
-                            pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
-                        return (new TrackingEditorResult(false,
-                            "The local directory could not be renamed, and tracking.yaml could not be rolled back. Check the server logs before running the downloader again."), false);
+                            rename.EntryType, rename.PreviousName, rename.NewName);
+                        return new TrackingEditorResult(false,
+                            "The local directory could not be renamed, and tracking.yaml could not be rolled back. Check the server logs before running the downloader again.");
                     }
 
                     logger.LogWarning("Rolled back tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
-                        pendingRename.Value.EntryType, pendingRename.Value.PreviousName, pendingRename.Value.NewName);
-                    return (new TrackingEditorResult(false,
-                        "The local directory could not be renamed, so tracking.yaml was rolled back. Check /music permissions and try again."), true);
-                }, cancellationToken: cancellationToken));
+                        rename.EntryType, rename.PreviousName, rename.NewName);
+                    return new TrackingEditorResult(false,
+                        "The local directory could not be renamed, so tracking.yaml was rolled back. Check /music permissions and try again.");
+                }
+            });
 
             return lockResult.Acquired
                 ? lockResult.Result!
