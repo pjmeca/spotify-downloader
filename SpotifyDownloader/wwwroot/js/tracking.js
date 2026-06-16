@@ -298,6 +298,8 @@ document.querySelectorAll('[data-open-editor]').forEach((button) => {
         document.getElementById('entry-index').value = button.dataset.index ?? '';
         document.getElementById('entry-original-name').value = button.dataset.name ?? '';
         document.getElementById('entry-original-url').value = button.dataset.url ?? '';
+        document.getElementById('entry-original-refresh').value = button.dataset.refresh === undefined ? 'true' : button.dataset.refresh;
+        document.getElementById('entry-original-mode').value = button.dataset.mode ?? 'Full';
         document.getElementById('entry-name').value = button.dataset.name ?? '';
         document.getElementById('entry-url').value = button.dataset.url ?? '';
         document.getElementById('entry-refresh').checked = button.dataset.refresh === undefined ? true : button.dataset.refresh === 'true';

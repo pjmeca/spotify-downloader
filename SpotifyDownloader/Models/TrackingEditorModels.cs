@@ -14,6 +14,8 @@ public class TrackingEntryInput
     public int? Index { get; set; }
     public string? OriginalName { get; set; }
     public string? OriginalUrl { get; set; }
+    public bool OriginalRefresh { get; set; }
+    public PlaylistDownloadMode OriginalMode { get; set; } = PlaylistDownloadMode.Full;
 
     [Required(ErrorMessage = "Name is required.")]
     public string Name { get; set; } = string.Empty;

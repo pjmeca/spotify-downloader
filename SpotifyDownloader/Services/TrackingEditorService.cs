@@ -239,7 +239,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
 
         var item = items[input.Index.Value];
-        if (item.Name != input.OriginalName || item.Url != input.OriginalUrl)
+        if (!MatchesOriginalEditableFields(item, input))
         {
             throw new IOException("The selected tracking entry changed since this editor was opened. Reload the page and try again.");
         }
@@ -249,6 +249,16 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
     private static bool MatchesOriginalIdentity(TrackingInformation.BaseItem item, string? originalName, string? originalUrl) =>
         item.Name == originalName && item.Url == originalUrl;
+
+    private static bool MatchesOriginalEditableFields(TrackingInformation.BaseItem item, TrackingEntryInput input)
+    {
+        if (!MatchesOriginalIdentity(item, input.OriginalName, input.OriginalUrl) || item.Refresh != input.OriginalRefresh)
+        {
+            return false;
+        }
+
+        return item is not TrackingInformation.PlaylistItem playlist || playlist.Mode == input.OriginalMode;
+    }
 
     private static bool IsNameInUse<T>(IEnumerable<T> items, string? name) where T : TrackingInformation.BaseItem
     {
