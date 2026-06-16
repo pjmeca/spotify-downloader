@@ -57,7 +57,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                         savedName = artist.Name;
 
                         Upsert(trackingInformation.Artists, input.Index, artist);
-                        oldNameStillInUse = IsNameInUse(trackingInformation.Artists, previousName);
+                        oldNameStillInUse = previousName is not null && trackingInformation.Artists.Any(x => x.Name == previousName);
                     }
                     else
                     {
@@ -72,7 +72,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                         savedName = playlist.Name;
 
                         Upsert(trackingInformation.Playlists, input.Index, playlist);
-                        oldNameStillInUse = IsNameInUse(trackingInformation.Playlists, previousName);
+                        oldNameStillInUse = previousName is not null && trackingInformation.Playlists.Any(x => x.Name == previousName);
                     }
 
                     if (previousName is not null && !oldNameStillInUse)
@@ -252,11 +252,6 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
 
         return item is not TrackingInformation.PlaylistItem playlist || playlist.Mode == input.OriginalMode;
-    }
-
-    private static bool IsNameInUse<T>(IEnumerable<T> items, string? name) where T : TrackingInformation.BaseItem
-    {
-        return name is not null && items.Any(x => x.Name == name);
     }
 
     private static string? Validate(TrackingEntryInput input)
