@@ -17,6 +17,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
     IFileOperationCoordinator fileOperationCoordinator, ILogger<TrackingEditorService> logger) : ITrackingEditorService
 {
     private const string DownloadInProgressMessage = "A download is currently in progress. Tracking changes are disabled until it finishes.";
+    private const string RenameRollbackFailedMessage = "The local directory could not be renamed, and tracking.yaml could not be rolled back. Check the server logs before running the downloader again.";
     private record PendingRename(
         TrackingEntryType EntryType,
         int Index,
@@ -201,18 +202,27 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
             logger.LogError(ex, "Failed to rename {entryType} directory from \"{previousName}\" to \"{newName}\" after saving tracking.yaml. Attempting to roll back tracking.yaml.",
                 rename.EntryType, rename.PreviousName, rename.NewName);
 
-            var rollbackResult = await trackingService.UpdateTrackingInformation(trackingInformation =>
+            bool rollbackResult;
+            try
             {
-                var rolledBack = RollBackTrackingEntry(trackingInformation, rename);
-                return (rolledBack, rolledBack);
-            }, cancellationToken: cancellationToken);
+                rollbackResult = await trackingService.UpdateTrackingInformation(trackingInformation =>
+                {
+                    var rolledBack = RollBackTrackingEntry(trackingInformation, rename);
+                    return (rolledBack, rolledBack);
+                }, cancellationToken: cancellationToken);
+            }
+            catch (Exception rollbackEx) when (rollbackEx is UnauthorizedAccessException or IOException or DirectoryNotFoundException)
+            {
+                logger.LogError(rollbackEx, "Could not write rollback to tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
+                    rename.EntryType, rename.PreviousName, rename.NewName);
+                return new TrackingEditorResult(false, RenameRollbackFailedMessage);
+            }
 
             if (!rollbackResult)
             {
                 logger.LogError("Could not roll back tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
                     rename.EntryType, rename.PreviousName, rename.NewName);
-                return new TrackingEditorResult(false,
-                    "The local directory could not be renamed, and tracking.yaml could not be rolled back. Check the server logs before running the downloader again.");
+                return new TrackingEditorResult(false, RenameRollbackFailedMessage);
             }
 
             logger.LogWarning("Rolled back tracking.yaml after {entryType} directory rename failed from \"{previousName}\" to \"{newName}\".",
