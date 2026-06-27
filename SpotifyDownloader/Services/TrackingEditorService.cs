@@ -17,6 +17,15 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
     IFileOperationCoordinator fileOperationCoordinator, ILogger<TrackingEditorService> logger) : ITrackingEditorService
 {
     private const string DownloadInProgressMessage = "A download is currently in progress. Tracking changes are disabled until it finishes.";
+    private record PendingRename(
+        TrackingEntryType EntryType,
+        int Index,
+        string PreviousName,
+        string NewName,
+        string NewUrl,
+        string OriginalUrl,
+        bool OriginalRefresh,
+        PlaylistDownloadMode OriginalMode);
 
     public Task<TrackingInformation> GetTrackingInformation(CancellationToken cancellationToken = default) =>
         trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
@@ -34,7 +43,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
         try
         {
-            (TrackingEntryType EntryType, string PreviousName, string NewName, string Url)? pendingRename = null;
+            PendingRename? pendingRename = null;
             var lockResult = await fileOperationCoordinator.TryRunWithExclusiveMusicAccess(async () =>
             {
                 var result = await trackingService.UpdateTrackingInformation(trackingInformation =>
@@ -77,7 +86,15 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
                     if (previousName is not null && !oldNameStillInUse)
                     {
-                        pendingRename = (input.EntryType, previousName, savedName, url);
+                        pendingRename = new PendingRename(
+                            input.EntryType,
+                            input.Index!.Value,
+                            previousName,
+                            savedName,
+                            url,
+                            input.OriginalUrl ?? string.Empty,
+                            input.OriginalRefresh,
+                            input.OriginalMode);
                     }
 
                     return (new TrackingEditorResult(true, "Changes saved to tracking.yaml."), true);
@@ -85,7 +102,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
                 return pendingRename is null
                     ? result
-                    : await RenameTrackedItemDirectoryWithRollback(pendingRename.Value, result, cancellationToken);
+                    : await RenameTrackedItemDirectoryWithRollback(pendingRename, result, cancellationToken);
             }, cancellationToken);
 
             return lockResult.Acquired
@@ -170,7 +187,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
     }
 
     private async Task<TrackingEditorResult> RenameTrackedItemDirectoryWithRollback(
-        (TrackingEntryType EntryType, string PreviousName, string NewName, string Url) rename,
+        PendingRename rename,
         TrackingEditorResult successResult,
         CancellationToken cancellationToken)
     {
@@ -186,7 +203,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
             var rollbackResult = await trackingService.UpdateTrackingInformation(trackingInformation =>
             {
-                var rolledBack = RollBackTrackingName(trackingInformation, rename.EntryType, rename.NewName, rename.PreviousName, rename.Url);
+                var rolledBack = RollBackTrackingEntry(trackingInformation, rename);
                 return (rolledBack, rolledBack);
             }, cancellationToken: cancellationToken);
 
@@ -205,19 +222,45 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         }
     }
 
-    private static bool RollBackTrackingName(TrackingInformation trackingInformation, TrackingEntryType entryType, string currentName, string previousName, string url)
+    private static bool RollBackTrackingEntry(TrackingInformation trackingInformation, PendingRename rename)
     {
-        var items = entryType == TrackingEntryType.Artist
-            ? trackingInformation.Artists.Cast<TrackingInformation.BaseItem>()
-            : trackingInformation.Playlists.Cast<TrackingInformation.BaseItem>();
-        var item = items.FirstOrDefault(x => x.Name == currentName && x.Url == url);
-        if (item is null)
+        if (rename.EntryType == TrackingEntryType.Artist)
+        {
+            var artist = GetUpdatedItem(trackingInformation.Artists, rename);
+            if (artist is null)
+            {
+                return false;
+            }
+
+            artist.Name = rename.PreviousName;
+            artist.Url = rename.OriginalUrl;
+            artist.Refresh = rename.OriginalRefresh;
+            return true;
+        }
+
+        var playlist = GetUpdatedItem(trackingInformation.Playlists, rename);
+        if (playlist is null)
         {
             return false;
         }
 
-        item.Name = previousName;
+        playlist.Name = rename.PreviousName;
+        playlist.Url = rename.OriginalUrl;
+        playlist.Refresh = rename.OriginalRefresh;
+        playlist.Mode = rename.OriginalMode;
         return true;
+    }
+
+    private static T? GetUpdatedItem<T>(IList<T> items, PendingRename rename) where T : TrackingInformation.BaseItem
+    {
+        if (rename.Index >= 0 && rename.Index < items.Count
+            && items[rename.Index].Name == rename.NewName
+            && items[rename.Index].Url == rename.NewUrl)
+        {
+            return items[rename.Index];
+        }
+
+        return items.FirstOrDefault(x => x.Name == rename.NewName && x.Url == rename.NewUrl);
     }
 
     private static string? GetPreviousName<T>(IList<T> items, TrackingEntryInput input) where T : TrackingInformation.BaseItem
