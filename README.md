@@ -2,8 +2,8 @@
   <img src="mkdocs/docs/assets/images/banner-dark.webp" alt="banner"/>
 </p>
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/pjmeca/spotify-downloader?style=flat&logo=github&label=Star%20this%20repo!)](https://github.com/pjmeca/spotify-downloader)
-[![Docker Image Version (tag)](https://img.shields.io/docker/v/pjmeca/spotify-downloader/latest?logo=docker)](https://hub.docker.com/r/pjmeca/spotify-downloader)
+[![GitHub Repo stars](https://img.shields.io/github/stars/pjmeca/spotcrate?style=flat&logo=github&label=Star%20this%20repo!)](https://github.com/pjmeca/spotcrate)
+[![Docker Image Version (tag)](https://img.shields.io/docker/v/pjmeca/spotcrate/latest?logo=docker)](https://hub.docker.com/r/pjmeca/spotcrate)
 
 This Docker image periodically tracks new music from Spotify and downloads it using [spotDL](https://github.com/spotDL/spotify-downloader) and [yt-dlp](https://github.com/yt-dlp/yt-dlp). Tracks are downloaded from YouTube with Spotify metadata embedded.
 
@@ -16,29 +16,29 @@ If you find this useful, please leave a ⭐. Feel free to request new features *
 >
 > This affects how this project works and may cause it to stop functioning if the app owner does not have Premium.
 >
-> See the full discussion in **[#51](https://github.com/pjmeca/spotify-downloader/issues/51)**.
+> See the full discussion in **[#51](https://github.com/pjmeca/spotcrate/issues/51)**.
 
 ## Full documentation
 
-This README is just a quick launch, you can find the complete documentation [here](https://spotify-downloader.pjmeca.com).
+This README is just a quick launch, you can find the complete documentation [here](https://spotcrate.pjmeca.com).
 
 ## Related projects
 
 This project works especially well together with [volume-normalizer](https://github.com/pjmeca/volume-normalizer), another Docker-based tool that I built to normalize the volume of your music library using ReplayGain.
 
-While `spotify-downloader` handles fetching and organizing your music, `volume-normalizer` takes care of keeping your library consistently balanced in terms of loudness, making both tools a good match for a complete self-hosted music pipeline.
+While `spotcrate` handles fetching and organizing your music, `volume-normalizer` takes care of keeping your library consistently balanced in terms of loudness, making both tools a good match for a complete self-hosted music pipeline.
 
 ## Usage
 
 The following `docker-compose` creates a container that downloads new music everyday at 00:00 AM.
 
 ```yml docker-compose.yml
-name: spotify-downloader
+name: spotcrate
 
 services:
-  spotify-downloader:
-    image: pjmeca/spotify-downloader:latest
-    container_name: spotify-downloader
+  spotcrate:
+    image: pjmeca/spotcrate:latest
+    container_name: spotcrate
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:8080" # (Optional) Web UI at http://localhost:8080
@@ -121,7 +121,7 @@ user@host:/music$ tree -d -L 2
 ```
 
 ## About the .Net release
-In September 2024, version `2.0.0` of `spotify-downloader` was released. This major version included a rewrite of the original code in Python. The reason behind this decision was to address a continuous series of `429` errors from the Spotify API unhandled by `spotDL`. I followed all the recomendations suggested in their [issue](https://github.com/spotDL/spotify-downloader/issues/2142), but it still didn't work. So, I decided to take a different approach, giving myself more flexibility to achieve what I really need.
+In September 2024, version `2.0.0` of `spotcrate` was released. This major version included a rewrite of the original code in Python. The reason behind this decision was to address a continuous series of `429` errors from the Spotify API unhandled by `spotDL`. I followed all the recomendations suggested in their [issue](https://github.com/spotDL/spotify-downloader/issues/2142), but it still didn't work. So, I decided to take a different approach, giving myself more flexibility to achieve what I really need.
 
 The reason why this change was made in .NET instead of sticking with Python is just that I am much more fluent in the former.
 

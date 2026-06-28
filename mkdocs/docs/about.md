@@ -18,7 +18,7 @@ The choice of .NET was mostly pragmatic: it matches the maintainer's day-to-day 
 
 This project works especially well together with [volume-normalizer](https://github.com/pjmeca/volume-normalizer), another Docker-based tool that I built to normalize the volume of your music library using ReplayGain.
 
-While `spotify-downloader` handles fetching and organizing your music, `volume-normalizer` takes care of keeping your library consistently balanced in terms of loudness, making both tools a good match for a complete self-hosted music pipeline.
+While `spotcrate` handles fetching and organizing your music, `volume-normalizer` takes care of keeping your library consistently balanced in terms of loudness, making both tools a good match for a complete self-hosted music pipeline.
 
 ## Credits
 

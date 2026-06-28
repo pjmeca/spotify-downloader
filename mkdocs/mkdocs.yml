@@ -1,7 +1,7 @@
-site_name: pjmeca/spotify-downloader
-site_url: https://spotify-downloader.pjmeca.com
-repo_url: https://github.com/pjmeca/spotify-downloader
-repo_name: pjmeca/spotify-downloader
+site_name: pjmeca/spotcrate
+site_url: https://spotcrate.pjmeca.com
+repo_url: https://github.com/pjmeca/spotcrate
+repo_name: pjmeca/spotcrate
 
 theme:
   name: material
@@ -49,11 +49,11 @@ extra:
   generator: false
   social:
     - icon: fontawesome/brands/docker
-      link: https://hub.docker.com/r/pjmeca/spotify-downloader
+      link: https://hub.docker.com/r/pjmeca/spotcrate
     - icon: fontawesome/brands/github
-      link: https://github.com/pjmeca/spotify-downloader
+      link: https://github.com/pjmeca/spotcrate
     - icon: fontawesome/solid/at
-      link: mailto:hello@pjmeca.com?subject=[spotify-downloader]
+      link: mailto:hello@pjmeca.com?subject=[spotcrate]
       name: email me!
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/pjmeca/
@@ -81,7 +81,7 @@ extra:
           data: -1
           note: >- 
             Thanks for your feedback! Help us improve this page by
-            submitting and issue on <a href="https://github.com/pjmeca/spotify-downloader/issues/new/?title=[Feedback]+{title}+-+{url}">GitHub</a>.
+            submitting and issue on <a href="https://github.com/pjmeca/spotcrate/issues/new/?title=[Feedback]+{title}+-+{url}">GitHub</a>.
 
 plugins:
   - search

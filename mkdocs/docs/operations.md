@@ -78,7 +78,7 @@ You can delete the cache if needed. The app will rebuild it over time, but you m
     - If you disabled updates with `YT_DLP_UPDATE_POLICY=never`, switch back to `before-run` or pin a known-good version.
     - You can pin a version with `YT_DLP_UPDATE_POLICY=<version>` to stabilize a setup without rebuilding the image.
     - YouTube may be blocking your IP. Changing your IP (or using a different network) may resolve the issue.
-    - It could be caused by a recent change on YouTube. Please check our [repo](https://github.com/pjmeca/spotify-downloader/issues) and open an issue so we can look into it as soon as possible.
+    - It could be caused by a recent change on YouTube. Please check our [repo](https://github.com/pjmeca/spotcrate/issues) and open an issue so we can look into it as soon as possible.
 
 ??? question "spotDL timeouts"
     - Each spotDL process is limited to about 10 minutes.
@@ -92,4 +92,4 @@ You can delete the cache if needed. The app will rebuild it over time, but you m
 ???+ bug "Still stuck?"
     If you hit an error that is not covered here, open an issue on GitHub:
     
-    <https://github.com/pjmeca/spotify-downloader/issues>
+    <https://github.com/pjmeca/spotcrate/issues>
