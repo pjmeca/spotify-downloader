@@ -84,7 +84,7 @@ code {
 }
 
 .hero-topline {
-    justify-content: space-between;
+    justify-content: flex-end;
     margin-bottom: .85rem;
 }
 
@@ -118,15 +118,6 @@ code {
     fill: currentColor;
 }
 
-.eyebrow {
-    margin: 0 0 .6rem;
-    color: var(--spotify-green-bright);
-    font-size: .8rem;
-    font-weight: 800;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-}
-
 .hero-title-row,
 .section-header,
 .entry-card,
@@ -155,6 +146,41 @@ h1 {
 .hero-title-row {
     position: relative;
     z-index: 1;
+}
+
+.hero-branding {
+    display: grid;
+    gap: 1rem;
+}
+
+.brand-lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: .9rem;
+}
+
+.hero-logo {
+    display: block;
+    width: clamp(4.862rem, 12.87vw, 7.436rem);
+    height: auto;
+}
+
+.brand-wordmark {
+    display: inline-flex;
+    align-items: center;
+    font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(2.125rem, 5.95vw, 4.08rem);
+    font-weight: 800;
+    line-height: .95;
+    letter-spacing: -.06em;
+}
+
+.brand-wordmark span:first-child {
+    color: #5eb235;
+}
+
+.brand-wordmark span:last-child {
+    color: #fff;
 }
 
 .mobile-resource-links {
