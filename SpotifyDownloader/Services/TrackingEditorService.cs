@@ -27,6 +27,7 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         string OriginalUrl,
         bool OriginalRefresh,
         PlaylistDownloadMode OriginalMode);
+    private record PreviousNameResult(string? PreviousName, TrackingEditorResult? Error);
 
     public Task<TrackingInformation> GetTrackingInformation(CancellationToken cancellationToken = default) =>
         trackingService.ReadTrackingInformation(cancellationToken: cancellationToken);
@@ -57,7 +58,13 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
 
                     if (input.EntryType == TrackingEntryType.Artist)
                     {
-                        previousName = GetPreviousName(trackingInformation.Artists, input);
+                        var previousNameResult = GetPreviousName(trackingInformation.Artists, input);
+                        if (previousNameResult.Error is not null)
+                        {
+                            return (previousNameResult.Error, false);
+                        }
+
+                        previousName = previousNameResult.PreviousName;
                         var artist = new TrackingInformation.ArtistItem
                         {
                             Name = newName,
@@ -71,7 +78,13 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
                     }
                     else
                     {
-                        previousName = GetPreviousName(trackingInformation.Playlists, input);
+                        var previousNameResult = GetPreviousName(trackingInformation.Playlists, input);
+                        if (previousNameResult.Error is not null)
+                        {
+                            return (previousNameResult.Error, false);
+                        }
+
+                        previousName = previousNameResult.PreviousName;
                         var playlist = new TrackingInformation.PlaylistItem
                         {
                             Name = newName,
@@ -273,25 +286,25 @@ public class TrackingEditorService(ITrackingService trackingService, IFileManage
         return items.FirstOrDefault(x => x.Name == rename.NewName && x.Url == rename.NewUrl);
     }
 
-    private static string? GetPreviousName<T>(IList<T> items, TrackingEntryInput input) where T : TrackingInformation.BaseItem
+    private static PreviousNameResult GetPreviousName<T>(IList<T> items, TrackingEntryInput input) where T : TrackingInformation.BaseItem
     {
         if (input.Index is null)
         {
-            return null;
+            return new PreviousNameResult(null, null);
         }
 
         if (input.Index.Value < 0 || input.Index.Value >= items.Count)
         {
-            throw new IOException("The selected tracking entry no longer exists.");
+            return new PreviousNameResult(null, new TrackingEditorResult(false, "The selected tracking entry no longer exists."));
         }
 
         var item = items[input.Index.Value];
         if (!MatchesOriginalEditableFields(item, input))
         {
-            throw new IOException("The selected tracking entry changed since this editor was opened. Reload the page and try again.");
+            return new PreviousNameResult(null, new TrackingEditorResult(false, "The selected tracking entry changed since this editor was opened. Reload the page and try again."));
         }
 
-        return item.Name;
+        return new PreviousNameResult(item.Name, null);
     }
 
     private static bool MatchesOriginalIdentity(TrackingInformation.BaseItem item, string? originalName, string? originalUrl) =>
