@@ -55,10 +55,10 @@ The editor can:
 - Adapt the layout for mobile screens, including compact status, documentation, and GitHub links.
 
 <p align="center">
-  <img src="assets/images/webui-landing.webp" alt="Desktop web UI example"/>
+  <img src="/assets/images/webui-landing.webp" alt="Desktop web UI example"/>
 </p>
 <p align="center">
-  <img src="assets/images/webui-dialog.webp" alt="Desktop web UI dialog example"/>
+  <img src="/assets/images/webui-dialog.webp" alt="Desktop web UI dialog example"/>
 </p>
 
 If `tracking.yaml` does not appear writable, the page remains available as a read-only view and shows a warning. To enable UI edits in Docker, mount `/app/tracking.yaml` without `:ro`:

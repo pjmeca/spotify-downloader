@@ -5,11 +5,11 @@ hide:
 ---
 
 <p align="center" class="banner">
-  <img src="assets/images/banner-dark.webp#only-dark" alt="banner"/>
+  <img src="/assets/images/banner-dark.webp#only-dark" alt="banner"/>
 </p>
 
 <p align="center" class="banner">
-  <img src="assets/images/banner-light.webp#only-light" alt="banner"/>
+  <img src="/assets/images/banner-light.webp#only-light" alt="banner"/>
 </p>
 
 # Home
@@ -39,7 +39,7 @@ Spotify Downloader is a Docker image that tracks artists and playlists on Spotif
 4. Your library stays tidy and up to date.
 
 <p align="center">
-  <img src="assets/images/illustration.webp" alt="banner"/>
+  <img src="/assets/images/illustration.webp" alt="banner"/>
 </p>
 
 ## Quick start
