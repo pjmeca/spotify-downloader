@@ -39,7 +39,7 @@ On disk, files are organized like this:
 
 ## Optional web UI
 
-The app serves a Razor Pages web UI on port `8080`. Publish the port in Docker Compose, then open `http://localhost:8080` to manage tracked artists and playlists. The UI validates that names and URLs are present, checks that URLs are parseable absolute URIs, and persists changes back to `tracking.yaml` when the file is writable.
+The app serves a Razor Pages web UI on port `8080`. Publish the port in Docker Compose, then open `http://localhost:8080` to manage tracked artists and playlists. The UI validates that names are present, that URLs use `http` or `https`, and that artist and playlist entries point to matching Spotify artist or playlist URLs before persisting changes back to `tracking.yaml` when the file is writable.
 
 The editor can:
 
