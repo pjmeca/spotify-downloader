@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
 using SpotifyAPI.Web;
 using SpotifyDownloader.Data;
 using SpotifyDownloader.Helpers;
@@ -18,7 +16,7 @@ public interface IArtistsService
     Task UpdateLocalArtistsInfo();
 }
 
-public class ArtistsService(ILogger<ArtistsService> logger, ISpotifyClientWrapper spotifyClient, ApplicationDbContext _applicationDbContext) : IArtistsService
+public class ArtistsService(ISpotifyClientWrapper spotifyClient, ApplicationDbContext _applicationDbContext) : IArtistsService
 {
     public async Task<(string[] localTracks, string[] localAlbums)> GetLocalArtistInfo(string artistName)
     {
@@ -49,13 +47,11 @@ public class ArtistsService(ILogger<ArtistsService> logger, ISpotifyClientWrappe
 
     public async Task<SimpleAlbum[]> GetRemoteArtistInfo(string url)
     {
-        var artistIdRegex = new Regex(@"/.*\.spotify.com\/.*artist\/([^\?]+)(\?.+)?", RegexOptions.Compiled);
-        var artistId = artistIdRegex.Match(url).Groups[1].Value;
+        var artistId = SpotifyUrlUtils.GetResourceId(url, "artist");
 
-        if (artistId == null)
+        if (string.IsNullOrWhiteSpace(artistId))
         {
-            logger.LogError("Artist not found in URL: {url}", url);
-            return [];
+            throw new InvalidOperationException($"Artist Id not found in URL: {url}");
         }
 
         var albums = await spotifyClient.GetAllAlbums(artistId);

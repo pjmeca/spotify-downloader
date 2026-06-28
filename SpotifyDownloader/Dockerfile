@@ -36,6 +36,8 @@ ENV CLIENT__SECRET=
 ENV FORMAT="opus"
 ENV OPTIONS=
 ENV YT_DLP_UPDATE_POLICY="before-run"
+ENV ASPNETCORE_URLS="http://+:8080"
+EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release

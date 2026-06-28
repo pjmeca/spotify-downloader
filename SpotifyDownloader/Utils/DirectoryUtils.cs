@@ -29,6 +29,7 @@ public static class DirectoryUtils
             catch (Exception ex)
             {
                 logger?.LogError(ex, "An error occurred while moving the file \"{file}\" from \"{dirFrom}\" to \"{dirTo}\"", sourceFilePath, sourceDir, destinationDir);
+                throw;
             }
         }
 

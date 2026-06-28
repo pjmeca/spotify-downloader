@@ -20,8 +20,8 @@ Everything you need to configure and run the container, without the noise.
 | Container path | Required | Purpose |
 | --- | --- | --- |
 | `/music` | yes | Download destination. |
-| `/app/tracking.yaml` | yes | Tracking config (read-only). |
-| `/app/cache` | no | SQLite cache to persist state. |
+| `/app/tracking.yaml` | yes | Tracking config. Use read-only for manual editing, or writable when using the web UI to save changes. |
+| `/app/cache` | no | SQLite cache and ASP.NET Data Protection keys. Persist this path to keep web UI antiforgery tokens valid across container recreations. |
 | `/app/logs` | no | Log files. |
 
 On disk, files are organized like this:
@@ -35,6 +35,46 @@ On disk, files are organized like this:
   /Playlists
     /Playlist Name
       track.ext
+```
+
+## Optional web UI
+
+The app serves a Razor Pages web UI on port `8080`. Publish the port in Docker Compose, then open `http://localhost:8080` to manage tracked artists and playlists. The UI validates that names are present, that URLs use `http` or `https`, and that artist and playlist entries point to matching Spotify artist or playlist URLs before persisting changes back to `tracking.yaml` when the file is writable.
+
+The editor can:
+
+- Add, edit, delete, and rename tracked artists and playlists.
+- Configure `refresh` for artists and playlists.
+- Configure playlist `mode` as `add` or `full`.
+- Rename the existing local folder when an entry name changes, when the folder can be found and moved safely.
+- Show entries in `A-Z` order without changing `tracking.yaml`.
+- Show entries in `YAML` order and reorder them with drag-and-drop; YAML-order changes are saved immediately.
+- Remember the selected order mode in the browser.
+- Keep the current page position after form submissions.
+- Show validation and save errors without adding success messages that shift the page layout.
+- Adapt the layout for mobile screens, including compact status, documentation, and GitHub links.
+
+<p align="center">
+  <img src="assets/images/webui-landing.webp" alt="Desktop web UI example"/>
+</p>
+<p align="center">
+  <img src="assets/images/webui-dialog.webp" alt="Desktop web UI dialog example"/>
+</p>
+
+If `tracking.yaml` does not appear writable, the page remains available as a read-only view and shows a warning. To enable UI edits in Docker, mount `/app/tracking.yaml` without `:ro`:
+
+```yaml
+ports:
+  - "127.0.0.1:8080:8080"
+volumes:
+  - /path/to/tracking.yaml:/app/tracking.yaml
+```
+
+If you do not want UI-based editing, you can keep the existing read-only mount:
+
+```yaml
+volumes:
+  - /path/to/tracking.yaml:/app/tracking.yaml:ro
 ```
 
 ## tracking.yaml
@@ -64,6 +104,8 @@ Define what to download. The file is read on every run.
 | `url` | yes | string | none | Spotify playlist URL (public only). |
 | `refresh` | no | boolean | `true` | If `false`, skip scanning if the playlist already exists locally. |
 | `mode` | no | string | `add` | `add` downloads only new tracks. `full` syncs the folder and deletes local tracks no longer present remotely. |
+
+For compatibility with older `tracking.yaml` files, playlists without `mode` keep using `add`. New playlists created from the web UI may explicitly set a mode when saved.
 
 ### Example
 

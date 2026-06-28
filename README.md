@@ -40,9 +40,11 @@ services:
     image: pjmeca/spotify-downloader:latest
     container_name: spotify-downloader
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080" # (Optional) Web UI at http://localhost:8080
     volumes:
       - /your/main/music/path:/music # (Required) Change this
-      - /path/to/tracking.yaml:/app/tracking.yaml:ro # (Required) Change this
+      - /path/to/tracking.yaml:/app/tracking.yaml # (Required) Remove :ro if you want the web UI to save changes
       - /path/to/cache:/app/cache # (Recommended) Store the SQLite cache somewhere
       - /path/to/logs:/app/logs # (Optional)
     environment:
@@ -63,7 +65,7 @@ docker compose -f ./docker-compose.yml up -d
 
 ## About `tracking.yaml`
 
-Each time the script inside the container runs, it reads the `tracking.yaml` file **(you must supply this file as a read-only volume)** and downloads all its contents. You don't need to stop or redeploy your container each time the file gets updated; changes will be read automatically on the next run.
+Each time the script inside the container runs, it reads the `tracking.yaml` file and downloads all its contents. You can keep mounting this file as read-only (`:ro`) if you manage it manually, but mount it without `:ro` if you want the optional web UI to save changes. You don't need to stop or redeploy your container each time the file gets updated; changes will be read automatically on the next run.
 
 Below is an example of `tracking.yaml`. The `name` field is used as a folder name, which will be created if it does not exist. If you want to download multiple URLs to the same folder, create multiple entries with the same name.
 
@@ -72,6 +74,8 @@ Optionally, you can specify if you wish to `refresh` each entry (defaults to `tr
 Playlists support an optional `mode` field. It accepts two values:
 - `add` (default): new tracks found in the remote playlist are added to the local folder, but no files are removed.
 - `full`: the local folder is synchronized with the remote playlist. Any local tracks no longer present in the remote playlist will be removed.
+
+For compatibility with older `tracking.yaml` files, playlists without `mode` keep using `add`. New playlists created from the web UI may explicitly set a mode when saved.
 
 ```yaml
 artists:
@@ -89,6 +93,18 @@ playlists:
     url: https://open.spotify.com/playlist/37i9dQZF1DWXm9R2iowygp
     mode: full # optional, default is 'add'
 ```
+
+## Optional web UI
+
+The container also serves a lightweight web UI for editing `tracking.yaml`. Publish port `8080` and open <http://localhost:8080> to add, edit, delete, rename, sort, and reorder tracked artists and playlists.
+
+<p align="center">
+  <img src="mkdocs/docs/assets/images/webui-landing.webp" alt="Desktop web UI example"/>
+</p>
+
+The editor supports artist `refresh`, playlist `refresh`, and playlist `mode` options. It can show entries in `A-Z` order without changing the file, or in `YAML` order where drag-and-drop reordering is saved back to `tracking.yaml` immediately.
+
+If `tracking.yaml` is mounted read-only, the UI still shows your current entries and displays a warning that changes may not be saved. Docker users who want to edit from the UI should mount `/app/tracking.yaml` without `:ro`. Users who keep editing the YAML manually can continue using a read-only mount.
 
 ### Result
 
