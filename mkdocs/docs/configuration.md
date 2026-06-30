@@ -1,3 +1,8 @@
+---
+title: Configure SpotCrate
+description: Configure SpotCrate environment variables, Docker volumes, the optional web UI, and tracking.yaml.
+---
+
 # Configuration
 
 Everything you need to configure and run the container, without the noise.
@@ -37,7 +42,7 @@ On disk, files are organized like this:
       track.ext
 ```
 
-## Optional web UI
+## Web UI
 
 The app serves a Razor Pages web UI on port `8080`. Publish the port in Docker Compose, then open `http://localhost:8080` to manage tracked artists and playlists. The UI validates that names are present, that URLs use `http` or `https`, and that artist and playlist entries point to matching Spotify artist or playlist URLs before persisting changes back to `tracking.yaml` when the file is writable.
 

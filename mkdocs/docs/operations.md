@@ -1,3 +1,8 @@
+---
+title: Scheduling, Logs and Troubleshooting
+description: Manage SpotCrate schedules, logs, cache behavior, and common download or Spotify API issues.
+---
+
 # Operations
 
 This page covers scheduling, logs, cache, and troubleshooting.

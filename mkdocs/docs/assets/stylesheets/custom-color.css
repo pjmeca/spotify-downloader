@@ -258,6 +258,8 @@ html body .md-header .md-header__inner.md-grid .md-header__title:hover {
 
 .spotcrate-hero__wordmark {
   display: inline-flex;
+  margin: 0;
+  color: inherit;
   font-size: clamp(2.1rem, 6vw, 4.1rem);
   font-weight: 800;
   line-height: .95;

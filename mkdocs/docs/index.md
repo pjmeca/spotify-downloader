@@ -1,4 +1,6 @@
 ---
+title: Home
+description: SpotCrate tracks Spotify artists and playlists from Docker and keeps your tagged music library up to date automatically.
 hide:
   - navigation
   - toc
@@ -8,9 +10,9 @@ hide:
   <div class="spotcrate-hero__content">
     <div class="spotcrate-hero__brand" aria-label="SpotCrate">
       <img src="/assets/images/isotype.webp" alt="" />
-      <span class="spotcrate-hero__wordmark"><span>Spot</span><span>Crate</span></span>
+      <h1 class="spotcrate-hero__wordmark"><span>Spot</span><span>Crate</span></h1>
     </div>
-    <p>Track Spotify artists and playlists from a self-hosted Docker container, then keep your music library organized, tagged, and moving automatically.</p>
+    <p>Track Spotify artists and playlists from Docker and keep your tagged music library up to date automatically.</p>
     <div class="spotcrate-hero__actions">
       <a href="getting-started/">Get started</a>
       <a href="https://github.com/pjmeca/spotcrate" class="spotcrate-hero__icon-link" aria-label="Open SpotCrate on GitHub">
@@ -25,25 +27,23 @@ hide:
   </div>
 </section>
 
-# Home
-
-SpotCrate is a Docker image that tracks artists and playlists on Spotify and automatically downloads new music to your library using [spotDL](https://github.com/spotDL/spotify-downloader) and [yt-dlp](https://github.com/yt-dlp/yt-dlp). Tracks are sourced from YouTube and tagged with Spotify metadata, so everything lands neatly organized and ready to play.
+SpotCrate watches the Spotify artists and playlists you choose, downloads new music on a schedule, and saves everything into clean artist and playlist folders. Start with the [Docker Compose setup](getting-started.md), then adjust your [tracking file](configuration.md#trackingyaml) and [schedule](operations.md#scheduling) when needed.
 
 <p class="spotcrate-premium-note">An active <strong>Spotify Premium subscription</strong> is required to use SpotCrate.</p>
 
-## Why you will like it
+## Why use SpotCrate
 
 <div class="spotcrate-feature-grid">
-  <div class="spotcrate-feature-card"><strong>Set it and forget it</strong><span>Run on a schedule and keep your library updated without babysitting downloads.</span></div>
-  <div class="spotcrate-feature-card"><strong>Smart tracking</strong><span>Skip rarely updated artists, or fully sync playlists when you want a strict mirror.</span></div>
-  <div class="spotcrate-feature-card"><strong>Flexible formats</strong><span>Use <code>opus</code>, <code>mp3</code>, or any spotDL-compatible format.</span></div>
-  <div class="spotcrate-feature-card"><strong>Clean structure</strong><span>Artists and playlists are organized automatically into predictable folders.</span></div>
-  <div class="spotcrate-feature-card spotcrate-feature-card--wide"><strong>Optional web UI</strong><span>Manage, sort, and reorder <code>tracking.yaml</code> from a responsive browser interface.</span></div>
+  <div class="spotcrate-feature-card"><strong>Automatic updates</strong><span>Run on a <a href="operations#scheduling">schedule</a> and keep your library updated without babysitting downloads.</span></div>
+  <div class="spotcrate-feature-card"><strong>Simple tracking</strong><span>Track your chosen artists and playlists with <a href="configuration#trackingyaml">a simple file</a>.</span></div>
+  <div class="spotcrate-feature-card"><strong>Flexible formats</strong><span>Choose <code>opus</code>, <code>mp3</code>, or another <a href="advanced#spotdl-options">spotDL-compatible format</a>.</span></div>
+  <div class="spotcrate-feature-card"><strong>Clean folders</strong><span>Save downloads into predictable artist and playlist folders under your music directory.</span></div>
+  <div class="spotcrate-feature-card spotcrate-feature-card--wide"><strong>Optional web UI</strong><span>Manage, sort, and reorder tracked items from the <a href="configuration#web-ui">browser editor</a>.</span></div>
 </div>
 
 ## How it works
 
-1. Define artists and playlists in `tracking.yaml`, either manually or through the optional web UI.
+1. Define artists and playlists in `tracking.yaml`, either manually or through the optional [web UI](configuration.md#web-ui).
 2. The container checks what you already have.
 3. New content is downloaded and tagged.
 4. Your library stays tidy and up to date.
@@ -54,4 +54,4 @@ SpotCrate is a Docker image that tracks artists and playlists on Spotify and aut
 
 ## Quick start
 
-If you already have [Docker](https://docs.docker.com/engine/install/) installed, head to [Getting Started](getting-started.md) to launch in minutes.
+If you already have [Docker](https://docs.docker.com/engine/install/) installed, follow [Getting Started](getting-started.md) to launch SpotCrate in minutes.

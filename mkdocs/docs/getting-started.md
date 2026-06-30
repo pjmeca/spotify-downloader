@@ -1,3 +1,8 @@
+---
+title: Run SpotCrate with Docker Compose
+description: Create Spotify credentials, define tracked artists and playlists, and start SpotCrate with Docker Compose.
+---
+
 # Getting Started
 
 This guide walks you from zero to a running container.

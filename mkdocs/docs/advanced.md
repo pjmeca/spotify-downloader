@@ -1,3 +1,8 @@
+---
+title: Advanced spotDL and yt-dlp Settings
+description: Customize SpotCrate with advanced spotDL options, yt-dlp update policies, and local Docker image builds.
+---
+
 # Advanced
 
 ## spotDL options

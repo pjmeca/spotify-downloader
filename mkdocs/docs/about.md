@@ -1,3 +1,8 @@
+---
+title: About SpotCrate
+description: Learn why SpotCrate was rewritten in .NET and which open-source projects make it possible.
+---
+
 # About
 
 ## The .NET rewrite
