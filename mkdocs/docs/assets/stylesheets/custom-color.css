@@ -333,6 +333,11 @@ html body .md-header .md-header__inner.md-grid .md-header__title:hover {
   margin: 1.25rem 0 2rem;
 }
 
+.spotcrate-premium-note {
+  color: #ffd166;
+  font-weight: 800;
+}
+
 .spotcrate-feature-card {
   grid-column: span 3;
   padding: 1rem;
