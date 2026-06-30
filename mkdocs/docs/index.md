@@ -4,17 +4,30 @@ hide:
   - toc
 ---
 
-<p align="center" class="banner">
-  <img src="/assets/images/banner-dark.webp#only-dark" alt="banner"/>
-</p>
-
-<p align="center" class="banner">
-  <img src="/assets/images/banner-light.webp#only-light" alt="banner"/>
-</p>
+<section class="spotcrate-hero">
+  <div class="spotcrate-hero__content">
+    <div class="spotcrate-hero__brand" aria-label="SpotCrate">
+      <img src="/assets/images/isotype.webp" alt="" />
+      <span class="spotcrate-hero__wordmark"><span>Spot</span><span>Crate</span></span>
+    </div>
+    <p>Track Spotify artists and playlists from a self-hosted Docker container, then keep your music library organized, tagged, and moving automatically.</p>
+    <div class="spotcrate-hero__actions">
+      <a href="getting-started/">Get started</a>
+      <a href="https://github.com/pjmeca/spotcrate" class="spotcrate-hero__icon-link" aria-label="Open SpotCrate on GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.21.09 1.85 1.24 1.85 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.4 11.4 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.49 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z" /></svg>
+        GitHub
+      </a>
+      <a href="https://hub.docker.com/r/pjmeca/spotcrate" class="spotcrate-hero__icon-link" aria-label="Open SpotCrate on Docker Hub">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.12 7.33h2.18v2.22h1.1c.5 0 1.02-.09 1.49-.25.23-.08.5-.19.72-.34-.29-.39-.44-.87-.48-1.35-.06-.65.07-1.5.51-2l.22-.25.26.2c.66.51 1.21 1.23 1.31 2.07.8-.23 1.74-.18 2.44.23l.29.17-.15.3c-.6 1.17-1.86 1.54-3.09 1.48-1.84 4.58-5.85 6.75-10.7 6.75-2.51 0-4.81-.94-6.12-3.15l-.02-.04-.2-.41c-.47-1.04-.62-2.28-.5-3.41l.03-.31h1.77V7.33h2.18V5.16h4.36v2.17h2.4Zm-6.15 0h2.03V5.86H6.97v1.47Zm-2.18.7v1.52h2.03V8.03H4.79Zm2.73 0v1.52h2.03V8.03H7.52Zm2.73 0v1.52h2.03V8.03h-2.03Zm2.73 0v1.52h2.03V8.03h-2.03ZM5.2 10.25H3.1c-.03.85.12 1.75.47 2.53l.16.33c1.13 1.88 3.1 2.75 5.49 2.75 4.53 0 8.15-2.04 9.73-6.35l.08-.22.23.03c.97.13 1.97-.04 2.56-.74-.65-.2-1.46-.13-2.05.23l-.56.34.04-.65c.05-.72-.31-1.37-.82-1.84-.17.32-.22.75-.18 1.11.05.51.27.95.66 1.24l.33.25-.34.24c-.27.19-.56.34-.87.46-.6.24-1.27.36-1.93.36H5.2Z" /></svg>
+        Docker Hub
+      </a>
+    </div>
+  </div>
+</section>
 
 # Home
 
-SpotCrate is a Docker image that tracks artists and playlists on Spotify and automatically downloads new music to your library using [spotDL](https://github.com/spotDL/spotcrate) and [yt-dlp](https://github.com/yt-dlp/yt-dlp). Tracks are sourced from YouTube and tagged with Spotify metadata, so everything lands neatly organized and ready to play.
+SpotCrate is a Docker image that tracks artists and playlists on Spotify and automatically downloads new music to your library using [spotDL](https://github.com/spotDL/spotify-downloader) and [yt-dlp](https://github.com/yt-dlp/yt-dlp). Tracks are sourced from YouTube and tagged with Spotify metadata, so everything lands neatly organized and ready to play.
 
 ???+ warning "Recent Spotify Developer policy changes"
     Spotify has recently changed its **Spotify for Developers** policy and the API now requires the **app owner to have an active Spotify Premium subscription**.
@@ -25,11 +38,13 @@ SpotCrate is a Docker image that tracks artists and playlists on Spotify and aut
 
 ## Why you will like it
 
-- 🚀 **Set it and forget it**: run on a schedule and keep your library updated.
-- 🧠 **Smart tracking**: skip rarely updated artists, or fully sync playlists when you want.
-- 🎚️ **Flexible formats**: use `opus`, `mp3`, or any spotDL-compatible format.
-- 🗂️ **Clean structure**: artists and playlists are organized automatically.
-- 🖥️ **Optional web UI**: manage, sort, and reorder `tracking.yaml` from a responsive browser interface.
+<div class="spotcrate-feature-grid">
+  <div class="spotcrate-feature-card"><strong>Set it and forget it</strong><span>Run on a schedule and keep your library updated without babysitting downloads.</span></div>
+  <div class="spotcrate-feature-card"><strong>Smart tracking</strong><span>Skip rarely updated artists, or fully sync playlists when you want a strict mirror.</span></div>
+  <div class="spotcrate-feature-card"><strong>Flexible formats</strong><span>Use <code>opus</code>, <code>mp3</code>, or any spotDL-compatible format.</span></div>
+  <div class="spotcrate-feature-card"><strong>Clean structure</strong><span>Artists and playlists are organized automatically into predictable folders.</span></div>
+  <div class="spotcrate-feature-card spotcrate-feature-card--wide"><strong>Optional web UI</strong><span>Manage, sort, and reorder <code>tracking.yaml</code> from a responsive browser interface.</span></div>
+</div>
 
 ## How it works
 
@@ -39,7 +54,7 @@ SpotCrate is a Docker image that tracks artists and playlists on Spotify and aut
 4. Your library stays tidy and up to date.
 
 <p align="center">
-  <img src="/assets/images/illustration.webp" alt="banner"/>
+  <img src="/assets/images/illustration.webp" alt="SpotCrate workflow illustration"/>
 </p>
 
 ## Quick start
