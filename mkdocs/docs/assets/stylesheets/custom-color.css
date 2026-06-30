@@ -31,6 +31,17 @@
   background: rgb(var(--brand-green-rgb) / 45%);
 }
 
+:target,
+:focus {
+  scroll-margin-top: 5rem;
+  scroll-margin-bottom: 2rem;
+}
+
+:focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 3px;
+}
+
 html,
 body {
   min-height: 100%;
@@ -293,6 +304,7 @@ html body .md-header .md-header__inner.md-grid .md-header__title:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-width: 2.8rem;
   min-height: 2.8rem;
   padding: .75rem 1.1rem;
   border: 1px solid var(--line);
@@ -395,5 +407,16 @@ html body .md-header .md-header__inner.md-grid .md-header__title:hover {
   .spotcrate-feature-card,
   .spotcrate-feature-card--wide {
     grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }

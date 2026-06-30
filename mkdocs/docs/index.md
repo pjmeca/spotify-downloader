@@ -8,8 +8,8 @@ hide:
 
 <section class="spotcrate-hero">
   <div class="spotcrate-hero__content">
-    <div class="spotcrate-hero__brand" aria-label="SpotCrate">
-      <img src="/assets/images/isotype.webp" alt="" />
+    <div class="spotcrate-hero__brand">
+      <img src="/assets/images/isotype.webp" alt="" aria-hidden="true" />
       <h1 class="spotcrate-hero__wordmark"><span>Spot</span><span>Crate</span></h1>
     </div>
     <p>Track Spotify artists and playlists from Docker and keep your tagged music library up to date automatically.</p>
