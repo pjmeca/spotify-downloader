@@ -9,18 +9,20 @@ This Docker image periodically tracks new music from Spotify and downloads it us
 
 If you find this useful, please leave a ⭐. Feel free to request new features *or make a pull request if you're up for it!* 💪
 
-> [!WARNING]
-> **Recent Spotify Developer policy changes**
->
-> Spotify has recently changed its **Spotify for Developers** policy and the API now requires the **app owner to have an active Spotify Premium subscription**.
->
-> This affects how this project works and may cause it to stop functioning if the app owner does not have Premium.
->
-> See the full discussion in **[#51](https://github.com/pjmeca/spotcrate/issues/51)**.
+> [!IMPORTANT]
+> An active **Spotify Premium subscription** is required to use SpotCrate.
 
 ## Full documentation
 
 This README is just a quick launch, you can find the complete documentation [here](https://spotcrate.pjmeca.com).
+
+## Disclaimer
+
+SpotCrate is a personal, self-hosted project. It is not affiliated with, endorsed by, sponsored by, or officially connected to Spotify, YouTube, Google, spotDL, yt-dlp, or any of their owners.
+
+Spotify is a trademark of Spotify AB. YouTube is a trademark of Google LLC. All other trademarks belong to their respective owners.
+
+SpotCrate does not host, distribute, or provide music. It uses Spotify API data to help decide what to process, manages local files and directories, and relies on third-party tools for download-related functionality. Use it responsibly and only with content and services you are allowed to access.
 
 ## Related projects
 

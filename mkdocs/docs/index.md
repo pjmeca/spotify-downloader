@@ -31,6 +31,8 @@ SpotCrate watches the Spotify artists and playlists you choose, downloads new mu
 
 <p class="spotcrate-premium-note">An active <strong>Spotify Premium subscription</strong> is required to use SpotCrate.</p>
 
+SpotCrate is a personal, self-hosted project and is not affiliated with Spotify, YouTube, Google, spotDL, or yt-dlp. See the [project disclaimer](about.md#disclaimer).
+
 ## Why use SpotCrate
 
 <div class="spotcrate-feature-grid">

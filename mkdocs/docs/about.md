@@ -25,6 +25,14 @@ This project works especially well together with [volume-normalizer](https://git
 
 While `spotcrate` handles fetching and organizing your music, `volume-normalizer` takes care of keeping your library consistently balanced in terms of loudness, making both tools a good match for a complete self-hosted music pipeline.
 
+## Disclaimer
+
+SpotCrate is a personal, self-hosted project. It is not affiliated with, endorsed by, sponsored by, or officially connected to Spotify, YouTube, Google, spotDL, yt-dlp, or any of their owners.
+
+Spotify is a trademark of Spotify AB. YouTube is a trademark of Google LLC. All other trademarks belong to their respective owners.
+
+SpotCrate does not host, distribute, or provide music. It uses Spotify API data to help decide what to process, manages local files and directories, and relies on third-party tools for download-related functionality. Use it responsibly and only with content and services you are allowed to access.
+
 ## Credits
 
 Special thanks to the projects that make this possible:
