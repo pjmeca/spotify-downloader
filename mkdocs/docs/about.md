@@ -37,9 +37,8 @@ SpotCrate does not host, distribute, or provide music. It uses Spotify API data 
 
 Special thanks to the projects that make this possible:
 
-- [spotDL](https://github.com/spotDL/spotify-downloader) for the core download engine
+- [spotDL](https://github.com/spotDL/spotify-downloader) and [yt-dlp](https://github.com/yt-dlp/yt-dlp) for the core download engine
 - [SpotifyAPI-NET](https://github.com/JohnnyCrazy/SpotifyAPI-NET) for the Spotify API client
 - [TagLib#](https://github.com/mono/taglib-sharp) for audio metadata access
 - [YamlDotNet](https://github.com/aaubry/YamlDotNet) for YAML parsing
 - [EasyCronJob](https://github.com/furkandeveloper/EasyCronJob) for cron scheduling in .NET
-- Picture of a hand holding headsets from the banner by [Sound On](https://www.pexels.com/es-es/foto/foto-de-persona-sosteniendo-auriculares-blancos-3761020/)
