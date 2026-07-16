@@ -85,8 +85,7 @@ code {
 }
 
 .hero-topline {
-    justify-content: flex-end;
-    margin-bottom: .85rem;
+    justify-content: space-between;
 }
 
 .resource-links {
@@ -119,7 +118,6 @@ code {
     fill: currentColor;
 }
 
-.hero-title-row,
 .section-header,
 .entry-card,
 .modal-header,
@@ -144,25 +142,17 @@ h1 {
     letter-spacing: -.06em;
 }
 
-.hero-title-row {
-    position: relative;
-    z-index: 1;
-}
-
-.hero-branding {
-    display: grid;
-    gap: 1rem;
-}
-
 .brand-lockup {
     display: inline-flex;
     align-items: center;
-    gap: .9rem;
+    flex: 0 0 auto;
+    gap: .45rem;
+    padding-left: 1.5rem;
 }
 
 .hero-logo {
     display: block;
-    width: clamp(4.862rem, 12.87vw, 7.436rem);
+    width: 3.8rem;
     height: auto;
 }
 
@@ -170,8 +160,8 @@ h1 {
     display: inline-flex;
     align-items: center;
     font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif;
-    font-size: clamp(2.125rem, 5.95vw, 4.08rem);
-    font-weight: 800;
+    font-size: 2.4rem;
+    font-weight: 600;
     line-height: .95;
     letter-spacing: -.06em;
 }
@@ -182,16 +172,6 @@ h1 {
 
 .brand-wordmark span:last-child {
     color: #fff;
-}
-
-.mobile-resource-links {
-    display: none;
-}
-
-.hero-title-row p {
-    max-width: 44rem;
-    font-size: 1.08rem;
-    line-height: 1.55;
 }
 
 .hero p,
@@ -260,9 +240,19 @@ h1 {
 
 .tabs {
     display: flex;
+    align-items: center;
     gap: .5rem;
     padding: .75rem;
     background: rgb(0 0 0 / 20%);
+}
+
+.tab-buttons {
+    display: flex;
+    gap: .5rem;
+}
+
+.tabs .status-pill {
+    margin-left: auto;
 }
 
 .order-toolbar {
@@ -648,12 +638,27 @@ body[data-order-mode="yaml"] .entry-card {
     .hero-topline {
         align-items: flex-start;
         flex-direction: column;
-        gap: .65rem;
-        margin-bottom: 1.35rem;
+        gap: .75rem;
+    }
+
+    .brand-lockup {
+        align-self: center;
+        padding-left: 0;
     }
 
     .resource-links {
-        display: none;
+        order: -1;
+        align-self: flex-end;
+        justify-content: flex-end;
+    }
+
+    .resource-links a {
+        justify-content: center;
+        gap: 0;
+        width: 2.35rem;
+        height: 2.35rem;
+        padding: 0;
+        font-size: 0;
     }
 
     .eyebrow {
@@ -661,7 +666,6 @@ body[data-order-mode="yaml"] .entry-card {
         font-size: .72rem;
     }
 
-    .hero-title-row,
     .section-header,
     .entry-card,
     .modal-actions {
@@ -669,56 +673,11 @@ body[data-order-mode="yaml"] .entry-card {
         flex-direction: column;
     }
 
-    .hero-title-row {
-        display: grid;
-        grid-template-columns: auto auto;
-        justify-content: start;
-        align-items: center;
-    }
-
-    .hero-title-row > div:first-child {
-        grid-column: 1 / -1;
-    }
-
     h1 {
         max-width: 10ch;
         margin-bottom: .75rem;
         font-size: clamp(2.8rem, 16vw, 4.25rem);
         line-height: .9;
-    }
-
-    .hero-title-row p {
-        margin-bottom: 0;
-        font-size: 1rem;
-        line-height: 1.65;
-    }
-
-    .status-pill {
-        align-self: center;
-    }
-
-    .mobile-resource-links {
-        display: flex;
-        align-self: center;
-        gap: .5rem;
-    }
-
-    .mobile-resource-links a {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.35rem;
-        height: 2.35rem;
-        color: var(--text);
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: rgb(255 255 255 / 6%);
-    }
-
-    .mobile-resource-links svg {
-        width: 1rem;
-        height: 1rem;
-        fill: currentColor;
     }
 
     .warning-banner,
@@ -739,9 +698,21 @@ body[data-order-mode="yaml"] .entry-card {
         padding: .65rem;
     }
 
-    .tab {
-        flex: 1 1 0;
-        padding: .85rem .65rem;
+    .tab-buttons {
+        display: flex;
+        flex: 0 0 auto;
+        gap: .55rem;
+        min-width: 0;
+    }
+
+    .tabs .status-pill {
+        padding: .5rem .65rem;
+        font-size: .68rem;
+    }
+
+    .tabs .tab {
+        flex: 0 0 auto;
+        padding: .65rem .85rem;
         text-align: center;
     }
 
@@ -869,6 +840,26 @@ body[data-order-mode="yaml"] .entry-card {
 
     .tab-panel {
         padding: .9rem;
+    }
+
+    .tabs {
+        gap: .3rem;
+        padding: .5rem;
+    }
+
+    .tab-buttons {
+        gap: .3rem;
+    }
+
+    .tabs .tab {
+        padding-right: .45rem;
+        padding-left: .45rem;
+    }
+
+    .tabs .status-pill {
+        padding-right: .5rem;
+        padding-left: .5rem;
+        font-size: .62rem;
     }
 
     .entry-card {
