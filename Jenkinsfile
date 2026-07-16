@@ -5,6 +5,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'pjmeca/spotcrate'
         DOCS_IMAGE_NAME = 'pjmeca/spotcrate-docs'
+        DOCS_CONTAINER_NAME = 'spotcrate-docs'
     }
     stages {
         stage('Docker Build Edge') {
@@ -32,8 +33,8 @@ pipeline {
         stage('Docs Deploy Prod') {
             steps {
                 sh '''
-                    docker rm -f spotcrate-docs
-                    docker run -d --name spotcrate-docs --restart unless-stopped -p 14666:80 ${DOCS_IMAGE_NAME}
+                    docker rm -f ${DOCS_CONTAINER_NAME} || true
+                    docker run -d --name ${DOCS_CONTAINER_NAME} --restart unless-stopped -p 14666:80 ${DOCS_IMAGE_NAME}
                 '''
             }
         }
