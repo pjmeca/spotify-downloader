@@ -10,7 +10,7 @@ using File = TagLib.File;
 
 namespace SpotCrate.Services;
 
-public class PlaylistsService(ILogger<ArtistsService> logger, ISpotifyClientWrapper spotifyClient, ApplicationDbContext _applicationDbContext)
+public class PlaylistsService(ILogger<ArtistsService> logger, SpotifyClientWrapper spotifyClient, ApplicationDbContext _applicationDbContext)
 {
     public File[] GetLocalPlaylistInfo(string playlistName)
     {

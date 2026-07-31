@@ -5,15 +5,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace SpotCrate.Services;
 
-public interface ITrackingService
-{
-    Task<TrackingInformation> ReadTrackingInformation(string? trackingFile = null, CancellationToken cancellationToken = default);
-    Task WriteTrackingInformation(TrackingInformation trackingInformation, string? trackingFile = null, CancellationToken cancellationToken = default);
-    Task<TResult> UpdateTrackingInformation<TResult>(Func<TrackingInformation, (TResult Result, bool ShouldWrite)> update, string? trackingFile = null, CancellationToken cancellationToken = default);
-    Task<bool> IsTrackingFileWritable(string? trackingFile = null, CancellationToken cancellationToken = default);
-}
-
-public class TrackingService(ILogger<TrackingService> logger) : ITrackingService
+public class TrackingService(ILogger<TrackingService> logger)
 {
     public const string DEFAULT_TRACKING_FILE = "/app/tracking.yaml";
     private readonly SemaphoreSlim trackingFileSemaphore = new(1, 1);

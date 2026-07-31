@@ -6,7 +6,7 @@ using SpotCrate.Services;
 
 namespace SpotCrate.Pages;
 
-public class IndexModel(ITrackingEditorService trackingEditorService) : PageModel
+public class IndexModel(TrackingEditorService trackingEditorService) : PageModel
 {
     public TrackingInformation TrackingInformation { get; private set; } = new();
     public bool IsTrackingFileWritable { get; private set; }
