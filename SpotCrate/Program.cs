@@ -48,7 +48,7 @@ try
         await dbContext.Database.MigrateAsync();
     }
 
-    var appVersionMigrationService = scope.ServiceProvider.GetRequiredService<IAppVersionMigrationService>();
+    var appVersionMigrationService = scope.ServiceProvider.GetRequiredService<AppVersionMigrationService>();
     await appVersionMigrationService.MigrateToCurrentVersion();
 
     logger.LogInformation("Cron job configured with: \"{cron}\"", CRON_SCHEDULE);
@@ -124,16 +124,16 @@ WebApplication Build()
             SPOTIFY_CLIENT_ID,
             SPOTIFY_CLIENT_SECRET));
     builder.Services.AddSingleton(new SpotifyClient(config));
-    builder.Services.AddScoped<ISpotifyClientWrapper, SpotifyClientWrapper>();
+    builder.Services.AddScoped<SpotifyClientWrapper>();
 
-    builder.Services.AddSingleton<IFileManagementService, FileManagementService>();
-    builder.Services.AddSingleton<IFileOperationCoordinator, FileOperationCoordinator>();
-    builder.Services.AddSingleton<ITrackingService, TrackingService>();
-    builder.Services.AddSingleton<ITrackingEditorService, TrackingEditorService>();
-    builder.Services.AddScoped<IAppVersionMigrationService, AppVersionMigrationService>();
-    builder.Services.AddScoped<IDownloadingService, DownloadingService>();
-    builder.Services.AddSingleton<IYtDlpService, YtDlpService>();
-    builder.Services.AddScoped<IArtistsService, ArtistsService>();
+    builder.Services.AddSingleton<FileManagementService>();
+    builder.Services.AddSingleton<FileOperationCoordinator>();
+    builder.Services.AddSingleton<TrackingService>();
+    builder.Services.AddSingleton<TrackingEditorService>();
+    builder.Services.AddScoped<AppVersionMigrationService>();
+    builder.Services.AddScoped<DownloadingService>();
+    builder.Services.AddSingleton<YtDlpService>();
+    builder.Services.AddScoped<ArtistsService>();
     builder.Services.AddScoped<PlaylistsService>();
 
     builder.Services.ApplyResulation<CronJob>(options =>

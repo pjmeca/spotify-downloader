@@ -7,16 +7,7 @@ using static Fluents.Fluent;
 
 namespace SpotCrate.Services;
 
-public interface IArtistsService
-{
-    Task<(string[] localTracks, string[] localAlbums)> GetLocalArtistInfo(string artistName);
-
-    Task<SimpleAlbum[]> GetRemoteArtistInfo(string url);
-
-    Task UpdateLocalArtistsInfo();
-}
-
-public class ArtistsService(ISpotifyClientWrapper spotifyClient, ApplicationDbContext _applicationDbContext) : IArtistsService
+public class ArtistsService(SpotifyClientWrapper spotifyClient, ApplicationDbContext _applicationDbContext)
 {
     public async Task<(string[] localTracks, string[] localAlbums)> GetLocalArtistInfo(string artistName)
     {

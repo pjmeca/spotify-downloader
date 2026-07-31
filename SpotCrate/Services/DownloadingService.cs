@@ -10,15 +10,9 @@ using static Fluents.Fluent;
 
 namespace SpotCrate.Services;
 
-public interface IDownloadingService
-{
-    Task<DownloadResult> Download(TrackingInformation trackingInformation);
-    Task<DownloadResult> DownloadWithoutFileOperationLock(TrackingInformation trackingInformation);
-}
-
 public class DownloadingService(ILogger<DownloadingService> logger, GlobalConfiguration configuration,
-    ISpotifyClientWrapper spotifyClient, IArtistsService artistsService, PlaylistsService playlistsService,
-    IFileOperationCoordinator fileOperationCoordinator) : IDownloadingService
+    SpotifyClientWrapper spotifyClient, ArtistsService artistsService, PlaylistsService playlistsService,
+    FileOperationCoordinator fileOperationCoordinator)
 {
     private static readonly string[] SpotdlFailureMarkers =
     [

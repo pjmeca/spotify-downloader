@@ -6,8 +6,8 @@ using SpotCrate.Services;
 namespace SpotCrate.Helpers;
 
 public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<CronJob> logger, IServiceScopeFactory scopeFactory,
-    ITrackingService trackingService, IYtDlpService ytDlpService,
-    IFileOperationCoordinator fileOperationCoordinator)
+    TrackingService trackingService, YtDlpService ytDlpService,
+    FileOperationCoordinator fileOperationCoordinator)
     : CronJobService(cronConfiguration.CronExpression, cronConfiguration.TimeZoneInfo, cronConfiguration.CronFormat)
 {
     public override async Task DoWork(CancellationToken cancellationToken)
@@ -18,8 +18,8 @@ public class CronJob(ICronConfiguration<CronJob> cronConfiguration, ILogger<Cron
             await ytDlpService.EnsureReadyForRun(cancellationToken);
 
             using var scope = scopeFactory.CreateScope();
-            var downloadingService = scope.ServiceProvider.GetRequiredService<IDownloadingService>();
-            var artistsService = scope.ServiceProvider.GetRequiredService<IArtistsService>();
+            var downloadingService = scope.ServiceProvider.GetRequiredService<DownloadingService>();
+            var artistsService = scope.ServiceProvider.GetRequiredService<ArtistsService>();
 
             var result = await fileOperationCoordinator.RunWithExclusiveMusicAccess(async () =>
             {

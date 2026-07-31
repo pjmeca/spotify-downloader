@@ -6,25 +6,11 @@ using SpotCrate.Utils;
 
 namespace SpotCrate.Services;
 
-public interface IFileManagementService
+public class FileManagementService(ILogger<FileManagementService> logger)
 {
     /// <summary>
     /// If we have just upgraded from v2.0.0 or lower, move each artist and playlist to their corresponding subfolder.
     /// </summary>
-    void MigrateFromOlderVersion(TrackingInformation trackingInformation, AppVersion upgradeFrom);
-    /// <summary>
-    /// Groups tracks by albums in the file system. If an album only has one track, it won't be moved.
-    /// </summary>
-    void OrganizeArtists(IEnumerable<string> artistsNames);
-
-    /// <summary>
-    /// Renames the local directory for a tracked artist or playlist.
-    /// </summary>
-    void RenameTrackedItemDirectory(TrackingEntryType entryType, string oldName, string newName);
-}
-
-public class FileManagementService(ILogger<FileManagementService> logger) : IFileManagementService
-{
     public void MigrateFromOlderVersion(TrackingInformation trackingInformation, AppVersion upgradeFrom)
     {
         if (upgradeFrom < new AppVersion(2, 1, 2))
@@ -90,7 +76,7 @@ public class FileManagementService(ILogger<FileManagementService> logger) : IFil
                 }
             }
         }
-        
+
         void Migration_2_3_1()
         {
             // Fixes https://github.com/pjmeca/spotcrate/issues/36
@@ -131,6 +117,9 @@ public class FileManagementService(ILogger<FileManagementService> logger) : IFil
         }
     }
 
+    /// <summary>
+    /// Groups tracks by albums in the file system. If an album only has one track, it won't be moved.
+    /// </summary>
     public void OrganizeArtists(IEnumerable<string> artistsNames)
     {
         foreach (var artist in artistsNames)
@@ -199,6 +188,9 @@ public class FileManagementService(ILogger<FileManagementService> logger) : IFil
         }
     }
 
+    /// <summary>
+    /// Renames the local directory for a tracked artist or playlist.
+    /// </summary>
     public void RenameTrackedItemDirectory(TrackingEntryType entryType, string oldName, string newName)
     {
         var sanitizedOldName = oldName.ToValidPathString();

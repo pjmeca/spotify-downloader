@@ -6,12 +6,7 @@ using static Fluents.Fluent;
 
 namespace SpotCrate.Services;
 
-public interface IYtDlpService
-{
-    Task EnsureReadyForRun(CancellationToken cancellationToken);
-}
-
-public class YtDlpService(ILogger<YtDlpService> logger, GlobalConfiguration configuration) : IYtDlpService
+public class YtDlpService(ILogger<YtDlpService> logger, GlobalConfiguration configuration)
 {
     private const string BeforeRunPolicy = "before-run";
     private const string NeverPolicy = "never";

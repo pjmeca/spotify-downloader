@@ -5,14 +5,9 @@ using SpotCrate.Helpers;
 
 namespace SpotCrate.Services;
 
-public interface IAppVersionMigrationService
-{
-    Task MigrateToCurrentVersion(CancellationToken cancellationToken = default);
-}
-
-public class AppVersionMigrationService(ApplicationDbContext dbContext, IFileManagementService fileManagementService,
-    ITrackingService trackingService, IFileOperationCoordinator fileOperationCoordinator,
-    ILogger<AppVersionMigrationService> logger) : IAppVersionMigrationService
+public class AppVersionMigrationService(ApplicationDbContext dbContext, FileManagementService fileManagementService,
+    TrackingService trackingService, FileOperationCoordinator fileOperationCoordinator,
+    ILogger<AppVersionMigrationService> logger)
 {
     public async Task MigrateToCurrentVersion(CancellationToken cancellationToken = default)
     {

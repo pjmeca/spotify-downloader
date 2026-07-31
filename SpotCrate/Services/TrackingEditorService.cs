@@ -4,17 +4,8 @@ using SpotCrate.Utils;
 
 namespace SpotCrate.Services;
 
-public interface ITrackingEditorService
-{
-    Task<TrackingInformation> GetTrackingInformation(CancellationToken cancellationToken = default);
-    Task<bool> IsTrackingFileWritable(CancellationToken cancellationToken = default);
-    Task<TrackingEditorResult> SaveEntry(TrackingEntryInput input, CancellationToken cancellationToken = default);
-    Task<TrackingEditorResult> DeleteEntry(TrackingEntryType entryType, int index, string? originalName, string? originalUrl, CancellationToken cancellationToken = default);
-    Task<TrackingEditorResult> ReorderEntries(TrackingEntryType entryType, IReadOnlyList<int> orderedIndexes, IReadOnlyList<TrackingReorderEntryInput> orderedEntries, CancellationToken cancellationToken = default);
-}
-
-public class TrackingEditorService(ITrackingService trackingService, IFileManagementService fileManagementService,
-    IFileOperationCoordinator fileOperationCoordinator, ILogger<TrackingEditorService> logger) : ITrackingEditorService
+public class TrackingEditorService(TrackingService trackingService, FileManagementService fileManagementService,
+    FileOperationCoordinator fileOperationCoordinator, ILogger<TrackingEditorService> logger)
 {
     private const string DownloadInProgressMessage = "A download is currently in progress. Tracking changes are disabled until it finishes.";
     private const string RenameRollbackFailedMessage = "The local directory could not be renamed, and tracking.yaml could not be rolled back. Check the server logs before running the downloader again.";

@@ -1,12 +1,6 @@
 namespace SpotCrate.Services;
 
-public interface IFileOperationCoordinator
-{
-    Task<TResult> RunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken = default);
-    Task<(bool Acquired, TResult? Result)> TryRunWithExclusiveMusicAccess<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken = default);
-}
-
-public class FileOperationCoordinator : IFileOperationCoordinator
+public class FileOperationCoordinator
 {
     private readonly SemaphoreSlim semaphore = new(1, 1);
 
