@@ -1,3 +1,8 @@
+---
+title: Advanced spotDL and yt-dlp Settings
+description: Customize SpotCrate with advanced spotDL options, yt-dlp update policies, and local Docker image builds.
+---
+
 # Advanced
 
 ## spotDL options
@@ -48,20 +53,20 @@ If the install or update fails, the run continues with the version that is alrea
 
 ## Build the image locally
 
-If you want to build locally (for development or customization), use the Dockerfile in `SpotifyDownloader/`.
+If you want to build locally (for development or customization), use the Dockerfile in `SpotCrate/`.
 
 ### Build command
 
 ```bash
-docker build -t spotify-downloader:local ./SpotifyDownloader
+docker build -t spotcrate:local ./SpotCrate
 ```
 
 Then reference it in your compose file:
 
 ```yaml
 services:
-  spotify-downloader:
-    image: spotify-downloader:local
+  spotcrate:
+    image: spotcrate:local
 ```
 
 ### What is inside
@@ -73,4 +78,4 @@ The image includes:
 - yt-dlp
 - spotDL
 
-Pinned baseline versions are defined in `SpotifyDownloader/Dockerfile`. Update that file if you need different versions baked into the image.
+Pinned baseline versions are defined in `SpotCrate/Dockerfile`. Update that file if you need different versions baked into the image.

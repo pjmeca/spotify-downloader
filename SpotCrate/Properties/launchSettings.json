@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SpotCrate": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

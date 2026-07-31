@@ -1,7 +1,7 @@
 services:
   docs:
-    image: pjmeca/spotify-downloader-docs
-    container_name: spotify-downloader-docs
+    image: pjmeca/spotcrate-docs
+    container_name: spotcrate-docs
     build:
       context: .
       dockerfile: Dockerfile

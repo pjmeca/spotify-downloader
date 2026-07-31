@@ -3,13 +3,14 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = 'pjmeca/spotify-downloader'
-        DOCS_IMAGE_NAME = 'pjmeca/spotify-downloader-docs'
+        IMAGE_NAME = 'pjmeca/spotcrate'
+        DOCS_IMAGE_NAME = 'pjmeca/spotcrate-docs'
+        DOCS_CONTAINER_NAME = 'spotcrate-docs'
     }
     stages {
         stage('Docker Build Edge') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:edge ./SpotifyDownloader'
+                sh 'docker build -t ${IMAGE_NAME}:edge ./SpotCrate'
             }
         }
         stage('Docs Build Prod') {
@@ -32,8 +33,8 @@ pipeline {
         stage('Docs Deploy Prod') {
             steps {
                 sh '''
-                    docker rm -f spotify-downloader-docs
-                    docker run -d --name spotify-downloader-docs --restart unless-stopped -p 14666:80 ${DOCS_IMAGE_NAME}
+                    docker rm -f ${DOCS_CONTAINER_NAME} || true
+                    docker run -d --name ${DOCS_CONTAINER_NAME} --restart unless-stopped -p 14666:80 ${DOCS_IMAGE_NAME}
                 '''
             }
         }

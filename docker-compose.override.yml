@@ -1,4 +1,4 @@
 services:
-  spotify-downloader:
+  spotcrate:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development

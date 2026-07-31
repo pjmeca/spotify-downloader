@@ -1,3 +1,8 @@
+---
+title: Run SpotCrate with Docker Compose
+description: Create Spotify credentials, define tracked artists and playlists, and start SpotCrate with Docker Compose.
+---
+
 # Getting Started
 
 This guide walks you from zero to a running container.
@@ -11,7 +16,7 @@ You will create Spotify credentials and a `tracking.yaml` file in the next steps
 
 ## 1) Create Spotify credentials
 
-Spotify Downloader uses Spotify **client credentials** to read artist and playlist data. You need a Client ID and Client Secret so the app can call the Spotify API.
+SpotCrate uses Spotify **client credentials** to read artist and playlist data. You need a Client ID and Client Secret so the app can call the Spotify API.
 
 Go to the Spotify Developer Dashboard and create an app:
 
@@ -26,7 +31,7 @@ Note: client credentials only allow access to **public** playlists.
 
     Spotify also introduced stricter Development Mode limits (for example, fewer supported endpoints/fields, one Client ID per developer, and up to five authorized users). These limits can affect functionality depending on your setup.
 
-    See the full discussion in **[#51](https://github.com/pjmeca/spotify-downloader/issues/51)**.
+    See the full discussion in **[#51](https://github.com/pjmeca/spotcrate/issues/51)**.
 
 ## 2) Create a tracking file
 
@@ -53,12 +58,12 @@ See the full format and options in [tracking.yaml](configuration.md#trackingyaml
 Use a compose file like this:
 
 ```yaml
-name: spotify-downloader
+name: spotcrate
 
 services:
-  spotify-downloader:
-    image: pjmeca/spotify-downloader:latest
-    container_name: spotify-downloader
+  spotcrate:
+    image: pjmeca/spotcrate:latest
+    container_name: spotcrate
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:8080" # Optional web UI
